@@ -62,6 +62,10 @@ then
 fi  
 
 
+
+sudo apt-get install gnuplot gnuplot-qt
+
+
 # Install base packages:
 echo "[Pre-build]  installing luarocks packages"
 
@@ -74,6 +78,7 @@ $TORCH_PREFIX/bin/luarocks install nnx
 $TORCH_PREFIX/bin/luarocks install optim
 #$TORCH_PREFIX/bin/luarocks install cutorch
 $TORCH_PREFIX/bin/luarocks install trepl
+$TORCH_PREFIX/bin/luarocks install gnuplot
 
 git clone http://github.com/soumith/cutorch
 sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-1.0-0.rockspec

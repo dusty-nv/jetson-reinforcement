@@ -11,8 +11,10 @@
 
 require 'nn'
 require 'optim'
+require 'gnuplot'
 
 math.randomseed(os.time())
+torch.setdefaulttensortype('torch.FloatTensor')
 
 --[[ Helper function: Chooses a random value between the two boundaries.]] --
 local function randf(s, e)
@@ -169,11 +171,10 @@ local function trainNetwork(model, inputs, targets, criterion, sgdParams)
 end
 
 function Main()
-    print("Training new model")
     local epsilon = 1 -- The probability of choosing a random action (in training). This decays as iterations increase. (0 to 1)
     local epsilonMinimumValue = 0.001 -- The minimum value we want epsilon to reach in training. (0 to 1)
     local nbActions = 3 -- The number of actions. Since we only have left/stay/right that means 3 actions.
-    local epoch = 1000 -- The number of games we want the system to run for.
+    local epoch = 3000 -- The number of games we want the system to run for.
     local hiddenSize = 100 -- Number of neurons in the hidden layers.
     local maxMemory = 500 -- How large should the memory be (where it stores its past experiences).
     local batchSize = 50 -- The mini-batch size for training. Samples are randomly taken from memory till mini-batch size.
@@ -211,8 +212,22 @@ function Main()
     local winHistoryIndex = 1	  -- Remember which slot in the history table we used last
     local winHistory      = torch.Tensor(winHistorySize):zero()
 
-	io.write(string.char(27) .. "[2J")
+    io.write(string.char(27) .. "[2J")
 
+    -- configure gnuplot
+    gnuplot.figure(1)
+    --gnuplot.title("DQN Loss Minimization")
+    gnuplot.xlabel("epoch")
+    --gnuplot.ylabel("win ratio")
+
+    local plotLabels  = torch.Tensor(1):zero()
+    local plotHistory = torch.Tensor(1):zero()
+    local lossHistory = torch.Tensor(1):zero()
+    local plotIndex   = 1
+
+    gnuplot.plot(plotLabels, plotHistory)
+ 
+    -- run the epoch iterations
     for i = 1, epoch do
         -- Initialise the environment.
         local err = 0
@@ -302,18 +317,31 @@ function Main()
             err = err + trainNetwork(model, inputs, targets, criterion, sgdParams)
         end
 
-		local winPercentage = (winCount/i) * 100
+		local plotValue     = winCount/i
+		local winPercentage = plotValue * 100
 		local winHistorySum = winHistory:sum()
 
           io.write(string.format("Epoch %03d : err = %f : wins %d (%.1f%%) ", i, err, winCount, winPercentage))
 
 		if i > winHistorySize then
 			io.write(string.format(": last%d - %d wins (%.1f%%)\n", winHistorySize, winHistorySum, (winHistorySum/winHistorySize) * 100))
+			plotValue = winHistorySum/winHistorySize
 		else
 			io.write("\n")
 		end
+
+		plotLabels[plotIndex]  = i
+		plotHistory[plotIndex] = plotValue
+		lossHistory[plotIndex] = err
+		plotIndex = plotIndex + 1
+			
+		gnuplot.plot({'win ratio', plotLabels, plotHistory}, {'error rate', plotLabels, lossHistory})
+
+		plotLabels:resize(plotIndex)
+		plotHistory:resize(plotIndex)
+		lossHistory:resize(plotIndex)
     end
-    torch.save("TorchQLearningModel.model", model)
+    torch.save("catchQModel.model", model)
     print("Model saved")
 end
 --print("Call the Main() function at the end of the TorchQLearningExample.lua file to train a new model")
