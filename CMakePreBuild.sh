@@ -85,7 +85,18 @@ git clone -b R5 http://github.com/soumith/cudnn.torch
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
 
 
-
 echo ""
 echo "[Pre-build]  Torch7 has been installed successfully"
 echo ""
+
+#echo "installing iTorch"
+#sudo apt-get install libzmq3-dev libssl-dev python-zmq
+#sudo pip install ipython
+#ipython --version
+## pip uninstall IPython
+## pip install ipython==3.2.1
+#sudo pip install jupyter
+#git clone https://github.com/facebook/iTorch.git
+#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/iTorch/itorch-scm-1.rockspec
+
+

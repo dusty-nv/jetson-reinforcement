@@ -63,7 +63,7 @@ foreach(include ${deepRLIncludes})
 endforeach()
 
 # transfer all LUA scripts to bin directory
-file(GLOB luaScripts lua/*.lua)
+file(GLOB luaScripts lua/*.lua lua/*.ipynb)
 
 foreach(luaScript ${luaScripts})
 	message("-- Copying ${luaScript}")
