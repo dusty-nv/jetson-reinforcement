@@ -9,14 +9,11 @@ extern "C"
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-//#include <TH/THTensor.h>
 }
 
 #include <TH/THTensor.h>
 #include <luaT.h>
 
-
-//#define SCRIPT_FILENAME "test-lua.lua"
 
 
 bool init( const char* script_filename )
