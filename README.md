@@ -1,2 +1,2 @@
 # jetson-reinforcement
-Deep reinforcement learning libraries for Jetson and online training
+Deep reinforcement learning libraries and training course
