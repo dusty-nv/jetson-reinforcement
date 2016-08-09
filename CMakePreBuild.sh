@@ -105,7 +105,7 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cutorch/rocks/cutorch-scm-1.rocks
 # install cudnn v5 bindings
 #git clone -b R5 http://github.com/soumith/cudnn.torch 
 git clone http://github.com/soumith/cudnn.torch 
-sed -i 's/ffi.sizeof('half'),/2,/g' cudnn.torch/init.lua
+#sed -i 's/ffi.sizeof('half'),/2,/g' cudnn.torch/init.lua
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
 
 
