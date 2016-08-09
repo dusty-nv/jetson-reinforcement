@@ -8,6 +8,8 @@ echo "[Pre-build]  dependency installer script running..."
 echo "[Pre-build]  build root directory:       $BUILD_ROOT"
 echo "[Pre-build]  installing Torch/LUA into:  $TORCH_PREFIX"
 
+# break on errors
+set -e
 
 # Install dependencies for Torch:
 echo "[Pre-build]  installing Torch7 package dependencies"
@@ -69,16 +71,31 @@ sudo apt-get install gnuplot gnuplot-qt
 # Install base packages:
 echo "[Pre-build]  installing luarocks packages"
 
-$TORCH_PREFIX/bin/luarocks install cwrap
-$TORCH_PREFIX/bin/luarocks install classic
-$TORCH_PREFIX/bin/luarocks install paths
-$TORCH_PREFIX/bin/luarocks install torch
-$TORCH_PREFIX/bin/luarocks install nn
-$TORCH_PREFIX/bin/luarocks install nnx
-$TORCH_PREFIX/bin/luarocks install optim
+cd $BUILD_ROOT
+git clone http://github.com/torch/rocks
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/luaffi-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/cwrap-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/paths-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/torch-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nn-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nnx-0.1-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/optim-1.0.5-0.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
+
+#$TORCH_PREFIX/bin/luarocks install cwrap
+#$TORCH_PREFIX/bin/luarocks install paths
+
+#$TORCH_PREFIX/bin/luarocks install torch
+#cd $BUILD_ROOT
+#git clone github.com/torch/torch7
+#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
+
+#$TORCH_PREFIX/bin/luarocks install nn
+#$TORCH_PREFIX/bin/luarocks install nnx
+#$TORCH_PREFIX/bin/luarocks install optim
 # $TORCH_PREFIX/bin/luarocks install cutorch
 # $TORCH_PREFIX/bin/luarocks install trepl
-$TORCH_PREFIX/bin/luarocks install gnuplot
+#$TORCH_PREFIX/bin/luarocks install gnuplot
 
 git clone https://github.com/torch/cutorch
 sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-1.0-0.rockspec
@@ -88,6 +105,7 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cutorch/rocks/cutorch-scm-1.rocks
 # install cudnn v5 bindings
 #git clone -b R5 http://github.com/soumith/cudnn.torch 
 git clone http://github.com/soumith/cudnn.torch 
+sed -i 's/ffi.sizeof('half'),/2,/g' cudnn.torch/init.lua
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
 
 

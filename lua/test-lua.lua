@@ -11,7 +11,7 @@ require 'torch'
 print('[deepRL]  loading cutorch...')
 require 'cutorch'
 
-print('cutorch.hasHalf = ' .. tostring(cutorch.hasHalf) )
+print('cutorch.hasHalf == ' .. tostring(cutorch.hasHalf) )
 
 if cutorch.hasHalf then
 	print('half tensor test...')
