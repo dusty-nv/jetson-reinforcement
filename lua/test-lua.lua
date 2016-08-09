@@ -11,6 +11,15 @@ require 'torch'
 print('[deepRL]  loading cutorch...')
 require 'cutorch'
 
+print('cutorch.hasHalf = ' .. tostring(cutorch.hasHalf) )
+
+if cutorch.hasHalf then
+	print('half tensor test...')
+	a = torch.CudaHalfTensor(3)
+	b = torch.CudaHalfTensor(3)
+	print(torch.cmul(a,b))
+end
+
 print('[deepRL]  loading nn...')
 require 'nn'
 

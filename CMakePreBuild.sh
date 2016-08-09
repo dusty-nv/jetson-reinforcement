@@ -76,17 +76,18 @@ $TORCH_PREFIX/bin/luarocks install torch
 $TORCH_PREFIX/bin/luarocks install nn
 $TORCH_PREFIX/bin/luarocks install nnx
 $TORCH_PREFIX/bin/luarocks install optim
-#$TORCH_PREFIX/bin/luarocks install cutorch
-$TORCH_PREFIX/bin/luarocks install trepl
+# $TORCH_PREFIX/bin/luarocks install cutorch
+# $TORCH_PREFIX/bin/luarocks install trepl
 $TORCH_PREFIX/bin/luarocks install gnuplot
 
-git clone http://github.com/soumith/cutorch
+git clone https://github.com/torch/cutorch
 sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-1.0-0.rockspec
 sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cutorch/rocks/cutorch-scm-1.rockspec
 
 # install cudnn v5 bindings
-git clone -b R5 http://github.com/soumith/cudnn.torch 
+#git clone -b R5 http://github.com/soumith/cudnn.torch 
+git http://github.com/soumith/cudnn.torch 
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
 
 
