@@ -16,7 +16,7 @@ extern "C"
 #include <luaT.h>
 
 
-#define SCRIPT_FILENAME "test-lua.lua"
+#define SCRIPT_FILENAME "test-packages.lua"
 
 
 bool init()
