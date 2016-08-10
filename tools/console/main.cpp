@@ -55,7 +55,7 @@ int main( int argc, char** argv )
 {
 	printf("deepRL-console\n\n");
 
-	const char* script_filename = "test-lua.lua";
+	const char* script_filename = "test-packages.lua";
 	
 	if( argc > 1 )
 		script_filename = argv[1];
