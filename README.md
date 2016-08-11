@@ -1,4 +1,5 @@
-https://a70ad2d16996820e6285-3c315462976343d903d5b3a03b69072d.ssl.cf2.rackcdn.com/10dc4a454bb70fe282e196d5758bf3bf
+<img src="https://a70ad2d16996820e6285-3c315462976343d903d5b3a03b69072d.ssl.cf2.rackcdn.com/10dc4a454bb70fe282e196d5758bf3bf">
+
 # Reinforcement Learning
 Reinforcement learners deploy an AI agent that chooses actions to perform based on environmental state and reward.
 
@@ -72,7 +73,7 @@ Depending on architecture, the package will be built to either armhf or aarch64,
       \lib			where the libraries are build to
 ```
 	  
-## Verifying Lua + Torch
+## Verifying Lua + Torch Install
 
 After either [Building from Source](#building-from-source) or [Downloading the Package](#downloading-the-package], verify the LuaJIT-5.1 / Torch7 scripting environment with these commands:
 
@@ -87,11 +88,11 @@ These scripts should run OK and verify the Lua / Torch environment is sane.
 Note the deepRL-console program can launch a user's script from the command line (CLI).
 
 
-## Verifying Q-Learner with Catch
+## Playing Catch with the Q-Learner
 
 Next, to verify that the reinforcement Q-learner learns like it's supposed to, let's play a simple game:  half-pong, or catch.
 
-```
+``` bash
 $ ./deepRL-console catchDQN.lua
 ```
 
