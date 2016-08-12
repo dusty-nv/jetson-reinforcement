@@ -17,8 +17,8 @@ These are available to download, extract, and run straight away.
 JetPack 2.2 / JetPack 2.2.1 64-bit
 L4T R24.1 aarch64
 
-jetson-reinforcement-R241-aarch64-20160803.tar.gz
-https://drive.google.com/file/d/0BwYxpotGWRNOYlBmM2xMUXZ0eUE/view?usp=sharing
+jetson-reinforcement-R241-aarch64-20160803.tar.gz (110MB)
+<a href="https://drive.google.com/file/d/0BwYxpotGWRNOYlBmM2xMUXZ0eUE/view?usp=sharing">https://drive.google.com/file/d/0BwYxpotGWRNOYlBmM2xMUXZ0eUE/view?usp=sharing</a>
 ```
 
 Alternatively the project and Torch can be built from source, a process which is mostly scripted on supported platforms.
