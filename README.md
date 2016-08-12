@@ -13,8 +13,8 @@ This repository includes Q-learning algorithms in Torch7 and an API in C++ for i
 These archives contain a full snapshot of the repo on the indicate date including binary build and prerequisites like Torch for the indicated JetPack/L4T release.
 These are available to download, extract, and run straight away.
 
-> JetPack 2.2 / JetPack 2.2.1 64-bit
-> L4T R24.1 aarch64
+> `JetPack 2.2 / JetPack 2.2.1 64-bit` <br />
+> `L4T R24.1 aarch64` <br />
 >
 > jetson-reinforcement-R241-aarch64-20160803.tar.gz (110MB)
 > https://drive.google.com/file/d/0BwYxpotGWRNOYlBmM2xMUXZ0eUE/view?usp=sharing
