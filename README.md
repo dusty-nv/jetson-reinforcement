@@ -16,7 +16,7 @@ These are available to download, extract, and run straight away.
 > `JetPack 2.2 / JetPack 2.2.1 64-bit` <br />
 > `L4T R24.1 aarch64` <br />
 >
-> jetson-reinforcement-R241-aarch64-20160803.tar.gz (110MB)
+> `jetson-reinforcement-R241-aarch64-20160803.tar.gz  (110MB)`
 > https://drive.google.com/file/d/0BwYxpotGWRNOYlBmM2xMUXZ0eUE/view?usp=sharing
 
 
