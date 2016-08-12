@@ -81,11 +81,58 @@ After either [Building from Source](#building-from-source) or [Downloading the P
 $ cd aarch64/bin
 
 $ ./deepRL-console hello.lua			# verify Lua interpreter (consult if unfamiliar with Lua)
-$ ./deepRL-console test-packages.lua    # load Torch packages and bindings
+
+[deepRL]  created new lua_State
+[deepRL]  opened LUA libraries
+[deepRL]  loading 'hello.lua'
+
+HELLO from LUA!
+my variable equals 16
+list  1
+map.x 10
+one
+two
+3
+4
+5
+6
+7
+8
+9
+10
+multiply = 200
+goodbye!
+
+[deepRL]  closing lua_State
 ```
 
-These scripts should run OK and verify the Lua / Torch environment is sane.
-Note the deepRL-console program can launch a user's script from the command line (CLI).
+This command will test loading Torch7 packages and bindings for CUDA/cuDNN:
+
+``` bash
+$ ./deepRL-console test-packages.lua    # load Torch packages and bindings
+
+[deepRL]  created new lua_State
+[deepRL]  opened LUA libraries
+[deepRL]  loading 'test-packages.lua'
+
+[deepRL]  hello from within Torch/Lua environment (time=0.032163)
+[deepRL]  loading Lua packages...
+[deepRL]  loading torch...
+[deepRL]  loading cutorch...
+cutorch.hasHalf == false
+[deepRL]  loading nn...
+[deepRL]  loading cudnn...
+[deepRL]  loading math...
+[deepRL]  loading nnx...
+[deepRL]  loading optim...
+[deepRL]  done loading packages. (time=5.234669)
+
+[deepRL]  closing lua_State
+```
+
+These scripts should run normally and verify the Lua / Torch environment is sane.
+
+>  the deepRL-console program can launch a user's script from the command line (CLI).
 
 
 ## Playing Catch with the Q-Learner
