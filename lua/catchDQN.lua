@@ -1,13 +1,6 @@
---[[
-            Torch translation of the keras example found here (written by Eder Santana).
-            https://gist.github.com/EderSantana/c7222daa328f0e885093#file-qlearn-py-L164
-
-            Example of Re-inforcement learning using the Q function described in this paper from deepmind.
-            https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
-
-            The agent plays a game of catch. Fruits drop from the sky and the agent can choose the actions
-            left/stay/right to catch the fruit before it reaches the ground.
-]] --
+--
+-- http://github.com/dusty-nv/jetson-reinforcement
+--
 
 require 'nn'
 require 'optim'

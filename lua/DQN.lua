@@ -1,10 +1,6 @@
---[[
-            Torch translation of the keras example found here (written by Eder Santana).
-            https://gist.github.com/EderSantana/c7222daa328f0e885093#file-qlearn-py-L164
-
-            Example of Re-inforcement learning using the Q function described in this paper from deepmind.
-            https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
-]] --
+--
+-- http://github.com/dusty-nv/jetson-reinforcement
+--
 
 require 'nn'
 require 'optim'

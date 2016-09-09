@@ -1,3 +1,6 @@
+--
+-- http://github.com/dusty-nv/jetson-reinforcement
+--
 
 math.randomseed(os.time())
 
