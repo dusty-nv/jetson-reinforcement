@@ -76,7 +76,18 @@ git clone http://github.com/torch/rocks
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/luaffi-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/cwrap-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/paths-scm-1.rockspec
-$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/torch-scm-1.rockspec
+
+#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/torch-scm-1.rockspec
+cd $BUILD_ROOT
+git clone http://github.com/torch/torch7
+cd torch7
+git checkout 7bbe17917ea560facdc652520e5ea01692e460d3
+$TORCH_PREFIX/bin/luarocks make $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
+cd $BUILD_ROOT
+#sed -i 's/neon/asimd/g' torch7/lib/TH/cmake/FindARM.cmake  
+#sed -i 's/STRING(COMPARE EQUAL "neon" "${NEON_THERE}" NEON_TRUE)/set(NEON_TRUE TRUE)/g' torch7/lib/TH/cmake/FindARM.cmake 
+#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
+
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nn-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nnx-0.1-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/optim-1.0.5-0.rockspec
@@ -84,17 +95,12 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
 
 #$TORCH_PREFIX/bin/luarocks install cwrap
 #$TORCH_PREFIX/bin/luarocks install paths
-
 #$TORCH_PREFIX/bin/luarocks install torch
-#cd $BUILD_ROOT
-#git clone github.com/torch/torch7
-#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
-
 #$TORCH_PREFIX/bin/luarocks install nn
 #$TORCH_PREFIX/bin/luarocks install nnx
 #$TORCH_PREFIX/bin/luarocks install optim
-# $TORCH_PREFIX/bin/luarocks install cutorch
-# $TORCH_PREFIX/bin/luarocks install trepl
+#$TORCH_PREFIX/bin/luarocks install cutorch
+#$TORCH_PREFIX/bin/luarocks install trepl
 #$TORCH_PREFIX/bin/luarocks install gnuplot
 
 git clone https://github.com/torch/cutorch
