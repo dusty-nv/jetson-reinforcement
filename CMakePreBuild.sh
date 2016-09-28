@@ -104,8 +104,11 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
 #$TORCH_PREFIX/bin/luarocks install gnuplot
 
 git clone https://github.com/torch/cutorch
-sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-1.0-0.rockspec
-sed -i 's/-j$(getconf _NPROCESSORS_ONLN)/-j1/g' cutorch/rocks/cutorch-scm-1.rockspec
+sed -i 's/$(getconf _NPROCESSORS_ONLN)/1/g' cutorch/rocks/cutorch-1.0-0.rockspec
+sed -i 's/$(getconf _NPROCESSORS_ONLN)/1/g' cutorch/rocks/cutorch-scm-1.rockspec
+sed -i 's/jopts=3/jopts=1/g' cutorch/rocks/cutorch-1.0-0.rockspec
+sed -i 's/jopts=3/jopts=1/g' cutorch/rocks/cutorch-scm-1.rockspec
+
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cutorch/rocks/cutorch-scm-1.rockspec
 
 # install cudnn v5 bindings
