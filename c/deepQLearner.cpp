@@ -240,8 +240,7 @@ bool deepQLearner::initLua()
 		return false;
 	}
 
-	printf("[deepRL]  cuTorch numDevices:  %i\n", THC->numDevices);
-
+	//printf("[deepRL]  cuTorch numDevices:  %i\n", THC->numDevices);
 	return true;
 }
 
