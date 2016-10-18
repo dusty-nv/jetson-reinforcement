@@ -5,6 +5,14 @@ project(jetson-reinforcement)
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.  Automatically reset to NO after dependencies are installed.")
 set(BUILD_OPENBLAS "YES" CACHE BOOL "If YES, will download & build OpenBLAS (for Torch) into sandbox")
 
+find_package(CUDA)
+
+# Pass options to NVCC
+set(
+	CUDA_NVCC_FLAGS
+	${CUDA_NVCC_FLAGS};
+	-O3 -gencode arch=compute_53,code=sm_53
+)
 
 # if this is the first time running cmake, perform pre-build dependency install script (or if the user manually triggers re-building the dependencies)
 if( ${BUILD_DEPS} )
@@ -19,14 +27,7 @@ if( ${BUILD_DEPS} )
 endif()
 
 
-find_package(CUDA)
 
-# Pass options to NVCC
-set(
-	CUDA_NVCC_FLAGS
-	${CUDA_NVCC_FLAGS};
-	-O3 -gencode arch=compute_53,code=sm_53
-)
 
 
 # setup project output paths

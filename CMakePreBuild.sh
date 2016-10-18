@@ -78,17 +78,48 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/cwrap-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/paths-scm-1.rockspec
 
 #$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/torch-scm-1.rockspec
+echo "[Pre-build]  installing torch7 from source"
 cd $BUILD_ROOT
 git clone http://github.com/torch/torch7
 cd torch7
 git checkout 7bbe17917ea560facdc652520e5ea01692e460d3
+
+# patch set 993
+##sed -i '6 a STRING(REGEX REPLACE "^.*(asimd).*$" "\\\\1" ASIMD_THERE ${CPUINFO})' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '7 a STRING(COMPARE EQUAL "asimd" "${ASIMD_THERE}" ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '8 a IF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '9 a set(ASIMD_FOUND true CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '10 a ELSE (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '11 a set(ASIMD_FOUND false CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+##sed -i '12 a ENDIF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+
+##sed -i '64 a IF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+##sed -i '65 a MESSAGE(STATUS "asimd/Neon found with compiler flag : -D__NEON__")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+##sed -i '66 a SET(CMAKE_C_FLAGS "-D__NEON__ ${CMAKE_C_FLAGS}")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+##sed -i '67 a ENDIF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+
+cat $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+cat $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+
 $TORCH_PREFIX/bin/luarocks make $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
 cd $BUILD_ROOT
-#sed -i 's/neon/asimd/g' torch7/lib/TH/cmake/FindARM.cmake  
-#sed -i 's/STRING(COMPARE EQUAL "neon" "${NEON_THERE}" NEON_TRUE)/set(NEON_TRUE TRUE)/g' torch7/lib/TH/cmake/FindARM.cmake 
+##sed -i 's/neon/asimd/g' torch7/lib/TH/cmake/FindARM.cmake  
+##sed -i 's/STRING(COMPARE EQUAL "neon" "${NEON_THERE}" NEON_TRUE)/set(NEON_TRUE TRUE)/g' torch7/lib/TH/cmake/FindARM.cmake 
 #$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
 
-$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nn-scm-1.rockspec
+echo "[Pre-build]  done installing torch7 package"
+echo "[Pre-build]  installing additional packages for Torch"
+
+echo "[Pre-build]  installing nn from source"
+git clone http://github.com/torch/nn
+cd nn
+sed -i 's/ptrdiff_t/long/g' lib/THNN/init.c
+sed -i 's/ptrdiff_t/long/g' lib/THNN/generic/* 
+$TORCH_PREFIX/bin/luarocks make $BUILD_ROOT/nn/rocks/nn-scm-1.rockspec
+cd $BUILD_ROOT
+echo "[Pre-build]  done installing nn package"
+
+#$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nn-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nnx-0.1-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/optim-1.0.5-0.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
@@ -103,6 +134,7 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
 #$TORCH_PREFIX/bin/luarocks install trepl
 #$TORCH_PREFIX/bin/luarocks install gnuplot
 
+echo "[Pre-build]  installing cutorch from source"
 git clone https://github.com/torch/cutorch
 sed -i 's/$(getconf _NPROCESSORS_ONLN)/1/g' cutorch/rocks/cutorch-1.0-0.rockspec
 sed -i 's/$(getconf _NPROCESSORS_ONLN)/1/g' cutorch/rocks/cutorch-scm-1.rockspec
@@ -110,13 +142,15 @@ sed -i 's/jopts=3/jopts=1/g' cutorch/rocks/cutorch-1.0-0.rockspec
 sed -i 's/jopts=3/jopts=1/g' cutorch/rocks/cutorch-scm-1.rockspec
 
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cutorch/rocks/cutorch-scm-1.rockspec
+echo "[Pre-build]  done installing cutorch package"
 
+echo "[Pre-build]  installing cudnn bindings from source"
 # install cudnn v5 bindings
 #git clone -b R5 http://github.com/soumith/cudnn.torch 
 git clone http://github.com/soumith/cudnn.torch 
 #sed -i 's/ffi.sizeof('half'),/2,/g' cudnn.torch/init.lua
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
-
+echo "[Pre-build]  done installing cudnn bindings package"
 
 echo ""
 echo "[Pre-build]  Torch7 has been installed successfully"
