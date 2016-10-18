@@ -14,6 +14,8 @@ set(
 	-O3 -gencode arch=compute_53,code=sm_53
 )
 
+configure_file("lua/NEON.c" ${PROJECT_BINARY_DIR} COPYONLY)
+
 # if this is the first time running cmake, perform pre-build dependency install script (or if the user manually triggers re-building the dependencies)
 if( ${BUILD_DEPS} )
 	message("Launching pre-build dependency installer script...")
