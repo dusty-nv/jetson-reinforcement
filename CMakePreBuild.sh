@@ -8,8 +8,8 @@ echo "[Pre-build]  dependency installer script running..."
 echo "[Pre-build]  build root directory:       $BUILD_ROOT"
 echo "[Pre-build]  installing Torch/LUA into:  $TORCH_PREFIX"
 
-# break on errors
-set -e
+# (don't) break on errors
+#set -e
 
 # Install dependencies for Torch:
 echo "[Pre-build]  installing Torch7 package dependencies"
@@ -82,31 +82,30 @@ echo "[Pre-build]  installing torch7 from source"
 cd $BUILD_ROOT
 git clone http://github.com/torch/torch7
 cd torch7
-cp ../NEON.c lib/TH/vector/NEON.c
-cat lib/TH/vector/NEON.c
-#git checkout 7bbe17917ea560facdc652520e5ea01692e460d3
+
+# patch neon vector itrinsics (this should be fixed in master now)
+# cp ../NEON.c lib/TH/vector/NEON.c
+# cat lib/TH/vector/NEON.c
 
 # patch set 993
-sed -i '6 a STRING(REGEX REPLACE "^.*(asimd).*$" "\\\\1" ASIMD_THERE ${CPUINFO})' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '7 a STRING(COMPARE EQUAL "asimd" "${ASIMD_THERE}" ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '8 a IF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '9 a set(ASIMD_FOUND true CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '10 a ELSE (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '11 a set(ASIMD_FOUND false CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-sed -i '12 a ENDIF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '6 a STRING(REGEX REPLACE "^.*(asimd).*$" "\\\\1" ASIMD_THERE ${CPUINFO})' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '7 a STRING(COMPARE EQUAL "asimd" "${ASIMD_THERE}" ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '8 a IF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '9 a set(ASIMD_FOUND true CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '10 a ELSE (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '11 a set(ASIMD_FOUND false CACHE BOOL "ASIMD/NEON available on host")' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#sed -i '12 a ENDIF (ASIMD_TRUE)' $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
 
-sed -i '64 a IF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
-sed -i '65 a MESSAGE(STATUS "asimd/Neon found with compiler flag : -D__NEON__")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
-sed -i '66 a SET(CMAKE_C_FLAGS "-D__NEON__ ${CMAKE_C_FLAGS}")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
-sed -i '67 a ENDIF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+#sed -i '64 a IF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+#sed -i '65 a MESSAGE(STATUS "asimd/Neon found with compiler flag : -D__NEON__")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+#sed -i '66 a SET(CMAKE_C_FLAGS "-D__NEON__ ${CMAKE_C_FLAGS}")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+#sed -i '67 a ENDIF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
 
 cat $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
 cat $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
 
 $TORCH_PREFIX/bin/luarocks make $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
 cd $BUILD_ROOT
-##sed -i 's/neon/asimd/g' torch7/lib/TH/cmake/FindARM.cmake  
-##sed -i 's/STRING(COMPARE EQUAL "neon" "${NEON_THERE}" NEON_TRUE)/set(NEON_TRUE TRUE)/g' torch7/lib/TH/cmake/FindARM.cmake 
 #$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
 
 echo "[Pre-build]  done installing torch7 package"
