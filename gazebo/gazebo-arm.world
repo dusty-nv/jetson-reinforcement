@@ -1,0 +1,487 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+<world name="default">
+	<!-- Ground Plane -->
+	<include>
+		<uri>model://ground_plane</uri>
+	</include>
+	<include>
+		<uri>model://sun</uri>
+	</include>
+
+	<!--             -->
+	<!-- ARM/GRIPPER -->
+	<!--             -->
+	<model name="my_model">
+		<static>false</static>
+		<link name="base">
+		<pose>0 0 .1 0 0 0</pose>
+		<inertial>
+			<pose>0 0 0 0 0 0</pose>
+			<inertia>
+				<ixx>0.01</ixx>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyy>0.01</iyy>
+				<iyz>0</iyz>
+				<izz>0.01</izz>
+			</inertia>
+			<mass>10</mass>
+		</inertial>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>0.4 0.4 0.2</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>0.4 0.4 0.2</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<link name="joint1">
+		<pose>0 0 0.3 0 1.5707 1.5707</pose>
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		</link>
+		<link name="link1">
+		<pose>0 0 .66 0 0 0</pose>
+		<inertial>
+			<mass>.25</mass>
+			<inertia>
+				<!-- interias are tricky to compute -->
+				<ixx>0.083</ixx>
+				<!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+				<ixy>0.0</ixy>
+				<!-- for a box: ixy = 0 -->
+				<ixz>0.0</ixz>
+				<!-- for a box: ixz = 0 -->
+				<iyy>0.083</iyy>
+				<!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+				<iyz>0.0</iyz>
+				<!-- for a box: iyz = 0 -->
+				<izz>0.083</izz>
+				<!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+			</inertia>
+		</inertial>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<link name="joint2">
+		<pose>0 0 1.01 0 1.5707 1.5707</pose>
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		</link>
+		<link name="link2">
+		<pose>0 0 1.37 0 0 0</pose>
+		<inertial>
+			<mass>.2</mass>
+			<inertia>
+				<ixx>0.083</ixx>
+				<ixy>0.0</ixy>
+				<ixz>0.0</ixz>
+				<iyy>0.083</iyy>
+				<iyz>0.0</iyz>
+				<izz>0.083</izz>
+			</inertia>
+		</inertial>
+		<collision name="collision1">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual1">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<link name="joint3">
+		<pose>0 0 1.72 0 1.5707 1.5707</pose>
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>.1</radius>
+					<length>.15</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		</link>
+		<link name="link3">
+		<pose>0 0 2.07 0 0 0</pose>
+		<inertial>
+			<mass>.2</mass>
+			<inertia>
+				<ixx>0.083</ixx>
+				<ixy>0.0</ixy>
+				<ixz>0.0</ixz>
+				<iyy>0.083</iyy>
+				<iyz>0.0</iyz>
+				<izz>0.083</izz>
+			</inertia>
+		</inertial>
+		<collision name="collision2">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual2">
+			<geometry>
+				<box>
+					<size>.1 .1 .6</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+
+		<link name="gripperbase">
+		<pose>0 0 2.38 0 0 0</pose>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.083</ixx>
+				<ixy>0.0</ixy>
+				<ixz>0.0</ixz>
+				<iyy>0.083</iyy>
+				<iyz>0.0</iyz>
+				<izz>0.083</izz>
+			</inertia>
+		</inertial>
+		<collision name="collision4">
+			<geometry>
+				<box>
+					<size>.1 .2 .05</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual4">
+			<geometry>
+				<box>
+					<size>.1 .2 .05</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<link name="gripperleft">
+		<pose>0 -0.075 2.42 0 0 0</pose>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.083</ixx>
+				<ixy>0.0</ixy>
+				<ixz>0.0</ixz>
+				<iyy>0.083</iyy>
+				<iyz>0.0</iyz>
+				<izz>0.083</izz>
+			</inertia>
+		</inertial>
+		<collision name="collision4">
+			<geometry>
+				<box>
+					<size>.02 .02 .15</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual4">
+			<geometry>
+				<box>
+					<size>.02 .02 .15</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<link name="gripperright">
+		<pose>0 0.075 2.42 0 0 0</pose>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.083</ixx>
+				<ixy>0.0</ixy>
+				<ixz>0.0</ixz>
+				<iyy>0.083</iyy>
+				<iyz>0.0</iyz>
+				<izz>0.083</izz>
+			</inertia>
+		</inertial>
+		<collision name="collision4">
+			<geometry>
+				<box>
+					<size>.02 .02 .15</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual4">
+			<geometry>
+				<box>
+					<size>.02 .02 .15</size>
+				</box>
+			</geometry>
+		</visual>
+		</link>
+		<joint name="base" type="revolute">
+			<pose>0 0 0 0 0 0</pose>
+			<child>base</child>
+			<parent>world</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>1 0 0</xyz>
+			</axis>
+		</joint>
+		<joint name="joint1" type="revolute">
+			<pose>0 0 0 0 0 0</pose>
+			<child>joint1</child>
+			<parent>base</parent>
+			<axis>
+				<limit>
+					<lower>-2</lower>
+					<upper>2</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="link1-join1" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>link1</child>
+			<parent>joint1</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="joint2" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>joint2</child>
+			<parent>link1</parent>
+			<axis>
+				<limit>
+					<lower>-2</lower>
+					<upper>2</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="link2-joint2" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>link2</child>
+			<parent>joint2</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="joint3" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>joint3</child>
+			<parent>link2</parent>
+			<axis>
+				<limit>
+					<lower>-2</lower>
+					<upper>2</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="link3-joint3" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>link3</child>
+			<parent>joint3</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+
+		<joint name="gripperbase" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>gripperbase</child>
+			<parent>link3</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="gripperleft" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>gripperleft</child>
+			<parent>gripperbase</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="gripperright" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>gripperright</child>
+			<parent>gripperbase</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<plugin name="ArmPlugin" filename="libgazeboArmPlugin.so" />
+	</model>
+
+
+	<!--        -->
+	<!-- CAMERA -->
+	<!--        -->
+	<model name="camera">
+		<link name="link">
+		<gravity>false</gravity>
+		<pose>-3.05 0.05 0.05 0 0 0</pose>
+		<inertial>
+			<mass>0.1</mass>
+		</inertial>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>0.1 0.1 0.1</size>
+				</box>
+			</geometry>
+		</visual>
+		<sensor name="camera" type="camera">
+			<camera>
+				<horizontal_fov>1.047</horizontal_fov>
+				<image>
+					<width>1024</width>
+					<height>1024</height>
+				</image>
+				<clip>
+					<near>0.1</near>
+					<far>100</far>
+				</clip>
+				<noise>
+					<type>gaussian</type>
+					<mean>0.0</mean>
+					<stddev>0.007</stddev>
+				</noise>
+			</camera>
+			<always_on>1</always_on>
+			<update_rate>30</update_rate>
+			<visualize>true</visualize>
+		</sensor>
+		</link>
+	</model>
+
+
+	<!--               -->
+	<!-- BOX/COLLISION -->
+	<!--               -->
+	<model name="box">
+		<link name="link">
+		<pose>2.0 0 0.5 0 0 0</pose>
+		
+		<collision name="box_collision">
+			<geometry>
+				<box>
+					<size>0.5 0.5 0.5</size>
+				</box>
+			</geometry>
+			<!-- TODO see default Gz models for ODE friction params -->
+		</collision>
+
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>0.5 0.5 0.5</size>
+				</box>
+			</geometry>
+			<material>
+				<ambient>0.3 0.3 0.3 1</ambient>
+				<diffuse>1.0 0.5 0.0 1</diffuse>
+				<specular>0.01 0.01 0.01 1</specular>
+				<emissive>0 0 0 1</emissive>
+				<shader type='vertex'>
+					<normal_map>__default__</normal_map>
+				</shader>
+			</material>
+		</visual>
+
+		<sensor name='my_contact' type='contact'>
+			<contact>
+				<collision>box_collision</collision>
+			</contact>
+		</sensor>
+		</link>
+	</model>
+</world>
+</sdf>

@@ -11,6 +11,18 @@ echo "[Pre-build]  installing Torch/LUA into:  $TORCH_PREFIX"
 # (don't) break on errors
 #set -e
 
+
+# (optional) install Gazebo7
+while true; do
+    read -p "[Pre-build]  Do you wish to install Gazebo robotics simulator (y/N)? " yn
+    case $yn in
+        [Yy]* ) sudo apt-get update; sudo apt-get install -y gazebo7 libgazebo7-dev; break;;
+        [Nn]* ) echo "[Pre-build]  skipping Gazebo installation"; break;;
+        * ) echo "[Pre-build]  Please answer yes or no.";;
+    esac
+done
+
+
 # Install dependencies for Torch:
 echo "[Pre-build]  installing Torch7 package dependencies"
 
@@ -21,7 +33,6 @@ sudo apt-get install -y gfortran build-essential gcc g++ cmake curl libreadline-
 sudo apt-get update
 
 echo "[Pre-build]  Torch7's package dependencies have been installed"
-
 
 
 # Install openBLAS

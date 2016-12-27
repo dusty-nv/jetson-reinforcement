@@ -75,5 +75,6 @@ endforeach()
 
 
 # build samples & tools
+add_subdirectory(gazebo)
 add_subdirectory(samples)
 add_subdirectory(tools)
