@@ -112,8 +112,13 @@ cd torch7
 #sed -i '66 a SET(CMAKE_C_FLAGS "-D__NEON__ ${CMAKE_C_FLAGS}")' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
 #sed -i '67 a ENDIF (ASIMD_FOUND)' $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
 
-cat $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
-cat $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+#cat $BUILD_ROOT/torch7/lib/TH/cmake/FindARM.cmake
+#cat $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
+
+#sed -i 's/#if defined(__arm__)/#if defined(__arm__) || defined(__arm64)/' $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
+sed -i 's/#if defined(__arm__)/#if defined(__arm__) || defined(__NEON__)/' $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
+
+cat $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
 
 $TORCH_PREFIX/bin/luarocks make $BUILD_ROOT/torch7/rocks/torch-scm-1.rockspec
 cd $BUILD_ROOT
