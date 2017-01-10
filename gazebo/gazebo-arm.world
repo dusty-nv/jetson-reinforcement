@@ -448,12 +448,12 @@
 	<!--               -->
 	<model name="box">
 		<link name="link">
-		<pose>2.0 0 0.5 0 0 0</pose>
+		<pose>2.0 2.0 0.5 0 0 0</pose>
 		
 		<collision name="box_collision">
 			<geometry>
 				<box>
-					<size>0.5 0.5 0.5</size>
+					<size>0.45 0.45 0.45</size>
 				</box>
 			</geometry>
 			<!-- TODO see default Gz models for ODE friction params -->
@@ -462,7 +462,7 @@
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>0.5 0.5 0.5</size>
+					<size>0.45 0.45 0.45</size>
 				</box>
 			</geometry>
 			<material>
@@ -483,5 +483,47 @@
 		</sensor>
 		</link>
 	</model>
+
+
+	<!--               -->
+	<!-- BALL/COLLISION -->
+	<!--               -->
+	<model name="ball">
+		<link name="link">
+		<pose>2.0 0.0 0.5 0 0 0</pose>
+		
+		<collision name="ball_collision">
+			<geometry>
+				<sphere>
+					<radius>0.25</radius>
+				</sphere>
+			</geometry>
+		</collision>
+
+		<visual name="visual">
+			<geometry>
+				<sphere>
+					<radius>0.25</radius>
+				</sphere>
+			</geometry>
+			<material>
+				<ambient>0.3 0.3 0.3 1</ambient>
+				<diffuse>1.0 0.5 0.0 1</diffuse>
+				<specular>0.01 0.01 0.01 1</specular>
+				<emissive>0 0 0 1</emissive>
+				<shader type='vertex'>
+					<normal_map>__default__</normal_map>
+				</shader>
+			</material>
+		</visual>
+
+		<sensor name='my_contact' type='contact'>
+			<contact>
+				<collision>ball_collision</collision>
+			</contact>
+		</sensor>
+		</link>
+	</model>
+
 </world>
 </sdf>
