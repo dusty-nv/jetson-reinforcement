@@ -116,7 +116,7 @@ cd torch7
 #cat $BUILD_ROOT/torch7/lib/TH/CMakeLists.txt
 
 #sed -i 's/#if defined(__arm__)/#if defined(__arm__) || defined(__arm64)/' $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
-sed -i 's/#if defined(__arm__)/#if defined(__arm__) || defined(__NEON__)/' $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
+#sed -i 's/#if defined(__arm__)/#if defined(__arm__) || defined(__NEON__)/' $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
 
 cat $BUILD_ROOT/torch7/lib/TH/generic/simd/simd.h
 
