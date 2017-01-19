@@ -140,6 +140,7 @@ echo "[Pre-build]  done installing nn package"
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nnx-0.1-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/optim-1.0.5-0.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/gnuplot-scm-1.rockspec
+$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/nngraph-scm-1.rockspec
 
 #$TORCH_PREFIX/bin/luarocks install cwrap
 #$TORCH_PREFIX/bin/luarocks install paths
