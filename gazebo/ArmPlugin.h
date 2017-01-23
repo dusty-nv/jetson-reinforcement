@@ -37,6 +37,9 @@
 namespace gazebo
 {
 
+/**
+ * ArmPlugin
+ */
 class ArmPlugin : public ModelPlugin
 {
 public: 
