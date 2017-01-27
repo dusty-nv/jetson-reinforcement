@@ -92,7 +92,7 @@ print('DDPG script initialized')
 --
 
 -- game = {}
-game.init_state = {0, 0} -- 1 angular velocity, 2 angle
+game.init_state = {0, 0} -- 1 angular velocity, 2 angle	(outputs?)
 game.target_state = {0, math.pi} -- 1 angular velocity, 2 angle
 
 function game.control(s_t, a_t)
@@ -136,7 +136,7 @@ function game.generate_dataset(e)
         -- Receive initial observation state s_1    
         s[1], x[1] = {}, torch.Tensor(opt.action_repeat,opt.img_size,opt.img_size)
         for i = 1, opt.action_repeat do
-            s[1][i] = tools.dc(game.init_state)
+            s[1][i] = tools.dc(game.init_state)		-- deep copy the state, because init_state gets overwritten
             x[1][i] = draw_sp(s[1][i][2], opt.img_size)
         end
         
@@ -341,6 +341,8 @@ print(opt)
 
 setup()
 
+print("DDPG setup() complete")
+
 -- Training configuration
 optim_config = {}
 optim_config.actor = {
@@ -495,7 +497,7 @@ end
 --
 -- Test function
 --
-function test(v)
+--[[function test(v)
     
     -- Set model to evaluate mode (for modules that differ in training and testing, like Dropout)
     model.actor:evaluate()
@@ -512,7 +514,7 @@ function test(v)
 
     for i = 1, opt.action_repeat do
         s[1][i] = tools.dc(game.init_state)
-        x[1][i] = draw_sp(s[1][i][2], opt.img_size)
+        x[1][i] = draw_sp(s[1][i][2], opt.img_size)	-- get frame 
     end
 
     -- Run episode
@@ -524,10 +526,10 @@ function test(v)
         -- Execute action a_t and observe reward r_t and observe new state s_{t+1}
         s[t+1], x[t+1] = {}, torch.Tensor(opt.action_repeat,opt.img_size,opt.img_size)   
         s[t+1][1] = game.control(s[t][opt.action_repeat], a[t])
-        x[t+1][1] = draw_sp(s[t+1][1][2], opt.img_size)
+        x[t+1][1] = draw_sp(s[t+1][1][2], opt.img_size)	-- get frame
         for i = 2, opt.action_repeat do
-            s[t+1][i] = game.control(s[t+1][i-1], a[t])
-            x[t+1][i] = draw_sp(s[t+1][i][2], opt.img_size)
+            s[t+1][i] = game.control(s[t+1][i-1], a[t])	-- progress simulation
+            x[t+1][i] = draw_sp(s[t+1][i][2], opt.img_size)	-- get frame
         end
                 
         -- Get reward
@@ -552,10 +554,11 @@ function test(v)
     
     return total_reward
 end
+--]]
 
 
 --
--- Generate and Train on initial data
+-- Generate and Train on random data
 --
 
 model.replay_buffer = {}
@@ -584,7 +587,7 @@ end
 local beginning_time = torch.tic()
 
 -- Iterate episodes
-for episode = 1, opt.episodes do
+for episode = 1, opt.episodes do		-- opt.episodes = 1000 (default)
     
     -- Initialise Variables
     local time = sys.clock()
@@ -597,16 +600,16 @@ for episode = 1, opt.episodes do
     s[1], x[1] = {}, torch.Tensor(opt.action_repeat,opt.img_size,opt.img_size)
     for i = 1, opt.action_repeat do
         s[1][i] = tools.dc(game.init_state)
-        x[1][i] = draw_sp(s[1][i][2], opt.img_size)
+        x[1][i] = draw_sp(s[1][i][2], opt.img_size)	-- get frame
     end
     
     -- Run episode
     local err_episode = 0
-    for t = 1, opt.episode_length do
+    for t = 1, opt.episode_length do		-- episode_length=30 (default # of frames)
         
         -- Select action a_t = μ(s_t|θ^μ) + N_t according to the current policy and exploration noise
         model.actor:evaluate()
-        a[t] = model.actor:forward(x[t]:type(opt.dtype))[1]:clone():add(N_t[t]):clamp(-1, 1)
+        a[t] = model.actor:forward(x[t]:type(opt.dtype))[1]:clone():add(N_t[t]):clamp(-1, 1)	-- x[t] using last frame?
         
         -- Execute action a_t and observe reward r_t and observe new state s_{t+1}
         s[t+1], x[t+1] = {}, torch.Tensor(opt.action_repeat,opt.img_size,opt.img_size)
@@ -614,7 +617,7 @@ for episode = 1, opt.episodes do
         x[t+1][1] = draw_sp(s[t+1][1][2], opt.img_size)
         for i = 2, opt.action_repeat do
             s[t+1][i] = game.control(s[t+1][i-1], a[t])
-            x[t+1][i] = draw_sp(s[t+1][i][2], opt.img_size)
+            x[t+1][i] = draw_sp(s[t+1][i][2], opt.img_size)		-- get frame
         end
         
         -- Get reward
@@ -652,28 +655,35 @@ for episode = 1, opt.episodes do
     end
     
     -- Test
-    local rewards_test = test()
+    --local rewards_test = test()
     
     -- Update stats
     table.insert(stats.train_err, err_episode)
-    table.insert(stats.test_r, rewards_test)
+    --table.insert(stats.test_r, rewards_test)
     
     if episode == 1 then
         stats.train_err_avg = err_episode
-        stats.test_r_avg = rewards_test:mean()
+        --stats.test_r_avg = rewards_test:mean()
     else
         stats.train_err_avg = stats.train_err_avg * 0.95 + 0.05 * err_episode
-        stats.test_r_avg = stats.test_r_avg * 0.95 + 0.05 * rewards_test:mean()
+        --stats.test_r_avg = stats.test_r_avg * 0.95 + 0.05 * rewards_test:mean()
     end
     
     -- Statistics
     if episode % 10 == 0 then        
-        log.infof('e=%d, train_mse=%.3f, train_mse_avg=%.3f, test_r=%.3f, test_r_avg=%.3f, t/e=%.2f sec, t=%d min.',
+        --[[log.infof('e=%d, train_mse=%.3f, train_mse_avg=%.3f, test_r=%.3f, test_r_avg=%.3f, t/e=%.2f sec, t=%d min.',
             #stats.train_err,
             stats.train_err[#stats.train_err],
             stats.train_err_avg,
             stats.test_r[#stats.test_r]:mean(),
             stats.test_r_avg,
+            sys.clock() - time,
+            torch.toc(beginning_time) / 60)--]]
+
+		log.infof('e=%d, train_mse=%.3f, train_mse_avg=%.3f, t/e=%.2f sec, t=%d min.',
+            #stats.train_err,
+            stats.train_err[#stats.train_err],
+            stats.train_err_avg,
             sys.clock() - time,
             torch.toc(beginning_time) / 60)
         
