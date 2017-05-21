@@ -11,7 +11,9 @@ find_package(CUDA)
 set(
 	CUDA_NVCC_FLAGS
 	${CUDA_NVCC_FLAGS};
-	-O3 -gencode arch=compute_53,code=sm_53
+	-O3 
+	-gencode arch=compute_53,code=sm_53
+	-gencode arch=compute_62,code=sm_62
 )
 
 #configure_file("lua/NEON.c" ${PROJECT_BINARY_DIR} COPYONLY)
