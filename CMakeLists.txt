@@ -4,6 +4,9 @@ project(jetson-reinforcement)
 
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.  Automatically reset to NO after dependencies are installed.")
 set(BUILD_OPENBLAS "YES" CACHE BOOL "If YES, will download & build OpenBLAS (for Torch) into sandbox")
+set(BUILD_PYTORCH "YES" CACHE BOOL "If YES, will build PyTorch and PyTorch examples")
+set(BUILD_TORCH "NO" CACHE BOOL "If YES, will build LUA, Torch, and Torch examples")
+
 
 find_package(CUDA)
 
@@ -22,7 +25,7 @@ set(
 if( ${BUILD_DEPS} )
 	message("Launching pre-build dependency installer script...")
 
-	execute_process(COMMAND sh ../CMakePreBuild.sh ${BUILD_OPENBLAS}
+	execute_process(COMMAND sh ../CMakePreBuild.sh ${BUILD_OPENBLAS} ${BUILD_PYTORCH} ${BUILD_TORCH}
 				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 				RESULT_VARIABLE PREBUILD_SCRIPT_RESULT)
 
@@ -67,17 +70,22 @@ foreach(include ${deepRLIncludes})
 	configure_file(${include} ${PROJECT_INCLUDE_DIR} COPYONLY)
 endforeach()
 
-# transfer all LUA scripts to bin directory
-file(GLOB luaScripts lua/*.lua lua/*.ipynb)
+if( ${BUILD_TORCH} )
 
-foreach(luaScript ${luaScripts})
-	message("-- Copying ${luaScript}")
-	configure_file(${luaScript} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
-endforeach()
+	# transfer all LUA scripts to bin directory
+	file(GLOB luaScripts lua/*.lua lua/*.ipynb)
 
-file(COPY lua/DDPG DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	foreach(luaScript ${luaScripts})
+		message("-- Copying ${luaScript}")
+		configure_file(${luaScript} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
+	endforeach()
 
-# build samples & tools
+	file(COPY lua/DDPG DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+	# build samples & tools
+	add_subdirectory(samples)
+	add_subdirectory(tools)
+endif()
+
 add_subdirectory(gazebo)
-add_subdirectory(samples)
-add_subdirectory(tools)
+

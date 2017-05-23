@@ -2,17 +2,26 @@
 # this script is automatically run from CMakeLists.txt
 
 BUILD_ROOT=$PWD
+BUILD_OPENBLAS=$1
+BUILD_PYTORCH=$2
+BUILD_TORCH=$3
 TORCH_PREFIX=$PWD/torch
 
 echo "[Pre-build]  dependency installer script running..."
-echo "[Pre-build]  build root directory:       $BUILD_ROOT"
+echo "[Pre-build]  BUILD_ROOT directory:       $BUILD_ROOT"
+echo "[Pre-build]  BUILD_OPENBLAS              $BUILD_OPENBLAS"
+echo "[Pre-build]  BUILD_PYTORCH               $BUILD_PYTORCH"
+echo "[Pre-build]  BUILD_TORCH                 $BUILD_TORCH"
 echo "[Pre-build]  installing Torch/LUA into:  $TORCH_PREFIX"
+
 
 # (don't) break on errors
 #set -e
 
 
-# (optional) install Gazebo7
+# 
+# (prompt) install Gazebo7
+#
 while true; do
     read -p "[Pre-build]  Do you wish to install Gazebo robotics simulator (y/N)? " yn
     case $yn in
@@ -22,6 +31,44 @@ while true; do
     esac
 done
 
+
+#
+# build pyTorch?
+#
+if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH = "Y" ]; then
+
+	echo "[Pre-build]  beginning pyTorch setup"
+
+	sudo apt-get install python-pip
+
+	# upgrade pip
+	pip install -U pip
+	pip --version
+	# pip 9.0.1 from /home/ubuntu/.local/lib/python2.7/site-packages (python 2.7)
+
+	# clone pyTorch repo
+	git clone http://github.com/pytorch/pytorch
+	cd pytorch
+
+	# install prereqs
+	sudo pip install -U setuptools
+	sudo pip install -r requirements.txt
+
+	# Develop Mode:
+	python setup.py build_deps
+	sudo python setup.py develop
+
+	git clone http://github.com/pytorch/examples
+	sudo pip install -r examples/reinforcement_learning/requirements.txt 
+	cd ../
+
+	echo "[Pre-build]  pyTorch setup complete"
+fi
+
+#
+# build Torch?
+#
+if [ $BUILD_TORCH = "ON" ] || [ $BUILD_TORCH = "YES" ] || [ $BUILD_TORCH = "Y" ]; then
 
 # Install dependencies for Torch:
 echo "[Pre-build]  installing Torch7 package dependencies"
@@ -184,4 +231,5 @@ echo ""
 #git clone https://github.com/facebook/iTorch.git
 #$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/iTorch/itorch-scm-1.rockspec
 
+fi
 
