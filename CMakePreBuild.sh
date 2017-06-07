@@ -60,7 +60,12 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 
 	git clone http://github.com/pytorch/examples
 	sudo pip install -r examples/reinforcement_learning/requirements.txt 
-	cd ../
+
+	git clone http://github.com/pytorch/vision
+	cd vision
+	sudo python setup.py install
+
+	cd ../../
 
 	echo "[Pre-build]  pyTorch setup complete"
 fi

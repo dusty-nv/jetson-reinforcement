@@ -5,6 +5,8 @@
 #include "deepQLearner.h"
 #include <string.h>
 
+#ifdef USE_LUA
+
 extern "C" 
 { 
 #include <lua.h>
@@ -393,5 +395,8 @@ bool deepQLearner::Backward( float reward )
 
 	return true;
 }*/
+
+#endif
+
 
 

@@ -34,9 +34,6 @@ if( ${BUILD_DEPS} )
 endif()
 
 
-
-
-
 # setup project output paths
 set(PROJECT_OUTPUT_DIR  ${PROJECT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR})
 set(PROJECT_INCLUDE_DIR ${PROJECT_OUTPUT_DIR}/include)
@@ -52,16 +49,23 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 
 
-# build deepRL C/C++ interface
-include_directories(${PROJECT_BINARY_DIR}/torch/include ${PROJECT_BINARY_DIR}/torch/include/TH ${PROJECT_INCLUDE_DIR})
-link_directories(${PROJECT_BINARY_DIR}/torch/lib)
+# set preprocessor defines
+if( ${BUILD_TORCH} )
+	add_definitions(-DUSE_LUA)
+	include_directories(${PROJECT_BINARY_DIR}/torch/include ${PROJECT_BINARY_DIR}/torch/include/TH ${PROJECT_INCLUDE_DIR})
+	link_directories(${PROJECT_BINARY_DIR}/torch/lib)
+endif()
 
+if( ${BUILD_PYTORCH} )
+	add_definitions(-DUSE_PYTHON)
+endif()
+
+
+# library sources
 file(GLOB deepRLSources c/*.cpp cuda/*.cu)
 file(GLOB deepRLIncludes c/*.h cuda/*.h)
 
-
 cuda_add_library(jetson-reinforcement SHARED ${deepRLSources})
-target_link_libraries(jetson-reinforcement luajit luaT TH THC)
 
 
 # transfer all headers to the include directory
@@ -70,7 +74,10 @@ foreach(include ${deepRLIncludes})
 	configure_file(${include} ${PROJECT_INCLUDE_DIR} COPYONLY)
 endforeach()
 
+# LUA-specific post-build steps
 if( ${BUILD_TORCH} )
+
+	target_link_libraries(jetson-reinforcement luajit luaT TH THC)
 
 	# transfer all LUA scripts to bin directory
 	file(GLOB luaScripts lua/*.lua lua/*.ipynb)
