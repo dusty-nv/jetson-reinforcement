@@ -4,19 +4,25 @@
 
 #include <stdio.h>
 
+
+#ifdef USE_LUA
+
 extern "C" 
 { 
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+//#include <TH/THTensor.h>
 }
 
 #include <TH/THTensor.h>
 #include <luaT.h>
 
 
+#define SCRIPT_FILENAME "test-packages.lua"
 
-bool init( const char* script_filename )
+
+bool init()
 {
 	lua_State* L = luaL_newstate();
 
@@ -29,22 +35,21 @@ bool init( const char* script_filename )
 	printf("[deepRL]  created new lua_State\n");
 
 	luaL_openlibs(L);
-	printf("[deepRL]  opened LUA libraries\n");
-	printf("[deepRL]  loading '%s'\n\n", script_filename);
+	printf("[deepRL]  opened lua libraries\n");
 
  	// load and run file
-	const int res = luaL_dofile(L, script_filename);
+	const int res = luaL_dofile(L, SCRIPT_FILENAME);
 
 	if( res == 1 ) 
 	{
-		printf("Error executing resource: %s\n", script_filename);
+		printf("Error executing resource: %s\n", SCRIPT_FILENAME);
 		const char* luastr = lua_tostring(L,-1);
 
 		if( luastr != NULL )
 			printf("%s\n", luastr);
 	}
 
-	printf("\n[deepRL]  closing lua_State\n");
+	printf("[deepRL]  closing lua_State\n");
 	lua_close(L);
 
 	return true;
@@ -53,18 +58,16 @@ bool init( const char* script_filename )
 
 int main( int argc, char** argv )
 {
-	printf("deepRL-console\n\n");
-
-	const char* script_filename = "test-packages.lua";
+	printf("deepRL-diagnostic (lua)\n\n");
 	
-	if( argc > 1 )
-		script_filename = argv[1];
-
-	if( !init(script_filename) )
+	if( !init() )
 	{
-		printf("failed to run lua script '%s', exiting deepRL-console\n", script_filename);
+		printf("failed to init lua, exiting deepRL-console\n");
 		return 0;
 	}
 	
 	return 0;
 }
+
+#endif
+

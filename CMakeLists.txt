@@ -58,6 +58,7 @@ endif()
 
 if( ${BUILD_PYTORCH} )
 	add_definitions(-DUSE_PYTHON)
+	include_directories(/usr/include/python2.7)
 endif()
 
 
@@ -74,6 +75,23 @@ foreach(include ${deepRLIncludes})
 	configure_file(${include} ${PROJECT_INCLUDE_DIR} COPYONLY)
 endforeach()
 
+
+# Python post-build steps
+if( ${BUILD_PYTORCH} )
+
+	target_link_libraries(jetson-reinforcement python2.7)
+
+	# transfer all python scripts to bin directory
+	file(GLOB pyScripts python/*.py)
+
+	foreach(pyScript ${pyScripts})
+		message("-- Copying ${pyScript}")
+		configure_file(${pyScript} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
+	endforeach()
+	
+endif()
+
+
 # LUA-specific post-build steps
 if( ${BUILD_TORCH} )
 
@@ -89,10 +107,10 @@ if( ${BUILD_TORCH} )
 
 	file(COPY lua/DDPG DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-	# build samples & tools
-	add_subdirectory(samples)
-	add_subdirectory(tools)
 endif()
 
+
 add_subdirectory(gazebo)
+add_subdirectory(samples)
+add_subdirectory(tools)
 
