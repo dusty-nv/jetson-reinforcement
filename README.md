@@ -46,7 +46,7 @@ $ git clone http://github.org/dusty-nv/jetson-reinforcement
 $ cd jetson-reinforcement
 $ mkdir build
 $ cd build
-$ cmake ../
+$ cmake ../ -DUSE_LUA=yes -DUSE_PYTHON=no
 ```
 
 This will initiate the building of dependencies like Torch and it's bindings for CUDA/cuDNN, which can take some time.

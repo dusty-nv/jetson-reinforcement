@@ -4,28 +4,25 @@ project(jetson-reinforcement)
 
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.  Automatically reset to NO after dependencies are installed.")
 set(BUILD_OPENBLAS "YES" CACHE BOOL "If YES, will download & build OpenBLAS (for Torch) into sandbox")
-set(BUILD_PYTORCH "YES" CACHE BOOL "If YES, will build PyTorch and PyTorch examples")
-set(BUILD_TORCH "NO" CACHE BOOL "If YES, will build LUA, Torch, and Torch examples")
+set(USE_PYTHON "YES" CACHE BOOL "If YES, will build PyTorch and PyTorch examples")
+set(USE_LUA "NO" CACHE BOOL "If YES, will build LUA, Torch, and Torch examples")
 
 
+# configure CUDA
 find_package(CUDA)
 
-# Pass options to NVCC
-set(
-	CUDA_NVCC_FLAGS
+set( CUDA_NVCC_FLAGS
 	${CUDA_NVCC_FLAGS};
 	-O3 
 	-gencode arch=compute_53,code=sm_53
-	-gencode arch=compute_62,code=sm_62
-)
+	-gencode arch=compute_62,code=sm_62 )
 
-#configure_file("lua/NEON.c" ${PROJECT_BINARY_DIR} COPYONLY)
 
 # if this is the first time running cmake, perform pre-build dependency install script (or if the user manually triggers re-building the dependencies)
 if( ${BUILD_DEPS} )
 	message("Launching pre-build dependency installer script...")
 
-	execute_process(COMMAND sh ../CMakePreBuild.sh ${BUILD_OPENBLAS} ${BUILD_PYTORCH} ${BUILD_TORCH}
+	execute_process(COMMAND sh ../CMakePreBuild.sh ${BUILD_OPENBLAS} ${USE_PYTHON} ${USE_LUA}
 				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 				RESULT_VARIABLE PREBUILD_SCRIPT_RESULT)
 
@@ -50,13 +47,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 
 
 # set preprocessor defines
-if( ${BUILD_TORCH} )
+if( ${USE_LUA} )
 	add_definitions(-DUSE_LUA)
 	include_directories(${PROJECT_BINARY_DIR}/torch/include ${PROJECT_BINARY_DIR}/torch/include/TH ${PROJECT_INCLUDE_DIR})
 	link_directories(${PROJECT_BINARY_DIR}/torch/lib)
 endif()
 
-if( ${BUILD_PYTORCH} )
+if( ${USE_PYTHON} )
 	add_definitions(-DUSE_PYTHON)
 	include_directories(/usr/include/python2.7)
 endif()
@@ -77,7 +74,7 @@ endforeach()
 
 
 # Python post-build steps
-if( ${BUILD_PYTORCH} )
+if( ${USE_PYTHON} )
 
 	target_link_libraries(jetson-reinforcement python2.7)
 
@@ -92,8 +89,8 @@ if( ${BUILD_PYTORCH} )
 endif()
 
 
-# LUA-specific post-build steps
-if( ${BUILD_TORCH} )
+# LUA post-build steps
+if( ${USE_LUA} )
 
 	target_link_libraries(jetson-reinforcement luajit luaT TH THC)
 
