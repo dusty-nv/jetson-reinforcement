@@ -58,12 +58,20 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	python setup.py build_deps
 	sudo python setup.py develop
 
+	cd torch/lib
+	ln -s libTH.so.1 libTH.so
+	ln -s libTHC.so.1 libTHC.so
+	cd ../../
+
 	git clone http://github.com/pytorch/examples
 	sudo pip install -r examples/reinforcement_learning/requirements.txt 
 
 	git clone http://github.com/pytorch/vision
 	cd vision
 	sudo python setup.py install
+
+	sudo apt-get install swig
+	sudo pip install box2D
 
 	cd ../../
 

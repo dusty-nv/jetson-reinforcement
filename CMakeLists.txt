@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(jetson-reinforcement)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")	# -std=gnu++11
+
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.  Automatically reset to NO after dependencies are installed.")
 set(BUILD_OPENBLAS "YES" CACHE BOOL "If YES, will download & build OpenBLAS (for Torch) into sandbox")
 set(USE_PYTHON "YES" CACHE BOOL "If YES, will build PyTorch and PyTorch examples")
@@ -55,7 +57,8 @@ endif()
 
 if( ${USE_PYTHON} )
 	add_definitions(-DUSE_PYTHON)
-	include_directories(/usr/include/python2.7)
+	include_directories(/usr/include/python2.7 ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include ${PROJECT_BINARY_DIR}/pytorch/torch/csrc ${PROJECT_BINARY_DIR}/pytorch/torch/csrc/cuda ${PROJECT_BINARY_DIR}/pytorch ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include/TH ${PROJECT_INCLUDE_DIR})
+	link_directories(${PROJECT_BINARY_DIR}/pytorch/torch/lib ${PROJECT_BINARY_DIR}/pytorch/torch/csrc)
 endif()
 
 
@@ -75,8 +78,7 @@ endforeach()
 
 # Python post-build steps
 if( ${USE_PYTHON} )
-
-	target_link_libraries(jetson-reinforcement python2.7)
+	target_link_libraries(jetson-reinforcement python2.7 _C TH THC)
 
 	# transfer all python scripts to bin directory
 	file(GLOB pyScripts python/*.py)
@@ -85,13 +87,11 @@ if( ${USE_PYTHON} )
 		message("-- Copying ${pyScript}")
 		configure_file(${pyScript} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
 	endforeach()
-	
 endif()
 
 
 # LUA post-build steps
 if( ${USE_LUA} )
-
 	target_link_libraries(jetson-reinforcement luajit luaT TH THC)
 
 	# transfer all LUA scripts to bin directory
@@ -103,7 +103,6 @@ if( ${USE_LUA} )
 	endforeach()
 
 	file(COPY lua/DDPG DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
 endif()
 
 
