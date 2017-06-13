@@ -58,7 +58,7 @@ endif()
 if( ${USE_PYTHON} )
 	add_definitions(-DUSE_PYTHON)
 	include_directories(/usr/include/python2.7 ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include ${PROJECT_BINARY_DIR}/pytorch/torch/csrc ${PROJECT_BINARY_DIR}/pytorch/torch/csrc/cuda ${PROJECT_BINARY_DIR}/pytorch ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include/TH ${PROJECT_INCLUDE_DIR})
-	link_directories(${PROJECT_BINARY_DIR}/pytorch/torch/lib ${PROJECT_BINARY_DIR}/pytorch/torch/csrc)
+	link_directories(${PROJECT_BINARY_DIR}/pytorch/torch/lib ${PROJECT_BINARY_DIR}/pytorch/torch)
 endif()
 
 
