@@ -12,6 +12,9 @@ from torch.autograd import Variable
 
 
 parser = argparse.ArgumentParser(description='PyTorch REINFORCE example')
+#parser.add_argument('--width', type=int, default=64, metavar='N', help='width of virtual screen')
+#parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
+parser.add_argument('--inputs', type=int, default=64, metavar='N', help='number of data inputs to the neural network')
 parser.add_argument('--env', metavar='N', default='CartPole-v0')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor (default: 0.99)')
