@@ -41,7 +41,7 @@ int main( int argc, char** argv )
 	if( !cudaAllocMapped((void**)&cpuPtr, (void**)&gpuPtr, size) )
 	{
 		printf("[deepRL]  failed to alloc CUDA buffers for tensor size %zu bytes\n", size);
-		return NULL;
+		return 0;
 	}
 
 	for( int i=0; i < elem; i++ )
@@ -97,7 +97,7 @@ int main( int argc, char** argv )
 	if( !cpuTensor )
 	{
 		printf("[deepRL]  failed to create CPU THFloatTensor()\n");
-		return NULL;
+		return 0;
 	}
 
 	THFloatTensor_setStorage(cpuTensor, cpuStorage, 0LL, sizeStorage, strideStorage);
@@ -127,7 +127,7 @@ int main( int argc, char** argv )
 	if( !gpuStorage )
 	{
 		printf("[deepRL]  failed to alloc GPU THCudaStorage\n");
-		return NULL;
+		return 0;
 	}
 
 	// alloc GPU tensor and set the storage to our descriptor
@@ -136,7 +136,7 @@ int main( int argc, char** argv )
 	if( !gpuTensor )
 	{
 		printf("[deepRL]  failed to create GPU THCudaTensor()\n");
-		return NULL;
+		return 0;
 	}
 
 	THCudaTensor_setStorage(state, gpuTensor, gpuStorage, 0LL, sizeStorage, strideStorage);
