@@ -27,8 +27,11 @@ deepRL::deepRL()
 	mActionTensor = NULL;
 	mRewardTensor = NULL;
 
-	mActionFunction = NULL;
-	mRewardFunction = NULL;
+	for( uint32_t n=0; n < NUM_FUNCTIONS; n++ )
+	{
+		mFunction[n] 	  = NULL;
+		mFunctionArgs[n] = NULL;
+	}
 }
 
 
@@ -110,11 +113,24 @@ deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* mod
 		return NULL;
 	}
 
-	rl->mActionFunction = (void*)actionFunc;
-	rl->mRewardFunction = (void*)rewardFunc;
+	rl->mFunction[ACTION_FUNCTION] = (void*)actionFunc;
+	rl->mFunction[REWARD_FUNCTION] = (void*)rewardFunc;
 	
-	rl->mActionFunctionName = nextAction;
-	rl->mRewardFunctionName = nextReward;
+	rl->mFunctionName[ACTION_FUNCTION] = nextAction;
+	rl->mFunctionName[REWARD_FUNCTION] = nextReward;
+
+	// allocate function arguments
+	PyObject* actionArgs = PyTuple_New(1);
+	PyObject* rewardArgs = PyTuple_New(3);
+
+	if( !actionArgs || !rewardArgs )
+	{
+		printf("[deepRL]  failed to allocated PyTuple for function arguments\n");
+		return NULL;
+	}
+
+	rl->mFunctionArgs[ACTION_FUNCTION] = (void*)actionArgs;
+	rl->mFunctionArgs[REWARD_FUNCTION] = (void*)rewardArgs;
 	
 	return rl;
 }
@@ -178,27 +194,26 @@ bool deepRL::NextAction( Tensor* state, int* action )
 		return false;
 
 	// setup arguments to action function
-	const int nArgs = 1;
-	PyObject* pArgs = PyTuple_New(nArgs);
+	PyObject* pArgs = (PyObject*)mFunctionArgs[ACTION_FUNCTION];
 
 	PyTuple_SetItem(pArgs, 0, state->pyTensorGPU);
 	
 	// call action function
-	PyObject* pValue = PyObject_CallObject((PyObject*)mActionFunction, pArgs);
+	PyObject* pValue = PyObject_CallObject((PyObject*)mFunction[ACTION_FUNCTION], pArgs);
 
-	Py_DECREF(pArgs);
+	//Py_DECREF(pArgs);
 
 	// check return value
 	if( pValue != NULL )
 	{
-		printf("[deepRL]  result of %s(): %ld\n", mActionFunctionName.c_str(), PyInt_AsLong(pValue));
+		printf("[deepRL]  result of %s(): %ld\n", mFunctionName[ACTION_FUNCTION].c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
 	else
 	{
 		PyErr_Print();
-		printf("[deepRL]  call to %s() failed\n", mActionFunctionName.c_str());
+		printf("[deepRL]  call to %s() failed\n", mFunctionName[ACTION_FUNCTION].c_str());
 		return false;
 	}
 
@@ -212,11 +227,8 @@ bool deepRL::NextReward( Tensor* state, int* action, float reward )
 	if( !state || !action )
 		return false;
 
-	const bool new_episode = false;
-
 	// setup arguments to action function
-	const int nArgs = 3;
-	PyObject* pArgs = PyTuple_New(nArgs);
+	PyObject* pArgs = PyTuple_New(3); //(PyObject*)mFunctionArgs[REWARD_FUNCTION];
 
 	PyTuple_SetItem(pArgs, 0, state->pyTensorGPU);
 	PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(reward));
@@ -225,21 +237,21 @@ bool deepRL::NextReward( Tensor* state, int* action, float reward )
 	mNewEpisode = false;	// reset new_ep flag
 
 	// call reward/training function
-	PyObject* pValue = PyObject_CallObject((PyObject*)mRewardFunction, pArgs);
+	PyObject* pValue = PyObject_CallObject((PyObject*)mFunction[REWARD_FUNCTION], pArgs);
 
-	Py_DECREF(pArgs);
+	//Py_DECREF(pArgs);		// this invalidates the tensors
 
 	// check return value
 	if( pValue != NULL )
 	{
-		printf("[deepRL]  result of %s(): %ld\n", mRewardFunctionName.c_str(), PyInt_AsLong(pValue));
+		//printf("[deepRL]  result of %s(): %ld\n", mRewardFunctionName.c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
 	else
 	{
 		PyErr_Print();
-		printf("[deepRL]  call to %s() failed\n", mActionFunctionName.c_str());
+		printf("[deepRL]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
 		return false;
 	}
 

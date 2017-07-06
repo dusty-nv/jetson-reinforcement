@@ -2,14 +2,19 @@
  * deepRL
  */
 
-#include "deepQLearner.h"
+#include "deepRL.h"
+
 #include <stdlib.h>
 #include <time.h>
 
-#define GAME_WIDTH 9
-#define GAME_HEIGHT 6
+#define GAME_WIDTH 5
+#define GAME_HEIGHT 9
 #define GAME_SIZE GAME_WIDTH * GAME_HEIGHT
 #define GAME_EPISODES 3000
+#define GAME_HISTORY 50
+
+bool gameHistory[GAME_HISTORY];
+int  gameHistoryIdx = 0;
 
 
 enum catchAction
@@ -48,17 +53,18 @@ int main( int argc, char** argv )
 	printf("deepRL-catch\n\n");
 	srand(time(NULL));
 	
-	// create Q-Learner in Torch
-	deepQLearner* dqn = deepQLearner::Create(GAME_SIZE, NUM_ACTIONS);
+
+	// create reinforcement learner in pyTorch
+	deepRL* rl = deepRL::Create(GAME_SIZE, NUM_ACTIONS);
 	
-	if( !dqn )
+	if( !rl )
 	{
-		printf("[deepRL]  failed to create dqn  %i  %i", GAME_SIZE, NUM_ACTIONS);
+		printf("[deepRL]  failed to create deepRL instance  %i  %i", GAME_SIZE, NUM_ACTIONS);
 		return 0;
 	}
 	
 	// allocate memory for the game input
-	deepQLearner::Tensor* input_state = dqn->AllocTensor(GAME_SIZE);
+	Tensor* input_state = Tensor::Alloc(GAME_SIZE);
 	
 	if( !input_state )
 	{
@@ -76,6 +82,8 @@ int main( int argc, char** argv )
 	int episodes_won = 0;
 	int episode = 1;
 	
+	float reward = 0.0f;
+
 	while(true)
 	{
 		// update the playing field
@@ -97,13 +105,13 @@ int main( int argc, char** argv )
 		// ask the AI agent for their action
 		int action = ACTION_STAY;
 		
-		if( !dqn->Forward(input_state, &action) )
+		if( !rl->NextReward(input_state, &action, reward) )
 		{
-			printf("[deepRL]  dqn->Forward failed.\n");
+			printf("[deepRL]  rl->NextReward() failed.\n");
 			return 0;
 		}
-		
-		printf("DQN action: %i %s\n", action, actionStr(action));
+
+		//printf("RL action: %i %s\n", action, actionStr(action));
 		
 		// apply the agent's action, without going off-screen
 		if( action == ACTION_LEFT && play_x > 0 )
@@ -112,11 +120,14 @@ int main( int argc, char** argv )
 			play_x++;
 		
 		
-		// make the ball fall
+		// advance the simulation (make the ball fall)
 		ball_y--;
+
+		reward = 0.0f;	// reset the reward for next iteration
 		
 		
 		// print screen
+#if 0
 		for( int y=0; y < GAME_HEIGHT; y++ )
 		{
 			printf("|");
@@ -133,33 +144,49 @@ int main( int argc, char** argv )
 			
 			printf("|\n");
 		}
-
-
+#endif 
 				
 		// if the ball has reached the bottom, train & reset randomly
 		if( ball_y <= 0 )
 		{
-			float reward = 0.0f;
-			
 			// if the agent caught the ball, give it a reward 
 			if( ball_x == play_x ) 
 			{
 				reward = 1.0;
 				episodes_won++;
+				gameHistory[gameHistoryIdx] = true;
 				printf("WON episode %i\n", episode);
 			}
 			else
-				printf("LOST episode %i\n", episode);
-			
-			printf("%i for %i  (%0.4f)\n", episodes_won, episode, float(episodes_won)/float(episode));
-			episode++;
-			
-			// perform training
-			if( !dqn->Backward(reward) )
 			{
-				printf("[deepRL]  dqn->Backward(%f) failed.\n", reward);
-				return 0;
+				gameHistory[gameHistoryIdx] = false;
+				printf("LOST episode %i\n", episode);
+				reward = -1.0f;
 			}
+
+			printf("%i for %i  (%0.4f)  ", episodes_won, episode, float(episodes_won)/float(episode));
+
+			if( episode >= GAME_HISTORY )
+			{
+				uint32_t historyWins = 0;
+
+				for( uint32_t n=0; n < GAME_HISTORY; n++ )
+				{
+					if( gameHistory[n] )
+						historyWins++;
+				}
+
+				printf("%u of last %u  (%0.4f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY));
+			}
+
+			printf("\n");
+			gameHistoryIdx = (gameHistoryIdx + 1) % GAME_HISTORY;
+			episode++;
+
+			
+			
+			// next episode
+			rl->NextEpisode();
 			
 			// reset the game for next episode
 			ball_x = rand_x();

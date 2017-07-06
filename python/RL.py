@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description='PyTorch REINFORCE example')
 #parser.add_argument('--width', type=int, default=64, metavar='N', help='width of virtual screen')
 #parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
 parser.add_argument('--inputs', type=int, default=64, metavar='N', help='number of data inputs to the neural network')
-parser.add_argument('--actions', type=int, defulat=2, metavar='N', help='number of output actions from the neural network')
+parser.add_argument('--actions', type=int, default=2, metavar='N', help='number of output actions from the neural network')
 #parser.add_argument('--env', metavar='N', default='CartPole-v0')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor (default: 0.99)')
@@ -43,7 +43,7 @@ print('use_cuda: ' + str(use_cuda))
 #env.seed(args.seed)
 torch.manual_seed(args.seed)
 
-num_inputs  = args.inputs
+num_inputs = args.inputs
 num_actions = args.actions
 print('num inputs:  ' + str(num_inputs))
 print('num actions: ' + str(num_actions))
@@ -61,8 +61,8 @@ max_episodes = 10000
 class Policy(nn.Module):
     def __init__(self):
         super(Policy, self).__init__()
-        self.affine1 = nn.Linear(num_inputs, 128)
-        self.affine2 = nn.Linear(128, num_actions)
+        self.affine1 = nn.Linear(num_inputs, 256)
+        self.affine2 = nn.Linear(256, num_actions)
 
         self.saved_actions = []
         self.rewards = []
@@ -84,15 +84,15 @@ optimizer = optim.Adam(policy.parameters(), lr=1e-2)
 
 def select_action(state, save):			# use DNN to select action from current state
 	#state = torch.from_numpy(state).float().unsqueeze(0)
-	state = state.unsqueeze(0)
-	state = state.cuda()
+	state = state.unsqueeze(0)	# turn into matrix
+	#state = state.cuda()
 	probs = policy(Variable(state))
 	action = probs.multinomial()
 
 	if save:
 		policy.saved_actions.append(action)
 
-	return action.data
+	return action.data[0][0]		# dereference from torch tensor
 
 
 def next_action(state):					# inference only
@@ -101,6 +101,7 @@ def next_action(state):					# inference only
 
 
 def finish_episode():					# training at the end of an episode
+	global num_episodes
 	print('finish_episode({:d})'.format(num_episodes))
 	R = 0
 	rewards = []
@@ -116,20 +117,25 @@ def finish_episode():					# training at the end of an episode
 	optimizer.step()
 	del policy.rewards[:]
 	del policy.saved_actions[:]
-
+	num_episodes += 1
 
 def next_reward(state, reward, new_episode):	# next reward is available
-	print('reward = ' + str(reward))
-	print('new_episode = ' + str(new_episode))
+	#print('state = ' + str(state))
+	#print('reward = ' + str(reward))
+	#print('new_episode = ' + str(new_episode))
+	#print('num_episodes = ' + str(num_episodes))
+	
+	# record rewards (unless this is the very first iteration)
+	if not (num_episodes == 0 and new_episode):
+		#print('recording reward = ' + str(reward))
+		policy.rewards.append(reward)
 
-	if new_episode:					# if this is the first frame of a new episode, complete last episode
-		if num_episodes != 0:
-			policy.rewards.append(reward)	# append the previous action's reward
-			finish_episode()			# finish training last episode
-
-		num_episodes += 1				# keep track of the current number of episodes have being run
+	# finish training previous episode
+	if new_episode and num_episodes != 0:	
+		finish_episode()	
 
 	action = select_action(state, True)
+	#print('action = ' + str(action))
 	return action
 
 

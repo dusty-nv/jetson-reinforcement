@@ -10,9 +10,7 @@
 #include <stdint.h>
 #include <string>
 
-
-struct pyTensor;
-typedef pyTensor Tensor;
+#include "pyTensor.h"
 
 
 /**
@@ -113,12 +111,18 @@ protected:
 	Tensor* mRewardTensor;
 	Tensor* mActionTensor;
 
+	enum
+	{
+		ACTION_FUNCTION = 0,
+		REWARD_FUNCTION,
+		NUM_FUNCTIONS
+	};
+
 	std::string mModuleName;
 	void*	  mModuleObj;
-	void* 	  mRewardFunction;
-	void* 	  mActionFunction;
-	std::string mActionFunctionName;
-	std::string mRewardFunctionName;
+	void* 	  mFunction[NUM_FUNCTIONS];
+	void*	  mFunctionArgs[NUM_FUNCTIONS];
+	std::string mFunctionName[NUM_FUNCTIONS];
 
 	static bool scriptingLoaded;
 };
