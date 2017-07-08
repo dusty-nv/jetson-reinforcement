@@ -48,14 +48,14 @@ deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* mod
 	if( !module || numInputs == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
 
-	return Create(numInputs, 1, numActions, module, nextAction, nextReward);
+	return Create(numInputs, 1, 1, numActions, module, nextAction, nextReward);
 }
 
 
 // Create
-deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
 {
-	if( !module || width == 0 || height == 0 || numActions == 0 || !module || !nextAction || !nextReward )
+	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
 
 	// create new object
@@ -64,22 +64,31 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t numActions, co
 	if( !rl )
 		return NULL;
 
-	const uint32_t numInputs = width * height;
+	const uint32_t numInputs = width * height * channels;
 
 	// format argument strings
 	char inputsStr[32];
 	char actionStr[32];
-	
-	sprintf(inputsStr, "--inputs=%u", numInputs);
+	char channelStr[32];
+	char widthStr[32];
+	char heightStr[32];
+
+	//sprintf(inputsStr, "--inputs=%u", numInputs);
+	sprintf(widthStr, "--width=%u", width);
+	sprintf(heightStr, "--height=%u", height);
 	sprintf(actionStr, "--actions=%u", numActions);
+	sprintf(channelStr, "--channels=%u", channels);
 
 	// set python command line
-	int py_argc = 3;
-	char* py_argv[3];
+	int py_argc = 5;
+	char* py_argv[5];
 
 	py_argv[0] = (char*)module;
-	py_argv[1] = inputsStr;
-	py_argv[2] = actionStr;
+	//py_argv[1] = inputsStr;
+	py_argv[1] = actionStr;
+	py_argv[2] = heightStr;
+	py_argv[3] = widthStr;
+	py_argv[4] = channelStr;
 	
 	// load python module
 	if( !rl->LoadModule(module, py_argc, py_argv) )

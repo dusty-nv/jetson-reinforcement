@@ -47,7 +47,7 @@ public:
 	/**
 	 * Create a new instance of a module.
 	 */
-	static deepRL* Create( uint32_t width, uint32_t height, uint32_t numActions, 
+	static deepRL* Create( uint32_t numInputs, uint32_t numActions, 
 					   const char* module=DEFAULT_RL_MODULE,
 					   const char* nextAction=DEFAULT_NEXT_ACTION, 
 					   const char* nextReward=DEFAULT_NEXT_REWARD );
@@ -55,7 +55,8 @@ public:
 	/**
 	 * Create a new instance of a module.
 	 */
-	static deepRL* Create( uint32_t numInputs, uint32_t numActions, 
+	static deepRL* Create( uint32_t width, uint32_t height, 
+					   uint32_t channels, uint32_t numActions, 
 					   const char* module=DEFAULT_RL_MODULE,
 					   const char* nextAction=DEFAULT_NEXT_ACTION, 
 					   const char* nextReward=DEFAULT_NEXT_REWARD );

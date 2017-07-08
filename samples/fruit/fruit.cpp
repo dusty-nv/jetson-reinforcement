@@ -64,7 +64,7 @@ int main( int argc, char** argv )
 	
 
 	// create reinforcement learner in pyTorch
-	deepRL* rl = deepRL::Create(GAME_WIDTH, GAME_HEIGHT, NUM_ACTIONS);
+	deepRL* rl = deepRL::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
 	
 	if( !rl )
 	{

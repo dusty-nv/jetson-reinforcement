@@ -1,86 +1,19 @@
 # -*- coding: utf-8 -*-
-"""
-Reinforcement Learning (DQN) tutorial
-=====================================
-**Author**: `Adam Paszke <https://github.com/apaszke>`_
 
-
-This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v0 task from the `OpenAI Gym <https://gym.openai.com/>`__.
-
-**Task**
-
-The agent has to decide between two actions - moving the cart left or
-right - so that the pole attached to it stays upright. You can find an
-official leaderboard with various algorithms and visualizations at the
-`Gym website <https://gym.openai.com/envs/CartPole-v0>`__.
-
-.. figure:: /_static/img/cartpole.gif
-   :alt: cartpole
-
-   cartpole
-
-As the agent observes the current state of the environment and chooses
-an action, the environment *transitions* to a new state, and also
-returns a reward that indicates the consequences of the action. In this
-task, the environment terminates if the pole falls over too far.
-
-The CartPole task is designed so that the inputs to the agent are 4 real
-values representing the environment state (position, velocity, etc.).
-However, neural networks can solve the task purely by looking at the
-scene, so we'll use a patch of the screen centered on the cart as an
-input. Because of this, our results aren't directly comparable to the
-ones from the official leaderboard - our task is much harder.
-Unfortunately this does slow down the training, because we have to
-render all the frames.
-
-Strictly speaking, we will present the state as the difference between
-the current screen patch and the previous one. This will allow the agent
-to take the velocity of the pole into account from one image.
-
-**Packages**
-
-
-First, let's import needed packages. Firstly, we need
-`gym <https://gym.openai.com/docs>`__ for the environment
-(Install using `pip install gym`).
-We'll also use the following from PyTorch:
-
--  neural networks (``torch.nn``)
--  optimization (``torch.optim``)
--  automatic differentiation (``torch.autograd``)
--  utilities for vision tasks (``torchvision`` - `a separate
-   package <https://github.com/pytorch/vision>`__).
-
-"""
-
-#import gym
+import argparse
 import math
 import random
 import numpy as np
-#import matplotlib
-#import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
 from copy import deepcopy
-#from PIL import Image
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
-#import torchvision.transforms as T
 
-
-#env = gym.make('CartPole-v0').unwrapped
-
-# set up matplotlib
-#is_ipython = 'inline' in matplotlib.get_backend()
-#if is_ipython:
-#    from IPython import display
-
-#plt.ion()
 
 # if gpu is to be used
 use_cuda = torch.cuda.is_available()
@@ -88,6 +21,24 @@ FloatTensor = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if use_cuda else torch.LongTensor
 ByteTensor = torch.cuda.ByteTensor if use_cuda else torch.ByteTensor
 Tensor = FloatTensor
+
+print('use_cuda: ' + str(use_cuda))
+
+
+# parse command line
+parser = argparse.ArgumentParser(description='PyTorch DQN runtime')
+parser.add_argument('--width', type=int, default=64, metavar='N', help='width of virtual screen')
+parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
+parser.add_argument('--channels', type=int, default=3, metavar='N', help='channels in the input image')
+parser.add_argument('--actions', type=int, default=3, metavar='N', help='number of output actions from the neural network')
+args = parser.parse_args()
+
+input_width    = args.width
+input_height   = args.height
+input_channels = args.channels
+num_actions    = args.actions
+
+
 
 
 ######################################################################
@@ -209,24 +160,32 @@ class ReplayMemory(object):
 
 class DQN(nn.Module):
 
-    def __init__(self):
-        super(DQN, self).__init__()
-        #self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
-        self.bn1 = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
-        self.bn2 = nn.BatchNorm2d(32)
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
-        self.bn3 = nn.BatchNorm2d(32)
-        self.head = nn.Linear(448, 3)	# 3 = num_outputs
+	def __init__(self):
+		super(DQN, self).__init__()
+		self.conv1 = nn.Conv2d(input_channels, 16, kernel_size=5, stride=2)
+		self.bn1 = nn.BatchNorm2d(16)
+		self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
+		self.bn2 = nn.BatchNorm2d(32)
+		self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+		self.bn3 = nn.BatchNorm2d(32)
 
-    def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        y = x.view(x.size(0), -1)
-        #print('forward y = ' + str(y))
-        return self.head(y)
+		# from the convolutions find the size of the last filter
+		x = Variable(torch.Tensor(1, input_channels, input_height, input_width).zero_())
+		x = F.relu(self.bn1(self.conv1(x)))
+		x = F.relu(self.bn2(self.conv2(x)))
+		x = F.relu(self.bn3(self.conv3(x)))
+		y = x.view(x.size(0), -1)
+		print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
+
+		self.head = nn.Linear(y.size(1), num_actions)
+
+	def forward(self, x):
+		x = F.relu(self.bn1(self.conv1(x)))
+		x = F.relu(self.bn2(self.conv2(x)))
+		x = F.relu(self.bn3(self.conv3(x)))
+		y = x.view(x.size(0), -1)
+		#print('forward y = ' + str(y))
+		return self.head(y)
 
 
 
@@ -286,7 +245,7 @@ def select_action(state, allow_rand):
         return action
     else:
         #print('rand range')
-        return LongTensor([[random.randrange(3)]])
+        return LongTensor([[random.randrange(num_actions)]])
 
 
 episode_durations = []
