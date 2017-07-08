@@ -16,7 +16,7 @@
 /**
  * Default name of the Python module to load
  */
-#define DEFAULT_RL_MODULE "RL"
+#define DEFAULT_RL_MODULE "DQN"
 
 /**
  * Default name of the Python function from the user's module
@@ -47,6 +47,14 @@ public:
 	/**
 	 * Create a new instance of a module.
 	 */
+	static deepRL* Create( uint32_t width, uint32_t height, uint32_t numActions, 
+					   const char* module=DEFAULT_RL_MODULE,
+					   const char* nextAction=DEFAULT_NEXT_ACTION, 
+					   const char* nextReward=DEFAULT_NEXT_REWARD );
+
+	/**
+	 * Create a new instance of a module.
+	 */
 	static deepRL* Create( uint32_t numInputs, uint32_t numActions, 
 					   const char* module=DEFAULT_RL_MODULE,
 					   const char* nextAction=DEFAULT_NEXT_ACTION, 
@@ -74,12 +82,12 @@ public:
 	/**
 	 * Next action with reward (training)
 	 */
-	virtual bool NextReward( Tensor* state, int* action, float reward );
+	virtual bool NextReward( float reward, bool end_episode );
 
 	/**
 	 * End the current episode and start the next episode
 	 */
-	virtual void NextEpisode();
+	//virtual void NextEpisode();
 
 	/**
 	 * Load script
@@ -103,8 +111,10 @@ protected:
 	THCState*  THC;	/**< cutorch state */
 #endif
 
-	bool mNewEpisode;
+	//bool mNewEpisode;
 
+	uint32_t mInputWidth;
+	uint32_t mInputHeight;
 	uint32_t mNumInputs;
 	uint32_t mNumActions;
 	

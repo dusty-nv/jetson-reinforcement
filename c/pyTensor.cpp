@@ -87,11 +87,11 @@ pyTensor* pyTensor::Alloc( uint32_t width, uint32_t height=1, uint32_t depth )
 	}
 
 	// convey the size and dimensions of the tensor
-	long sizedata[1]   = { t->elements };	// { height, width };
-	long stridedata[1] = { 1 };		// { width, 3 }  (for YUV)
+	long sizedata[3]   = { t->depth, t->height, t->width };//{ t->elements };	// { height, width };
+	long stridedata[3] = { t->width * t->height, t->width, 1 };//{ 1 };		// { width, 3 }  (for YUV)
        
-	THLongStorage* sizeStorage   = THLongStorage_newWithData(sizedata, 1/*2*/);
-	THLongStorage* strideStorage = THLongStorage_newWithData(stridedata, 1/*2*/);
+	THLongStorage* sizeStorage   = THLongStorage_newWithData(sizedata, /*1*/3);
+	THLongStorage* strideStorage = THLongStorage_newWithData(stridedata, /*1*/3);
 
 	// alloc CPU tensor
 	t->cpuTensor = THFloatTensor_new();

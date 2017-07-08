@@ -18,7 +18,7 @@ bool deepRL::scriptingLoaded = false;
 // constructor
 deepRL::deepRL()
 {	
-	mNewEpisode = true;		// true for the first ep run by default
+	//mNewEpisode = true;
 	mNumInputs  = 0;
 	mNumActions = 0;
 	mModuleName = "RL";
@@ -48,10 +48,23 @@ deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* mod
 	if( !module || numInputs == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
 
+	return Create(numInputs, 1, numActions, module, nextAction, nextReward);
+}
+
+
+// Create
+deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+{
+	if( !module || width == 0 || height == 0 || numActions == 0 || !module || !nextAction || !nextReward )
+		return NULL;
+
+	// create new object
 	deepRL* rl = new deepRL();
 
 	if( !rl )
 		return NULL;
+
+	const uint32_t numInputs = width * height;
 
 	// format argument strings
 	char inputsStr[32];
@@ -121,7 +134,7 @@ deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* mod
 
 	// allocate function arguments
 	PyObject* actionArgs = PyTuple_New(1);
-	PyObject* rewardArgs = PyTuple_New(3);
+	PyObject* rewardArgs = PyTuple_New(2);
 
 	if( !actionArgs || !rewardArgs )
 	{
@@ -194,7 +207,7 @@ bool deepRL::NextAction( Tensor* state, int* action )
 		return false;
 
 	// setup arguments to action function
-	PyObject* pArgs = (PyObject*)mFunctionArgs[ACTION_FUNCTION];
+	PyObject* pArgs = PyTuple_New(1); //(PyObject*)mFunctionArgs[ACTION_FUNCTION];
 
 	PyTuple_SetItem(pArgs, 0, state->pyTensorGPU);
 	
@@ -206,7 +219,7 @@ bool deepRL::NextAction( Tensor* state, int* action )
 	// check return value
 	if( pValue != NULL )
 	{
-		printf("[deepRL]  result of %s(): %ld\n", mFunctionName[ACTION_FUNCTION].c_str(), PyInt_AsLong(pValue));
+		//printf("[deepRL]  result of %s(): %ld\n", mFunctionName[ACTION_FUNCTION].c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
@@ -222,19 +235,16 @@ bool deepRL::NextAction( Tensor* state, int* action )
 
 
 // NextReward
-bool deepRL::NextReward( Tensor* state, int* action, float reward )
+bool deepRL::NextReward( float reward, bool end_episode )
 {
-	if( !state || !action )
-		return false;
-
 	// setup arguments to action function
-	PyObject* pArgs = PyTuple_New(3); //(PyObject*)mFunctionArgs[REWARD_FUNCTION];
+	PyObject* pArgs = PyTuple_New(2); //(PyObject*)mFunctionArgs[REWARD_FUNCTION];
 
-	PyTuple_SetItem(pArgs, 0, state->pyTensorGPU);
-	PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(reward));
-	PyTuple_SetItem(pArgs, 2, PyBool_FromLong(mNewEpisode ? 1 : 0));
+	//PyTuple_SetItem(pArgs, 0, state->pyTensorGPU);
+	PyTuple_SetItem(pArgs, 0, PyFloat_FromDouble(reward));
+	PyTuple_SetItem(pArgs, 1, PyBool_FromLong(/*mNewEpisode*/end_episode ? 1 : 0));
 
-	mNewEpisode = false;	// reset new_ep flag
+	//mNewEpisode = false;	// reset new_ep flag
 
 	// call reward/training function
 	PyObject* pValue = PyObject_CallObject((PyObject*)mFunction[REWARD_FUNCTION], pArgs);
@@ -242,13 +252,20 @@ bool deepRL::NextReward( Tensor* state, int* action, float reward )
 	//Py_DECREF(pArgs);		// this invalidates the tensors
 
 	// check return value
-	if( pValue != NULL )
+	/*if( pValue != NULL )
 	{
 		//printf("[deepRL]  result of %s(): %ld\n", mRewardFunctionName.c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
 	else
+	{
+		PyErr_Print();
+		printf("[deepRL]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
+		return false;
+	}*/
+
+	if( !pValue )
 	{
 		PyErr_Print();
 		printf("[deepRL]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
@@ -260,10 +277,10 @@ bool deepRL::NextReward( Tensor* state, int* action, float reward )
 
 
 // NextEpisode
-void deepRL::NextEpisode()
+/*void deepRL::NextEpisode()
 {
 	mNewEpisode = true;
-}
+}*/
 
 #endif
 

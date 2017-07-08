@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser(description='PyTorch REINFORCE example')
 #parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
 parser.add_argument('--inputs', type=int, default=64, metavar='N', help='number of data inputs to the neural network')
 parser.add_argument('--actions', type=int, default=2, metavar='N', help='number of output actions from the neural network')
+parser.add_argument('--hidden', type=int, default=128, metavar='N', help='number of hidden neurons')
 #parser.add_argument('--env', metavar='N', default='CartPole-v0')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor (default: 0.99)')
@@ -44,8 +45,10 @@ print('use_cuda: ' + str(use_cuda))
 torch.manual_seed(args.seed)
 
 num_inputs = args.inputs
+num_hidden = args.hidden
 num_actions = args.actions
 print('num inputs:  ' + str(num_inputs))
+print('num hidden:  ' + str(num_hidden))
 print('num actions: ' + str(num_actions))
 
 num_episodes = 0
@@ -59,18 +62,24 @@ max_episodes = 10000
 
 
 class Policy(nn.Module):
-    def __init__(self):
-        super(Policy, self).__init__()
-        self.affine1 = nn.Linear(num_inputs, 256)
-        self.affine2 = nn.Linear(256, num_actions)
+	def __init__(self):
+		super(Policy, self).__init__()
+		self.affine1 = nn.Linear(num_inputs, num_hidden)
+		self.affine2 = nn.Linear(num_hidden, num_hidden)
+		#self.affine3 = nn.Linear(num_hidden, num_hidden)
+		#self.affine4 = nn.Linear(num_hidden, num_hidden)
+		self.affineN = nn.Linear(num_hidden, num_actions)
 
-        self.saved_actions = []
-        self.rewards = []
+		self.saved_actions = []
+		self.rewards = []
 
-    def forward(self, x):
-        x = F.relu(self.affine1(x))
-        action_scores = self.affine2(x)
-        return F.softmax(action_scores)
+	def forward(self, x):
+		x = F.relu(self.affine1(x))
+		#x = F.relu(self.affine2(x))
+		#x = F.relu(self.affine3(x))
+		#x = F.relu(self.affine4(x))
+		action_scores = self.affineN(x)
+		return F.softmax(action_scores)
 
 
 policy = Policy()

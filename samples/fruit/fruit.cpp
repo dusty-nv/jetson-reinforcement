@@ -7,17 +7,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GAME_WIDTH 5
-#define GAME_HEIGHT 5
-#define GAME_SIZE GAME_WIDTH * GAME_HEIGHT
-#define GAME_EPISODES 3000
-#define GAME_HISTORY 50
+#define GAME_WIDTH  40
+#define GAME_HEIGHT 80
+#define BALL_SIZE	8
+#define BALL_SIZE2  (BALL_SIZE/2)
+#define PLAY_SIZE   16
+#define PLAY_SIZE2  (PLAY_SIZE/2)
+
+#define GAME_HISTORY 12
 
 bool gameHistory[GAME_HISTORY];
 int  gameHistoryIdx = 0;
 
 
-enum catchAction
+enum fruitAction
 {
 	ACTION_STAY  = 0,
 	ACTION_LEFT  = 1,
@@ -25,7 +28,7 @@ enum catchAction
 	NUM_ACTIONS
 };
 
-static const char* actionStr( int action )
+static const char* fruitStr( int action )
 {
 	if( action == 0 )
 	{
@@ -56,25 +59,25 @@ static inline int absolute( int x )
 
 int main( int argc, char** argv )
 {
-	printf("deepRL-catch\n\n");
+	printf("deepRL-fruit\n\n");
 	srand(time(NULL));
 	
 
 	// create reinforcement learner in pyTorch
-	deepRL* rl = deepRL::Create(GAME_SIZE, NUM_ACTIONS);
+	deepRL* rl = deepRL::Create(GAME_WIDTH, GAME_HEIGHT, NUM_ACTIONS);
 	
 	if( !rl )
 	{
-		printf("[deepRL]  failed to create deepRL instance  %i  %i", GAME_SIZE, NUM_ACTIONS);
+		printf("[deepRL]  failed to create deepRL instance  %ux%u  %u", GAME_WIDTH, GAME_HEIGHT, NUM_ACTIONS);
 		return 0;
 	}
 	
 	// allocate memory for the game input
-	Tensor* input_state = Tensor::Alloc(GAME_SIZE);
+	Tensor* input_state = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, 3);
 	
 	if( !input_state )
 	{
-		printf("[deepRL]  failed to allocate input tensor with %u elements", GAME_SIZE);
+		printf("[deepRL]  failed to allocate input tensor with %ux%xu elements", GAME_WIDTH, GAME_HEIGHT);
 		return 0;
 	}
 	
@@ -88,8 +91,7 @@ int main( int argc, char** argv )
 	int episodes_won = 0;
 	int episode = 1;
 	
-	float reward = 0.0f;
-
+	
 	while(true)
 	{
 		// update the playing field
@@ -99,21 +101,24 @@ int main( int argc, char** argv )
 			{
 				float cell_value = 0.0f;
 				
-				if( x == ball_x && y == ball_y )
-					cell_value = -10.0f;
-				else if( x == play_x && y == 0 )
-					cell_value = 10.0f;
+				if( (x >= ball_x - BALL_SIZE2) && (x <= ball_x + BALL_SIZE2) &&
+				    (y >= ball_y - BALL_SIZE2) && (y <= ball_y + BALL_SIZE2) )
+					cell_value = 1.0f;
+				else if( (x >= play_x - PLAY_SIZE2) && (x <= play_x + PLAY_SIZE2) &&
+					    (y == 0) )
+					cell_value = 100.0f;
 				
-				input_state->cpuPtr[y*GAME_WIDTH+x] = cell_value;
+				for( int c=0; c < 3; c++ )
+					input_state->cpuPtr[c*GAME_WIDTH*GAME_HEIGHT+y*GAME_WIDTH+x] = cell_value;
 			}
 		}
 		
 		// ask the AI agent for their action
 		int action = ACTION_STAY;
 		
-		if( !rl->NextReward(input_state, &action, reward) )
+		if( !rl->NextAction(input_state, &action) )
 		{
-			printf("[deepRL]  rl->NextReward() failed.\n");
+			printf("[deepRL]  rl->NextAction() failed.\n");
 			return 0;
 		}
 
@@ -122,23 +127,12 @@ int main( int argc, char** argv )
 		const int prevDist = absolute(play_x - ball_x);
 
 		// apply the agent's action, without going off-screen
-		if( action == ACTION_LEFT && play_x > 0 )
+		if( action == ACTION_LEFT && (play_x - PLAY_SIZE2) > 0 )
 			play_x--;
-		else if( action == ACTION_RIGHT && play_x < (GAME_WIDTH-1) )
+		else if( action == ACTION_RIGHT && (play_x + PLAY_SIZE2) < (GAME_WIDTH-1) )
 			play_x++;
 		
 		const int currDist = absolute(play_x - ball_x);
-
-		if( currDist == 0 )
-			reward = 200.0f;
-		else
-			reward = 0.0f;
-		/*else if( currDist > prevDist )
-			reward = -100.0f;
-		else if( currDist < prevDist )
-			reward = 10.0f;
-		else if( currDist == prevDist )
-			reward = -50.0f;*/
 		
 		
 		// advance the simulation (make the ball fall)
@@ -168,14 +162,45 @@ int main( int argc, char** argv )
 			printf("|\n");
 		}
 #endif 
-				
+		
+		// compute reward
+		float reward = 0.0f;
+
+		if( currDist == 0 )
+			reward = 1.0f;
+		else if( currDist > prevDist )
+			reward = -1.0f;
+		else if( currDist < prevDist )
+			reward = 1.0f;
+		else if( currDist == prevDist )
+			reward = 0.0f;
+
+
 		// if the ball has reached the bottom, train & reset randomly
+		bool end_episode = false;
+		
 		if( ball_y <= 0 )
 		{
-			// if the agent caught the ball, give it a reward 
-			if( ball_x == play_x ) 
+			bool ball_overlap = false;
+
+			// detect if the player paddle is overlapping with the ball
+			for( int i=0; i < BALL_SIZE; i++ )	// BUG: this is slow?
 			{
-				reward = 500.0;
+				const int p = ball_x - BALL_SIZE2 + i;
+				
+				if( p >= play_x - PLAY_SIZE2 && p <= play_x + PLAY_SIZE2 )
+				{
+					ball_overlap = true;
+					break;
+				}
+			}
+
+			// if the agent caught the ball, give it a reward 
+			/*if( ((ball_x - BALL_SIZE2) >= (play_x - PLAY_SIZE2) &&
+			    (ball_x - BALL_SIZE2) <= (play_x + PLAY_SIZE2)) */
+			if( ball_overlap ) 
+			{
+				reward = 1.0;
 				episodes_won++;
 				gameHistory[gameHistoryIdx] = true;
 				printf("WON episode %i\n", episode);
@@ -184,7 +209,7 @@ int main( int argc, char** argv )
 			{
 				gameHistory[gameHistoryIdx] = false;
 				printf("LOST episode %i\n", episode);
-				reward = -500.0f;
+				reward = -1.0f;
 			}
 
 			printf("%i for %i  (%0.4f)  ", episodes_won, episode, float(episodes_won)/float(episode));
@@ -206,16 +231,17 @@ int main( int argc, char** argv )
 			gameHistoryIdx = (gameHistoryIdx + 1) % GAME_HISTORY;
 			episode++;
 
-			
-			
-			// next episode
-			rl->NextEpisode();
-			
 			// reset the game for next episode
-			ball_x = (GAME_WIDTH / 2) + 1;//rand_x();
+			ball_x = rand_x();
 			ball_y = GAME_HEIGHT - 1;
 			play_x = (GAME_WIDTH / 2) + 1; //rand_x();//(GAME_WIDTH / 2) + 1;
+						
+			// flag as end of episode
+			end_episode = true;
 		}
+
+		if( !rl->NextReward(reward, end_episode) )
+			printf("[deepRL]  NextReward() failed\n");
 	}
 	
 	return 0;
