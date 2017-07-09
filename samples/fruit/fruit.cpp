@@ -14,7 +14,7 @@
 #define PLAY_SIZE   16
 #define PLAY_SIZE2  (PLAY_SIZE/2)
 
-#define GAME_HISTORY 12
+#define GAME_HISTORY 20
 
 bool gameHistory[GAME_HISTORY];
 int  gameHistoryIdx = 0;
@@ -124,7 +124,7 @@ int main( int argc, char** argv )
 
 		//printf("RL action: %i %s\n", action, actionStr(action));
 		
-		const int prevDist = absolute(play_x - ball_x);
+		const int prevDist = abs(play_x - ball_x);
 
 		// apply the agent's action, without going off-screen
 		if( action == ACTION_LEFT && (play_x - PLAY_SIZE2) > 0 )
@@ -132,15 +132,13 @@ int main( int argc, char** argv )
 		else if( action == ACTION_RIGHT && (play_x + PLAY_SIZE2) < (GAME_WIDTH-1) )
 			play_x++;
 		
-		const int currDist = absolute(play_x - ball_x);
+		const int currDist = abs(play_x - ball_x);
 		
 		
 		// advance the simulation (make the ball fall)
 		ball_y--;
 
-		//reward = 0.0f;	// reset the reward for next iteration
-		
-		
+
 		// print screen
 #if 0
 		printf("\n");
@@ -184,7 +182,7 @@ int main( int argc, char** argv )
 			bool ball_overlap = false;
 
 			// detect if the player paddle is overlapping with the ball
-			for( int i=0; i < BALL_SIZE; i++ )	// BUG: this is slow?
+			for( int i=0; i < BALL_SIZE; i++ )
 			{
 				const int p = ball_x - BALL_SIZE2 + i;
 				
@@ -196,8 +194,6 @@ int main( int argc, char** argv )
 			}
 
 			// if the agent caught the ball, give it a reward 
-			/*if( ((ball_x - BALL_SIZE2) >= (play_x - PLAY_SIZE2) &&
-			    (ball_x - BALL_SIZE2) <= (play_x + PLAY_SIZE2)) */
 			if( ball_overlap ) 
 			{
 				reward = 1.0;
@@ -212,6 +208,7 @@ int main( int argc, char** argv )
 				reward = -1.0f;
 			}
 
+			// print out statistics for tracking agent learning progress
 			printf("%i for %i  (%0.4f)  ", episodes_won, episode, float(episodes_won)/float(episode));
 
 			if( episode >= GAME_HISTORY )
@@ -234,7 +231,7 @@ int main( int argc, char** argv )
 			// reset the game for next episode
 			ball_x = rand_x();
 			ball_y = GAME_HEIGHT - 1;
-			play_x = (GAME_WIDTH / 2) + 1; //rand_x();//(GAME_WIDTH / 2) + 1;
+			play_x = (GAME_WIDTH / 2) + 1;
 						
 			// flag as end of episode
 			end_episode = true;

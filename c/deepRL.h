@@ -37,15 +37,16 @@
 #define DEFAULT_NEXT_REWARD "next_reward"
 
 
+
 /**
- * Base class for deep reinforcement learning,
+ * Base class for deep reinforcement learning agent,
  * using Python & pyTorch underneath with C FFI.
  */
 class deepRL
 {
 public:
 	/**
-	 * Create a new instance of a module.
+	 * Create a new instance of a module for training an agent.
 	 */
 	static deepRL* Create( uint32_t numInputs, uint32_t numActions, 
 					   const char* module=DEFAULT_RL_MODULE,
@@ -53,7 +54,7 @@ public:
 					   const char* nextReward=DEFAULT_NEXT_REWARD );
 
 	/**
-	 * Create a new instance of a module.
+	 * Create a new instance of a module for training an agent.
 	 */
 	static deepRL* Create( uint32_t width, uint32_t height, 
 					   uint32_t channels, uint32_t numActions, 
