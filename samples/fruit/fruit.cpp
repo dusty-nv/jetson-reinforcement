@@ -63,10 +63,10 @@ int main( int argc, char** argv )
 	srand(time(NULL));
 	
 
-	// create reinforcement learner in pyTorch
-	deepRL* rl = deepRL::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
+	// create reinforcement learner agent in pyTorch
+	rlAgent* agent = rlAgent::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
 	
-	if( !rl )
+	if( !agent )
 	{
 		printf("[deepRL]  failed to create deepRL instance  %ux%u  %u", GAME_WIDTH, GAME_HEIGHT, NUM_ACTIONS);
 		return 0;
@@ -116,9 +116,9 @@ int main( int argc, char** argv )
 		// ask the AI agent for their action
 		int action = ACTION_STAY;
 		
-		if( !rl->NextAction(input_state, &action) )
+		if( !agent->NextAction(input_state, &action) )
 		{
-			printf("[deepRL]  rl->NextAction() failed.\n");
+			printf("[deepRL]  agent->NextAction() failed.\n");
 			return 0;
 		}
 
@@ -199,7 +199,7 @@ int main( int argc, char** argv )
 				reward = 1.0;
 				episodes_won++;
 				gameHistory[gameHistoryIdx] = true;
-				printf("WON episode %i\n", episode);
+				printf("WON  episode %i\n", episode);
 			}
 			else
 			{
@@ -237,8 +237,8 @@ int main( int argc, char** argv )
 			end_episode = true;
 		}
 
-		if( !rl->NextReward(reward, end_episode) )
-			printf("[deepRL]  NextReward() failed\n");
+		if( !agent->NextReward(reward, end_episode) )
+			printf("[deepRL]  agent->NextReward() failed\n");
 	}
 	
 	return 0;

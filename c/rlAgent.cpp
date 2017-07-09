@@ -1,9 +1,8 @@
 /*
- * deepRL
+ * rlAgent
  */
 
-#include "deepRL.h"
-
+#include "rlAgent.h"
 #include "pyTorch.h"
 #include "pyTensor.h"
 
@@ -11,12 +10,12 @@
 #ifdef USE_PYTHON
 
 //-------------------------------------------------------------------------------
-bool deepRL::scriptingLoaded = false;
+bool rlAgent::scriptingLoaded = false;
 //-------------------------------------------------------------------------------
 
 
 // constructor
-deepRL::deepRL()
+rlAgent::rlAgent()
 {	
 	//mNewEpisode = true;
 	mNumInputs  = 0;
@@ -36,14 +35,14 @@ deepRL::deepRL()
 
 
 // destructor
-deepRL::~deepRL()
+rlAgent::~rlAgent()
 {
 
 }
 
 
 // Create
-deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+rlAgent* rlAgent::Create( uint32_t numInputs, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
 {
 	if( !module || numInputs == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
@@ -53,13 +52,13 @@ deepRL* deepRL::Create( uint32_t numInputs, uint32_t numActions, const char* mod
 
 
 // Create
-deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
 {
 	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
 
 	// create new object
-	deepRL* rl = new deepRL();
+	rlAgent* rl = new rlAgent();
 
 	if( !rl )
 		return NULL;
@@ -103,7 +102,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 		if (PyErr_Occurred())
 			PyErr_Print();
 
-		printf("[deepRL]  failed to find function %s() in Python module '%s'\n", nextAction, module);
+		printf("[rlAgent]  failed to find function %s() in Python module '%s'\n", nextAction, module);
 		return NULL;
 	}
 
@@ -112,7 +111,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 		if (PyErr_Occurred())
 			PyErr_Print();
 
-		printf("[deepRL]  failed to find function %s() in Python module '%s'\n", nextReward, module);
+		printf("[rlAgent]  failed to find function %s() in Python module '%s'\n", nextReward, module);
 		return NULL;
 	}
 
@@ -122,7 +121,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 		if (PyErr_Occurred())
 			PyErr_Print();
 
-		printf("[deepRL]  %s() from Python module '%s' is not a callable function\n", nextAction, module);
+		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", nextAction, module);
 		return NULL;
 	}
 
@@ -131,7 +130,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 		if (PyErr_Occurred())
 			PyErr_Print();
 
-		printf("[deepRL]  %s() from Python module '%s' is not a callable function\n", nextReward, module);
+		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", nextReward, module);
 		return NULL;
 	}
 
@@ -147,7 +146,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 
 	if( !actionArgs || !rewardArgs )
 	{
-		printf("[deepRL]  failed to allocated PyTuple for function arguments\n");
+		printf("[rlAgent]  failed to allocated PyTuple for function arguments\n");
 		return NULL;
 	}
 
@@ -159,7 +158,7 @@ deepRL* deepRL::Create( uint32_t width, uint32_t height, uint32_t channels, uint
 
 
 // LoadInterpreter
-bool deepRL::LoadInterpreter()
+bool rlAgent::LoadInterpreter()
 {
 	if( scriptingLoaded )
 		return true;
@@ -172,7 +171,7 @@ bool deepRL::LoadInterpreter()
 
 
 // LoadModule
-bool deepRL::LoadModule( const char* module )
+bool rlAgent::LoadModule( const char* module )
 {
 	int argc = 0;
 	return LoadModule(module, argc, NULL);
@@ -180,7 +179,7 @@ bool deepRL::LoadModule( const char* module )
 
 
 // LoadModule
-bool deepRL::LoadModule( const char* module, int argc, char** argv )
+bool rlAgent::LoadModule( const char* module, int argc, char** argv )
 {
 	if( !LoadInterpreter() )
 		return false;
@@ -210,7 +209,7 @@ bool deepRL::LoadModule( const char* module, int argc, char** argv )
 
 
 // NextAction
-bool deepRL::NextAction( Tensor* state, int* action )
+bool rlAgent::NextAction( Tensor* state, int* action )
 {
 	if( !state || !action )
 		return false;
@@ -228,14 +227,14 @@ bool deepRL::NextAction( Tensor* state, int* action )
 	// check return value
 	if( pValue != NULL )
 	{
-		//printf("[deepRL]  result of %s(): %ld\n", mFunctionName[ACTION_FUNCTION].c_str(), PyInt_AsLong(pValue));
+		//printf("[rlAgent]  result of %s(): %ld\n", mFunctionName[ACTION_FUNCTION].c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
 	else
 	{
 		PyErr_Print();
-		printf("[deepRL]  call to %s() failed\n", mFunctionName[ACTION_FUNCTION].c_str());
+		printf("[rlAgent]  call to %s() failed\n", mFunctionName[ACTION_FUNCTION].c_str());
 		return false;
 	}
 
@@ -244,7 +243,7 @@ bool deepRL::NextAction( Tensor* state, int* action )
 
 
 // NextReward
-bool deepRL::NextReward( float reward, bool end_episode )
+bool rlAgent::NextReward( float reward, bool end_episode )
 {
 	// setup arguments to action function
 	PyObject* pArgs = PyTuple_New(2); //(PyObject*)mFunctionArgs[REWARD_FUNCTION];
@@ -263,21 +262,21 @@ bool deepRL::NextReward( float reward, bool end_episode )
 	// check return value
 	/*if( pValue != NULL )
 	{
-		//printf("[deepRL]  result of %s(): %ld\n", mRewardFunctionName.c_str(), PyInt_AsLong(pValue));
+		//printf("[rlAgent]  result of %s(): %ld\n", mRewardFunctionName.c_str(), PyInt_AsLong(pValue));
 		*action = (int)PyInt_AsLong(pValue);		
 		Py_DECREF(pValue);
 	}
 	else
 	{
 		PyErr_Print();
-		printf("[deepRL]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
+		printf("[rlAgent]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
 		return false;
 	}*/
 
 	if( !pValue )
 	{
 		PyErr_Print();
-		printf("[deepRL]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
+		printf("[rlAgent]  call to %s() failed\n", mFunctionName[REWARD_FUNCTION].c_str());
 		return false;
 	}
 
@@ -286,7 +285,7 @@ bool deepRL::NextReward( float reward, bool end_episode )
 
 
 // NextEpisode
-/*void deepRL::NextEpisode()
+/*void rlAgent::NextEpisode()
 {
 	mNewEpisode = true;
 }*/
