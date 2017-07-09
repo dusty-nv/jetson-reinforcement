@@ -51,11 +51,6 @@ static inline int rand_x()
 	return float(rand()) / float(RAND_MAX) * (GAME_WIDTH-1);
 }
 
-static inline int absolute( int x )
-{
-	return x < 0 ? -x : x;
-}
-
 
 int main( int argc, char** argv )
 {
@@ -64,7 +59,7 @@ int main( int argc, char** argv )
 	
 
 	// create reinforcement learner agent in pyTorch
-	rlAgent* agent = rlAgent::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
+	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
 	
 	if( !agent )
 	{

@@ -1,5 +1,5 @@
 /*
- * rlAgent
+ * deepRL
  */
 
 #include "rlAgent.h"
@@ -63,6 +63,19 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 	if( !rl )
 		return NULL;
 
+	if( !rl->Init(width, height, channels, numActions, module, nextAction, nextReward) )
+		return NULL;
+
+	return rl;
+}
+
+
+// Init
+bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+{
+	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
+		return false;
+
 	const uint32_t numInputs = width * height * channels;
 
 	// format argument strings
@@ -90,12 +103,12 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 	py_argv[4] = channelStr;
 	
 	// load python module
-	if( !rl->LoadModule(module, py_argc, py_argv) )
-		return NULL;
+	if( !LoadModule(module, py_argc, py_argv) )
+		return false;
 
 	// retrieve python RL functions
-	PyObject* actionFunc = PyObject_GetAttrString((PyObject*)rl->mModuleObj, nextAction);
-	PyObject* rewardFunc = PyObject_GetAttrString((PyObject*)rl->mModuleObj, nextReward);
+	PyObject* actionFunc = PyObject_GetAttrString((PyObject*)mModuleObj, nextAction);
+	PyObject* rewardFunc = PyObject_GetAttrString((PyObject*)mModuleObj, nextReward);
 
 	if( !actionFunc )
 	{
@@ -103,7 +116,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 			PyErr_Print();
 
 		printf("[rlAgent]  failed to find function %s() in Python module '%s'\n", nextAction, module);
-		return NULL;
+		return false;
 	}
 
 	if( !rewardFunc )
@@ -112,7 +125,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 			PyErr_Print();
 
 		printf("[rlAgent]  failed to find function %s() in Python module '%s'\n", nextReward, module);
-		return NULL;
+		return false;
 	}
 
 	// check that the retrieved functions are actually callable
@@ -122,7 +135,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 			PyErr_Print();
 
 		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", nextAction, module);
-		return NULL;
+		return false;
 	}
 
 	if( !PyCallable_Check(rewardFunc) )
@@ -131,14 +144,14 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 			PyErr_Print();
 
 		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", nextReward, module);
-		return NULL;
+		return false;
 	}
 
-	rl->mFunction[ACTION_FUNCTION] = (void*)actionFunc;
-	rl->mFunction[REWARD_FUNCTION] = (void*)rewardFunc;
+	mFunction[ACTION_FUNCTION] = (void*)actionFunc;
+	mFunction[REWARD_FUNCTION] = (void*)rewardFunc;
 	
-	rl->mFunctionName[ACTION_FUNCTION] = nextAction;
-	rl->mFunctionName[REWARD_FUNCTION] = nextReward;
+	mFunctionName[ACTION_FUNCTION] = nextAction;
+	mFunctionName[REWARD_FUNCTION] = nextReward;
 
 	// allocate function arguments
 	PyObject* actionArgs = PyTuple_New(1);
@@ -147,13 +160,13 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 	if( !actionArgs || !rewardArgs )
 	{
 		printf("[rlAgent]  failed to allocated PyTuple for function arguments\n");
-		return NULL;
+		return false;
 	}
 
-	rl->mFunctionArgs[ACTION_FUNCTION] = (void*)actionArgs;
-	rl->mFunctionArgs[REWARD_FUNCTION] = (void*)rewardArgs;
+	mFunctionArgs[ACTION_FUNCTION] = (void*)actionArgs;
+	mFunctionArgs[REWARD_FUNCTION] = (void*)rewardArgs;
 	
-	return rl;
+	return true;
 }
 
 

@@ -1,10 +1,9 @@
 /*
- * rlAgent
+ * deepRL
  */
 
 #ifndef __REINFORCEMENT_LEARNING_AGENT_H_
 #define __REINFORCEMENT_LEARNING_AGENT_H_
-
 
 #include <stdio.h>
 #include <stdint.h>
@@ -87,11 +86,6 @@ public:
 	virtual bool NextReward( float reward, bool end_episode );
 
 	/**
-	 * End the current episode and start the next episode
-	 */
-	//virtual void NextEpisode();
-
-	/**
 	 * Load script
 	 */
 	bool LoadModule( const char* module );
@@ -104,10 +98,10 @@ public:
 
 protected:
 	rlAgent();
-	
-	//bool initLua();
-	bool initNetwork( uint32_t numInputs, uint32_t numActions );
 
+	virtual bool Init( uint32_t width, uint32_t height, uint32_t channels, 
+				    uint32_t numActions, const char* module, 
+				    const char* nextAction, const char* nextReward );
 #ifdef USE_LUA
 	lua_State* L;		/**< Lua/Torch7 operating environment */
 	THCState*  THC;	/**< cutorch state */
