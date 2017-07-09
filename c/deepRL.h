@@ -1,5 +1,5 @@
 /*
- * deepRL
+ * http://github.com/dusty-nv/jetson-reinforcement
  */
 
 #ifndef __DEEP_REINFORCEMENT_LEARNER_H_
@@ -11,6 +11,7 @@
 
 #include "pyTensor.h"
 
+#include "aiAgent.h"
 #include "rlAgent.h"
 #include "dqnAgent.h"
 

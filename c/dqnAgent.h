@@ -1,5 +1,5 @@
 /*
- * deepRL
+ * http://github.com/dusty-nv/jetson-reinforcement
  */
 
 #ifndef __DEEP_Q_LEARNING_AGENT_H_
@@ -37,6 +37,16 @@ public:
 	 * Next action with reward (training)
 	 */
 	virtual bool NextReward( float reward, bool end_episode );
+
+	/**
+	 * GetType
+	 */
+	virtual TypeID GetType() const 	{ return TYPE_DQN; }
+
+	/**
+ 	 * TypeID
+	 */
+	const TypeID TYPE_DQN = TYPE_RL | (1 << 2);
 
 protected:
 	dqnAgent();

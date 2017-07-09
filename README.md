@@ -1,7 +1,7 @@
 <img src="https://a70ad2d16996820e6285-3c315462976343d903d5b3a03b69072d.ssl.cf2.rackcdn.com/10dc4a454bb70fe282e196d5758bf3bf">
 
-# Reinforcement Learning
-Reinforcement learners choose actions to perform based on environmental state and a reward system.  They provide an AI agent that can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
+# Learning Agents
+In this tutorial, we'll be creating AI agents that learn from experience and are capable of completing complex tasks and exhibiting advanced behaviors in their environments. Reinforcement learners choose the best action for the agent to perform based on environmental state and a system of rewards that provide feedback.  They provide an AI agent that can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
 
 In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to estimate the Q-function, which approximates the future reward based on state sequence.
 

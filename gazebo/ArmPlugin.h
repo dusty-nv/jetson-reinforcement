@@ -5,6 +5,7 @@
 #ifndef __GAZEBO_ARM_PLUGIN_H__
 #define __GAZEBO_ARM_PLUGIN_H__
 
+#include "deepRL.h"
 
 #include <boost/bind.hpp>
 #include <gazebo/gazebo.hh>
@@ -18,7 +19,6 @@
 #include <gazebo/msgs/MessageTypes.hh>
 #include <gazebo/common/Time.hh>
 
-
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -31,7 +31,6 @@
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
-
 
 
 namespace gazebo
@@ -57,18 +56,15 @@ public:
 	static const uint32_t DOF = 3;
 
 private:
-	physics::ModelPtr model;	 // Pointer to the model
-
-	// Pointer to the update event connection
-	event::ConnectionPtr updateConnection;
-
-	physics::JointController * j2_controller;
-	//enum ach_status ach_close(ach_channel_t *channel);
-	//enum ach_status ach_unlink(const char *name);
-
 	float ref[DOF];
 	float dT[3];
+
+	rlAgent* agent;
 	uint32_t animationStep;
+	
+	physics::ModelPtr model;
+	event::ConnectionPtr updateConnection;
+	physics::JointController* j2_controller;
 
 	gazebo::transport::NodePtr cameraNode;
 	gazebo::transport::SubscriberPtr cameraSub;

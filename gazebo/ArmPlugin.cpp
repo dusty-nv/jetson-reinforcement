@@ -59,11 +59,12 @@ GZ_REGISTER_MODEL_PLUGIN(ArmPlugin)
 ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()), collisionNode(new gazebo::transport::Node())
 {
 	for( uint32_t n=0; n < DOF; n++ )
-		ref[n] = 0.0f;
+		ref[n] = JOINT_MIN; //0.0f;
 
 	printf("HELLO WORLD!\n");
 
 	animationStep = 0;
+	agent = NULL;
 
 	//setAnimationTarget(7000, 5000);
 }
@@ -74,10 +75,15 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
 	printf("ArmPlugin::Load()\n");
 
+	// Create AI agent
+	agent = dqnAgent::Create(40, 80, 3, 2);
+
+	if( !agent )
+		printf("ArmPlugin - failed to create AI agent\n");
+
 	// Store the pointer to the model
 	this->model = _parent;
 	this->j2_controller = new physics::JointController(model);
-
 
 	// Create our node for camera communication
 	cameraNode->Init();

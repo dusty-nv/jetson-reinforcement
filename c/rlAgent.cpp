@@ -1,5 +1,5 @@
 /*
- * deepRL
+ * http://github.com/dusty-nv/jetson-reinforcement
  */
 
 #include "rlAgent.h"

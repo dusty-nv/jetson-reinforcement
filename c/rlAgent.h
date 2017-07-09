@@ -1,14 +1,16 @@
 /*
- * deepRL
+ * http://github.com/dusty-nv/jetson-reinforcement
  */
 
 #ifndef __REINFORCEMENT_LEARNING_AGENT_H_
 #define __REINFORCEMENT_LEARNING_AGENT_H_
 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string>
 
+#include "aiAgent.h"
 #include "pyTensor.h"
 
 
@@ -41,7 +43,7 @@
  * Base class for deep reinforcement learning agent,
  * using Python & pyTorch underneath with C FFI.
  */
-class rlAgent
+class rlAgent : public aiAgent
 {
 public:
 	/**
@@ -95,6 +97,15 @@ public:
 	 */
 	bool LoadModule( const char* module, int argc, char** argv );
 
+	/**
+	 * GetType
+	 */
+	virtual TypeID GetType() const 	{ return TYPE_RL; }
+
+	/**
+ 	 * TypeID
+	 */
+	const TypeID TYPE_RL = TYPE_AI | (1 << 1);
 
 protected:
 	rlAgent();
