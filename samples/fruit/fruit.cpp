@@ -194,7 +194,7 @@ int main( int argc, char** argv )
 				reward = 1.0;
 				episodes_won++;
 				gameHistory[gameHistoryIdx] = true;
-				printf("WON  episode %i\n", episode);
+				printf("WON! episode %i\n", episode);
 			}
 			else
 			{
@@ -216,7 +216,7 @@ int main( int argc, char** argv )
 						historyWins++;
 				}
 
-				printf("%u of last %u  (%0.4f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY));
+				printf("%02u of last %u  (%0.4f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY));
 			}
 
 			printf("\n");
