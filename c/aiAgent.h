@@ -33,6 +33,16 @@ public:
 	virtual bool NextAction( Tensor* state, int* action ) = 0;
 
 	/**
+	 * Load model checkpoint
+	 */
+	virtual bool LoadCheckpoint( const char* filename ) = 0;
+
+	/**
+ 	 * Save model checkpoint
+	 */
+	virtual bool SaveCheckpoint( const char* filename ) = 0;
+
+	/**
 	 * GetType
 	 */
 	virtual TypeID GetType() const 	{ return TYPE_AI; }

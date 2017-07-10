@@ -30,7 +30,7 @@ dqnAgent* dqnAgent::Create( uint32_t width, uint32_t height, uint32_t channels, 
 	if( !agent )
 		return NULL;
 
-	if( !agent->Init(width, height, channels, numActions, "DQN", DEFAULT_NEXT_ACTION, DEFAULT_NEXT_REWARD) )
+	if( !agent->Init(width, height, channels, numActions, "DQN", DEFAULT_NEXT_ACTION, DEFAULT_NEXT_REWARD, DEFAULT_LOAD_MODEL, DEFAULT_SAVE_MODEL) )
 		return NULL;
 
 	return agent;

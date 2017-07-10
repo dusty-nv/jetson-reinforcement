@@ -225,27 +225,34 @@ model = DQN()
 if use_cuda:
     model.cuda()
 
+def load_model(filename):
+	print('[deepRL]  loading model checkpoint from ' + filename)
+	model.load_state_dict(torch.load(filename))
+
+def save_model(filename):
+	print('[deepRL]  saving model checkpoint to ' + filename)
+	torch.save(model.state_dict(), filename)
+
+
 optimizer = optim.RMSprop(model.parameters())
 memory = ReplayMemory(10000)
 
-
 steps_done = 0
 
-
 def select_action(state, allow_rand):
-    global steps_done
-    sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps_done / EPS_DECAY)
-    steps_done += 1
-    if not allow_rand or sample > eps_threshold:
-        action = model(
-            Variable(state, volatile=True).type(FloatTensor)).data.max(1)[1].unsqueeze(0)
-        #print('select_action = ' + str(action))
-        return action
-    else:
-        #print('rand range')
-        return LongTensor([[random.randrange(num_actions)]])
+	global steps_done
+	sample = random.random()
+	eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+		math.exp(-1. * steps_done / EPS_DECAY)
+	steps_done += 1
+	if not allow_rand or sample > eps_threshold:
+		action = model(
+			Variable(state, volatile=True).type(FloatTensor)).data.max(1)[1].unsqueeze(0)
+		#print('select_action = ' + str(action))
+		return action
+	else:
+		#print('rand range')
+		return LongTensor([[random.randrange(num_actions)]])
 
 
 episode_durations = []

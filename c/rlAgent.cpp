@@ -42,17 +42,17 @@ rlAgent::~rlAgent()
 
 
 // Create
-rlAgent* rlAgent::Create( uint32_t numInputs, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+rlAgent* rlAgent::Create( uint32_t numInputs, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel )
 {
 	if( !module || numInputs == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
 
-	return Create(numInputs, 1, 1, numActions, module, nextAction, nextReward);
+	return Create(numInputs, 1, 1, numActions, module, nextAction, nextReward, loadModel, saveModel);
 }
 
 
 // Create
-rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel )
 {
 	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return NULL;
@@ -63,7 +63,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 	if( !rl )
 		return NULL;
 
-	if( !rl->Init(width, height, channels, numActions, module, nextAction, nextReward) )
+	if( !rl->Init(width, height, channels, numActions, module, nextAction, nextReward, loadModel, saveModel) )
 		return NULL;
 
 	return rl;
@@ -71,7 +71,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 
 
 // Init
-bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward )
+bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel )
 {
 	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return false;
@@ -109,6 +109,8 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	// retrieve python RL functions
 	PyObject* actionFunc = PyObject_GetAttrString((PyObject*)mModuleObj, nextAction);
 	PyObject* rewardFunc = PyObject_GetAttrString((PyObject*)mModuleObj, nextReward);
+	PyObject* loadFunc   = PyObject_GetAttrString((PyObject*)mModuleObj, loadModel);
+	PyObject* saveFunc   = PyObject_GetAttrString((PyObject*)mModuleObj, saveModel);
 
 	if( !actionFunc )
 	{
@@ -147,11 +149,37 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 		return false;
 	}
 
+	if( loadFunc != NULL && !PyCallable_Check(loadFunc) )
+	{
+		if (PyErr_Occurred())
+			PyErr_Print();
+
+		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", loadModel, module);
+		loadFunc = NULL;
+	}
+
+	if( saveFunc != NULL && !PyCallable_Check(saveFunc) )
+	{
+		if (PyErr_Occurred())
+			PyErr_Print();
+
+		printf("[rlAgent]  %s() from Python module '%s' is not a callable function\n", saveModel, module);
+		saveFunc = NULL;
+	}
+
 	mFunction[ACTION_FUNCTION] = (void*)actionFunc;
 	mFunction[REWARD_FUNCTION] = (void*)rewardFunc;
-	
+	mFunction[LOAD_FUNCTION]   = (void*)loadFunc;
+	mFunction[SAVE_FUNCTION]   = (void*)saveFunc;
+
 	mFunctionName[ACTION_FUNCTION] = nextAction;
 	mFunctionName[REWARD_FUNCTION] = nextReward;
+
+	if( loadModel != NULL )
+		mFunctionName[LOAD_FUNCTION] = loadModel;
+
+	if( saveModel != NULL )
+		mFunctionName[SAVE_FUNCTION] = saveModel;
 
 	// allocate function arguments
 	PyObject* actionArgs = PyTuple_New(1);
@@ -218,6 +246,76 @@ bool rlAgent::LoadModule( const char* module, int argc, char** argv )
 	mModuleName = module;
 	mModuleObj  = (void*)pyModule;
 	return true;
+}
+
+
+// LoadCheckpoint
+bool rlAgent::LoadCheckpoint( const char* filename )
+{
+	if( !filename )
+		return false;
+
+	PyObject* pArgs = PyTuple_New(1);
+
+	PyTuple_SetItem(pArgs, 0, PyString_FromString(filename));
+	
+
+	// call checkpoint function
+	if( !mFunction[LOAD_FUNCTION] )
+		return false;
+
+	PyObject* pValue = PyObject_CallObject((PyObject*)mFunction[LOAD_FUNCTION], pArgs);
+
+	Py_DECREF(pArgs);
+
+
+	// check for success
+	if( !pValue )
+	{
+		PyErr_Print();
+		printf("[rlAgent]  call to %s() failed\n", mFunctionName[LOAD_FUNCTION].c_str());
+		return false;
+	}
+	else
+	{
+		Py_DECREF(pValue);
+		return true;
+	}
+}
+	
+
+// SaveCheckpoint
+bool rlAgent::SaveCheckpoint( const char* filename )
+{
+	if( !filename )
+		return false;
+
+	PyObject* pArgs = PyTuple_New(1);
+
+	PyTuple_SetItem(pArgs, 0, PyString_FromString(filename));
+	
+
+	// call checkpoint function
+	if( !mFunction[SAVE_FUNCTION] )
+		return false;
+
+	PyObject* pValue = PyObject_CallObject((PyObject*)mFunction[SAVE_FUNCTION], pArgs);
+
+	Py_DECREF(pArgs);
+
+
+	// check for success
+	if( !pValue )
+	{
+		PyErr_Print();
+		printf("[rlAgent]  call to %s() failed\n", mFunctionName[SAVE_FUNCTION].c_str());
+		return false;
+	}
+	else
+	{
+		Py_DECREF(pValue);
+		return true;
+	}
 }
 
 

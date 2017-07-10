@@ -37,6 +37,15 @@
  */
 #define DEFAULT_NEXT_REWARD "next_reward"
 
+/**
+ * Default name of the Python function for loading model checkpoints
+ */
+#define DEFAULT_LOAD_MODEL "load_model"
+
+/**
+ * Default name of the Python function for saving model checkpoints
+ */
+#define DEFAULT_SAVE_MODEL "save_model"
 
 
 /**
@@ -52,7 +61,9 @@ public:
 	static rlAgent* Create( uint32_t numInputs, uint32_t numActions, 
 					    const char* module=DEFAULT_RL_MODULE,
 					    const char* nextAction=DEFAULT_NEXT_ACTION, 
-					    const char* nextReward=DEFAULT_NEXT_REWARD );
+					    const char* nextReward=DEFAULT_NEXT_REWARD,
+					    const char* loadModel=DEFAULT_LOAD_MODEL,
+					    const char* saveModel=DEFAULT_SAVE_MODEL );
 
 	/**
 	 * Create a new instance of a module for training an agent.
@@ -61,20 +72,14 @@ public:
 					    uint32_t channels, uint32_t numActions, 
 					    const char* module=DEFAULT_RL_MODULE,
 					    const char* nextAction=DEFAULT_NEXT_ACTION, 
-					    const char* nextReward=DEFAULT_NEXT_REWARD );
+					    const char* nextReward=DEFAULT_NEXT_REWARD,
+					    const char* loadModel=DEFAULT_LOAD_MODEL,
+					    const char* saveModel=DEFAULT_SAVE_MODEL );
 
 	/**
 	 * Destructor
 	 */
 	virtual ~rlAgent();
-
-	/**
-	 * Globally load Python scripting interpreter.
-	 * LoadInterpreter is automatically called before tensors or scripts are run.
-	 * It can optionally be called by the user at the beginning of their program to
-	 * load Python at that time. It has internal protections to only be called once.
-	 */
-	static bool LoadInterpreter();
 
 	/**
 	 * From the input state, predict the next action (inference)
@@ -88,12 +93,30 @@ public:
 	virtual bool NextReward( float reward, bool end_episode );
 
 	/**
-	 * Load script
+	 * Load model checkpoint
+	 */
+	virtual bool LoadCheckpoint( const char* filename );
+
+	/**
+ 	 * Save model checkpoint
+	 */
+	virtual bool SaveCheckpoint( const char* filename );
+
+	/**
+	 * Globally load Python scripting interpreter.
+	 * LoadInterpreter is automatically called before tensors or scripts are run.
+	 * It can optionally be called by the user at the beginning of their program to
+	 * load Python at that time. It has internal protections to only be called once.
+	 */
+	static bool LoadInterpreter();
+
+	/**
+	 * Load Python script module
 	 */
 	bool LoadModule( const char* module );
 
 	/**
-	 * Load script (with arguments)
+	 * Load Python script module (with arguments)
 	 */
 	bool LoadModule( const char* module, int argc, char** argv );
 
@@ -112,7 +135,8 @@ protected:
 
 	virtual bool Init( uint32_t width, uint32_t height, uint32_t channels, 
 				    uint32_t numActions, const char* module, 
-				    const char* nextAction, const char* nextReward );
+				    const char* nextAction, const char* nextReward,
+				    const char* loadModel, const char* saveModel );
 #ifdef USE_LUA
 	lua_State* L;		/**< Lua/Torch7 operating environment */
 	THCState*  THC;	/**< cutorch state */
@@ -132,6 +156,8 @@ protected:
 	{
 		ACTION_FUNCTION = 0,
 		REWARD_FUNCTION,
+		LOAD_FUNCTION,
+		SAVE_FUNCTION,
 		NUM_FUNCTIONS
 	};
 
