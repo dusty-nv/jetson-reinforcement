@@ -49,7 +49,7 @@ $ python gym-DQN.py
 
 Three windows should appear showing the cartpole game, a graph of peformance, and the DQN agent should begin learning.  The longer the DQN agent is able to balance the pole on the moving cart, the more points it's rewarded.  In Gym, a score of 200 indicates the scenario has been mastered.  After a short while of training, the agent should achieve it and the program will quit.
 
-<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/DQN-cartpole.png" width="350">
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/DQN-cartpole.png" width="400">
 
 ## Lunar Lander
 
@@ -61,7 +61,7 @@ $ python gym-RL.py --env=LunarLander-v2 --render
 
 At first, the lander will crash wildly, but starting around episode 50, you may notice it start to attempt to remain between the flags, and after several hundred episodes, it may start to land with a controlled descent.  In the terminal, you should see the average length (i.e. reward) increasing over time towards 200:
 
-<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/LunarLander.png" width="350">
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/LunarLander.png" width="400">
 
 ```
 Episode 10	Last length:   138	Average length: 18.19
