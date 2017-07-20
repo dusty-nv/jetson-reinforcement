@@ -82,13 +82,12 @@ public:
 	virtual ~rlAgent();
 
 	/**
-	 * From the input state, predict the next action (inference)
-	 * This function isn't used during training, for that see NextReward()
+	 * From the input state, predict the next action
 	 */
 	virtual bool NextAction( Tensor* state, int* action );
 
 	/**
-	 * Next action with reward (training)
+	 * Issue the next reward and training iteration
 	 */
 	virtual bool NextReward( float reward, bool end_episode );
 

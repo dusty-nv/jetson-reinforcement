@@ -76,10 +76,10 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	printf("ArmPlugin::Load()\n");
 
 	// Create AI agent
-	agent = dqnAgent::Create(40, 80, 3, 2);
+	//agent = dqnAgent::Create(40, 80, 3, DOF*2+1);
 
-	if( !agent )
-		printf("ArmPlugin - failed to create AI agent\n");
+	//if( !agent )
+	//	printf("ArmPlugin - failed to create AI agent\n");
 
 	// Store the pointer to the model
 	this->model = _parent;
@@ -196,7 +196,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		animationStep++;
 		printf("animation step %u\n", animationStep);
 
-		for( uint32_t n=0; n < 3; n++ )
+		for( uint32_t n=0; n < DOF; n++ )
 			ref[n] = JOINT_MIN + step * float(animationStep);
 	}
 	else if( animationStep < ANIMATION_STEPS * 2 )
@@ -208,7 +208,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		animationStep++;
 		printf("animation step %u\n", animationStep);
 
-		for( uint32_t n=0; n < 3; n++ )
+		for( uint32_t n=0; n < DOF; n++ )
 			ref[n] = JOINT_MAX - step * float(animationStep-ANIMATION_STEPS);
 	}
 	else

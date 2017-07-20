@@ -328,7 +328,7 @@ steps_done = 0
 
 def select_action(state):
     global steps_done
-    print('state ' + str(state))
+    #print('state ' + str(state))
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
@@ -445,7 +445,7 @@ for i_episode in range(num_episodes):
     last_screen = get_screen()
     current_screen = get_screen()
     state = current_screen - last_screen
-    print(state.size())
+    #print(state.size())
     for t in count():
         # Select and perform an action
         action = select_action(state)
