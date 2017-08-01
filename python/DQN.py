@@ -22,8 +22,6 @@ LongTensor = torch.cuda.LongTensor if use_cuda else torch.LongTensor
 ByteTensor = torch.cuda.ByteTensor if use_cuda else torch.ByteTensor
 Tensor = FloatTensor
 
-print('use_cuda: ' + str(use_cuda))
-
 
 # parse command line
 parser = argparse.ArgumentParser(description='PyTorch DQN runtime')
@@ -38,7 +36,11 @@ input_height   = args.height
 input_channels = args.channels
 num_actions    = args.actions
 
-
+print('[deepRL]  use_cuda:       ' + str(use_cuda))
+print('[deepRL]  input_width:    ' + str(input_width))
+print('[deepRL]  input_height:   ' + str(input_height))
+print('[deepRL]  input_channels: ' + str(input_channels))
+print('[deepRL]  num_actions:    ' + str(num_actions))
 
 
 ######################################################################
@@ -161,6 +163,7 @@ class ReplayMemory(object):
 class DQN(nn.Module):
 
 	def __init__(self):
+		print('[deepRL]  DQN::__init__()')
 		super(DQN, self).__init__()
 		self.conv1 = nn.Conv2d(input_channels, 16, kernel_size=5, stride=2)
 		self.bn1 = nn.BatchNorm2d(16)
@@ -169,22 +172,35 @@ class DQN(nn.Module):
 		self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
 		self.bn3 = nn.BatchNorm2d(32)
 
+		#print('done creating Conv2d() layers')
 		# from the convolutions find the size of the last filter
-		x = Variable(torch.Tensor(1, input_channels, input_height, input_width).zero_())
-		x = F.relu(self.bn1(self.conv1(x)))
-		x = F.relu(self.bn2(self.conv2(x)))
-		x = F.relu(self.bn3(self.conv3(x)))
-		y = x.view(x.size(0), -1)
-		print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
+		#x = Variable(torch.Tensor(1, input_channels, input_height, input_width).zero_())
+		#print('done Variable(torch.Tensor)')
+		#print(x)
+		#x = F.relu(self.bn1(self.conv1(x)))
+		#print('done relu 1')
+		#x = F.relu(self.bn2(self.conv2(x)))
+		#x = F.relu(self.bn3(self.conv3(x)))
+		#y = x.view(x.size(0), -1)
+		#print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
 
-		self.head = nn.Linear(y.size(1), num_actions)
+		#self.head = nn.Linear(y.size(1), num_actions)
+		#self.head = nn.Linear(448, num_actions)
+		self.head = None
 
 	def forward(self, x):
 		x = F.relu(self.bn1(self.conv1(x)))
 		x = F.relu(self.bn2(self.conv2(x)))
 		x = F.relu(self.bn3(self.conv3(x)))
 		y = x.view(x.size(0), -1)
-		#print('forward y = ' + str(y))
+
+		if self.head is None:
+			print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
+			self.head = nn.Linear(y.size(1), num_actions)
+
+			if use_cuda:
+				self.head.cuda()
+
 		return self.head(y)
 
 
@@ -220,7 +236,9 @@ EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 200
 
+print('[deepRL]  creating DQN model instance')
 model = DQN()
+print('[deepRL]  DQN model instance created')
 
 if use_cuda:
     model.cuda()
@@ -257,6 +275,7 @@ def select_action(state, allow_rand):
 
 episode_durations = []
 
+print('[deepRL]  DQN script done init')
 
 
 ######################################################################

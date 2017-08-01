@@ -76,10 +76,10 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	printf("ArmPlugin::Load()\n");
 
 	// Create AI agent
-	//agent = dqnAgent::Create(40, 80, 3, DOF*2+1);
+	agent = dqnAgent::Create(40, 80, 3, /*DOF*2+1*/2);
 
-	//if( !agent )
-	//	printf("ArmPlugin - failed to create AI agent\n");
+	if( !agent )
+		printf("ArmPlugin - failed to create AI agent\n");
 
 	// Store the pointer to the model
 	this->model = _parent;
