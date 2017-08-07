@@ -1,5 +1,5 @@
 /*
- * deepRL
+ * http://github.com/dusty-nv/jetson-reinforcement
  */
 
 #ifndef __CUDA_MAPPED_MEMORY_H_
@@ -9,6 +9,9 @@
 #include "cudaUtility.h"
 
 
+/**
+ * Allocate ZeroCopy mapped memory, shared between CUDA and CPU.
+ */
 inline bool cudaAllocMapped( void** cpuPtr, void** gpuPtr, size_t size )
 {
 	if( !cpuPtr || !gpuPtr || size == 0 )

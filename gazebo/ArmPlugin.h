@@ -42,12 +42,14 @@ namespace gazebo
 class ArmPlugin : public ModelPlugin
 {
 public: 
-
 	ArmPlugin(); 
 
 	virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/); 
 	virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
 
+	bool updateAgent();
+	bool updateJoints();
+	
 	void setAnimationTarget( float x, float y );
 
 	void onCameraMsg(ConstImageStampedPtr &_msg);
@@ -56,12 +58,21 @@ public:
 	static const uint32_t DOF = 3;
 
 private:
-	float ref[DOF];
-	float dT[3];
+	float ref[DOF];			// joint reference positions
+	float dT[3];				// IK delta theta
 
-	rlAgent* agent;
+	rlAgent* agent;			// AI learning agent instance
+	bool     newState;			// true if a new frame needs processed
+	Tensor*  inputState;		// pyTorch input object to the agent
+	void*    inputBuffer[2];		// [0] for CPU and [1] for GPU
+	size_t   inputBufferSize;
+	size_t   inputRawWidth;
+	size_t   inputRawHeight;	
+	float    actionJointDelta;	// amount of offset caused to a joint
+
+	bool     testAnimation;		// true for test animation mode
 	uint32_t animationStep;
-	
+
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;
 	physics::JointController* j2_controller;

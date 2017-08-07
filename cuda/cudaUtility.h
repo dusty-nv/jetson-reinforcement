@@ -72,4 +72,10 @@ inline cudaError_t cudaCheckError(cudaError_t retval, const char* txt, const cha
 }
 
 
+/**
+ * iDivUp
+ */
+inline __device__ __host__ int iDivUp( int a, int b )  		{ return (a % b != 0) ? (a / b + 1) : (a / b); }
+
+
 #endif

@@ -13,11 +13,15 @@ set(USE_LUA "NO" CACHE BOOL "If YES, will build LUA, Torch, and Torch examples")
 # configure CUDA
 find_package(CUDA)
 
-set( CUDA_NVCC_FLAGS
-	${CUDA_NVCC_FLAGS};
-	-O3 
+set(
+	CUDA_NVCC_FLAGS
+	${CUDA_NVCC_FLAGS}; 
+    -O3 
 	-gencode arch=compute_53,code=sm_53
-	-gencode arch=compute_62,code=sm_62 )
+	-gencode arch=compute_60,code=sm_60
+	-gencode arch=compute_61,code=sm_61
+	-gencode arch=compute_62,code=sm_62
+)
 
 
 # if this is the first time running cmake, perform pre-build dependency install script (or if the user manually triggers re-building the dependencies)
