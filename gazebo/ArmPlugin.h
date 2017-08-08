@@ -63,14 +63,19 @@ private:
 
 	rlAgent* agent;			// AI learning agent instance
 	bool     newState;			// true if a new frame needs processed
+	bool     newReward;			// true if a new reward's been issued
+	bool     endEpisode;		// true if this episode is over
+	float    rewardHistory;		// value of the last reward issued
 	Tensor*  inputState;		// pyTorch input object to the agent
 	void*    inputBuffer[2];		// [0] for CPU and [1] for GPU
 	size_t   inputBufferSize;
 	size_t   inputRawWidth;
 	size_t   inputRawHeight;	
 	float    actionJointDelta;	// amount of offset caused to a joint
-
+	int	    maxEpisodeLength;	// maximum number of frames to win episode (or <= 0 for unlimited)
+	int      episodeFrames;		// frame counter for the current episode	
 	bool     testAnimation;		// true for test animation mode
+	bool     loopAnimation;		// loop the test animation while true
 	uint32_t animationStep;
 
 	physics::ModelPtr model;

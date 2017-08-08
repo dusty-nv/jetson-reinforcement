@@ -44,9 +44,15 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	inputRawWidth    = 0;
 	inputRawHeight   = 0;
 	actionJointDelta = 0.1f;
+	maxEpisodeLength = 200;
+	episodeFrames    = 0;
 
 	newState         = false;
+	newReward        = false;
+	endEpisode       = false;
+	rewardHistory    = 0.0f;
 	testAnimation    = false;
+	loopAnimation    = false;
 	animationStep    = 0;
 }
 
@@ -172,6 +178,12 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 					 << contacts->contact(i).normal(j).z() << "\n";
 			 std::cout << "   Depth:" << contacts->contact(i).depth(j) << "\n";
 		}
+
+		// issue learning reward
+		rewardHistory = 1.0f;
+
+		newReward  = true;
+		endEpisode = true;
 	}
 }
 
@@ -232,18 +244,11 @@ bool ArmPlugin::updateAgent()
 // update joint reference positions, returns true if positions have been modified
 bool ArmPlugin::updateJoints()
 {
-	// update the AI agent if a new camera frame is ready
-	if( newState && agent != NULL )
-	{
-		newState = false;
-
-		if( updateAgent() )
-			return true;
-	}
-	else if( testAnimation )	// test sequence
+	if( testAnimation )	// test sequence
 	{
 		const float step = (JOINT_MAX - JOINT_MIN) * (float(1.0f) / float(ANIMATION_STEPS));
-
+#if 0
+		// range of motion
 		if( animationStep < ANIMATION_STEPS )
 		{
 			//for( uint32_t n=0; n < DOF; n++ )
@@ -276,8 +281,41 @@ bool ArmPlugin::updateJoints()
 			//const float r = float(rand()) / float(RAND_MAX);
 			//setAnimationTarget( 10000.0f, 0.0f );
 		}
+#else
+		// return to base position
+		for( uint32_t n=0; n < DOF; n++ )
+		{
+			ref[n] -= step;
+
+			if( ref[n] < JOINT_MIN )
+				ref[n] = JOINT_MIN;
+		}
+
+		animationStep++;
+#endif
+
+		// reset and loop the animation
+		if( animationStep > ANIMATION_STEPS )
+		{
+			animationStep = 0;
+			
+			if( !loopAnimation )
+				testAnimation = false;
+		}
 
 		return true;
+	}
+	else if( newState && agent != NULL )
+	{
+		// update the AI agent when new camera frame is ready
+		episodeFrames++;
+		printf("episode frame = %i\n", episodeFrames);
+
+		// reset camera ready flag
+		newState = false;
+
+		if( updateAgent() )
+			return true;
 	}
 
 	return false;
@@ -287,22 +325,52 @@ bool ArmPlugin::updateJoints()
 // called by the world update start event
 void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
-	if( !updateJoints() )
-		return;
+	// update the robot positions with vision/DQN
+	if( updateJoints() )
+	{
+		printf("%f  %f  %f  %s\n", ref[0], ref[1], ref[2], testAnimation ? "(testAnimation)" : "(agent)");
 
-	printf("%f  %f  %f\n", ref[0], ref[1], ref[2]);
+		double angle(1);
+		//std::string j2name("joint1");   
+		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[2]);
+		/*j2_controller->SetJointPosition(this->model->GetJoint("joint4"),  ref[3]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint5"),  ref[4]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint6"),  ref[5]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint7"),  ref[6]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint8"),  ref[7]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint9"),  ref[8]);*/
+	}
 
-	double angle(1);
-	//std::string j2name("joint1");   
-	j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[2]);
-	/*j2_controller->SetJointPosition(this->model->GetJoint("joint4"),  ref[3]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint5"),  ref[4]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint6"),  ref[5]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint7"),  ref[6]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint8"),  ref[7]);
-	j2_controller->SetJointPosition(this->model->GetJoint("joint9"),  ref[8]);*/
+	// episode timeout
+	if( maxEpisodeLength > 0 && episodeFrames > maxEpisodeLength )
+	{
+		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
+
+		rewardHistory = -1.0f;
+		newReward     = true;
+		endEpisode    = true;
+		episodeFrames = 0;
+	}
+
+	// issue rewards and train DQN
+	if( newReward && agent != NULL )
+	{
+		printf("ArmPlugin - issuing reward %f, EOE=%s\n", rewardHistory, endEpisode ? "true" : "false");
+		agent->NextReward(rewardHistory, endEpisode);
+
+		// reset reward indicator
+		newReward = false;
+
+		// reset for next episode
+		if( endEpisode )
+		{
+			testAnimation = true;	// recall the robot to base position
+			loopAnimation = false;
+			endEpisode    = false;
+		}
+	}
 }
 
 
