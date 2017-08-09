@@ -3,6 +3,7 @@
  */
 
 #include "ArmPlugin.h"
+#include "PropPlugin.h"
 
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
@@ -14,9 +15,12 @@
 #define JOINT_MIN	-0.75f
 #define JOINT_MAX	 0.75f
 
-#define INPUT_WIDTH   40
-#define INPUT_HEIGHT  80
+#define INPUT_WIDTH   64
+#define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
+
+#define PROP_NAME "ball"
+#define GRIP_NAME "gripperbase"
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -54,13 +58,14 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	testAnimation    = false;
 	loopAnimation    = false;
 	animationStep    = 0;
+	lastBBoxDistance = 0.0f;
 }
 
 
 // Load
 void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/) 
 {
-	printf("ArmPlugin::Load()\n");
+	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Create AI agent
 	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2+1);
@@ -94,8 +99,6 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 {
 	// check the validity of the message contents
-	printf("camera callback\n");
-
 	if( !_msg )
 	{
 		printf("ArmPlugin - recieved NULL message\n");
@@ -180,7 +183,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		}
 
 		// issue learning reward
-		rewardHistory = 1.0f;
+		rewardHistory = 100.0f;
 
 		newReward  = true;
 		endEpisode = true;
@@ -322,9 +325,41 @@ bool ArmPlugin::updateJoints()
 }
 
 
+// compute the distance between two bounding boxes
+float BoxDistance(const math::Box& a, const math::Box& b)
+{
+	float sqrDist = 0;
+
+	if( b.max.x < a.min.x )
+	{
+		float d = b.max.x - a.min.x;
+		sqrDist += d * d;
+	}
+	else if( b.min.x > a.max.x )
+	{
+		float d = b.min.x - a.max.x;
+		sqrDist += d * d;
+	}
+	
+	return sqrtf(sqrDist);
+}
+
+
 // called by the world update start event
 void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
+   /*const math::Pose& pose = model->GetWorldPose();
+	printf("%s location:  %lf %lf %lf\n", model->GetName().c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
+	
+	const math::Box& bbox = model->GetBoundingBox();
+	printf("%s bounding:  min=%lf %lf %lf  max=%lf %lf %lf\n", model->GetName().c_str(), bbox.min.x, bbox.min.y, bbox.min.z,bbox.max.x, bbox.max.y, bbox.max.z);
+   */
+   /*const math::Vector3 center = bbox.GetCenter();
+	const math::Vector3 bbSize = bbox.GetSize();
+
+	printf("arm bounding:  center=%lf %lf %lf  size=%lf %lf %lf\n", center.x, center.y, center.z, bbSize.x, bbSize.y, bbSize.z); */
+	const bool hadNewState = newState;
+
 	// update the robot positions with vision/DQN
 	if( updateJoints() )
 	{
@@ -348,10 +383,67 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	{
 		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
 
-		rewardHistory = -1.0f;
+		rewardHistory = -100.0f;
 		newReward     = true;
 		endEpisode    = true;
-		episodeFrames = 0;
+	}
+
+	// if an EOE reward hasn't already been issued, compute one
+	if( hadNewState && !newReward )
+	{
+		PropPlugin* prop = GetPropByName(PROP_NAME);
+
+		if( !prop )
+		{
+			printf("ArmPlugin - failed to find Prop '%s'\n", PROP_NAME);
+			return;
+		}
+
+		const math::Box& propBBox = prop->model->GetBoundingBox();
+
+		physics::LinkPtr gripper = model->GetLink(GRIP_NAME);
+
+		if( !gripper )
+		{
+			printf("ArmPlugin - failed to find Gripper '%s'\n", GRIP_NAME);
+			return;
+		}
+
+		const math::Box& gripBBox = gripper->GetBoundingBox();
+
+		const float distBBox = BoxDistance(gripBBox, propBBox);
+
+		printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distBBox);
+
+		if( episodeFrames > 1 )
+		{
+			const float distDiff = lastBBoxDistance - distBBox;
+			const float epsilon = 0.01f;
+
+			if( distDiff >= epsilon )
+			{
+				float multiplier = 5.0f - distBBox;
+				
+				if( multiplier < 1.0f )
+					multiplier = 1.0f;
+
+				rewardHistory = 1.0f * multiplier;
+				newReward = true;
+			}
+			else if( distDiff <= -epsilon )
+			{
+				rewardHistory = -1.0f;
+				newReward = true;
+			}
+
+			if( newReward )	
+			{	
+				printf("distance reward = %f\n", rewardHistory);
+				lastBBoxDistance = distBBox;
+			}
+		}
+		else
+			lastBBoxDistance = distBBox;	
 	}
 
 	// issue rewards and train DQN
@@ -366,9 +458,11 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		// reset for next episode
 		if( endEpisode )
 		{
-			testAnimation = true;	// recall the robot to base position
-			loopAnimation = false;
-			endEpisode    = false;
+			testAnimation    = true;	// recall the robot to base position
+			loopAnimation    = false;
+			endEpisode       = false;
+			episodeFrames    = 0;
+			lastBBoxDistance = 0.0f;
 		}
 	}
 }

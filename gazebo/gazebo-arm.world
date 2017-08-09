@@ -523,6 +523,8 @@
 			</contact>
 		</sensor>
 		</link>
+
+		<plugin name="PropPlugin" filename="libgazeboPropPlugin.so" />
 	</model>
 
 </world>

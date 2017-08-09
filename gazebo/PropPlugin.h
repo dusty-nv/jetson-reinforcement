@@ -43,16 +43,32 @@ namespace gazebo
 class PropPlugin : public ModelPlugin
 {
 public:
-
 	virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/);
 	virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
 
-private:
 	physics::ModelPtr model;	// Pointer to the model
 
+private:
+	
 	// Pointer to the update event connection
 	event::ConnectionPtr updateConnection;
 };
+
+
+/**
+ * Retrieve the number of global Prop objects
+ */
+size_t GetNumProps();
+
+/**
+ * Retrieve a global Prop object by index
+ */
+PropPlugin* GetProp( size_t index );
+
+/**
+ * Retrieve a global Prop object by name
+ */
+PropPlugin* GetPropByName( const char* name );
 
 
 }

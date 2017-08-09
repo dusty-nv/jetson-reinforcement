@@ -77,7 +77,7 @@ private:
 	bool     testAnimation;		// true for test animation mode
 	bool     loopAnimation;		// loop the test animation while true
 	uint32_t animationStep;
-
+	float    lastBBoxDistance;
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;
 	physics::JointController* j2_controller;
