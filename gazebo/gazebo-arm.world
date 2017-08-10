@@ -407,7 +407,7 @@
 	<model name="camera">
 		<link name="link">
 		<gravity>false</gravity>
-		<pose>-2.5 -2.5 0.5 0 0 0.78535</pose>
+		<pose>-1.0 -3.0 0.85 0 0 0.95</pose>
 		<inertial>
 			<mass>0.1</mass>
 		</inertial>
@@ -446,7 +446,7 @@
 	<!--               -->
 	<!-- BOX/COLLISION -->
 	<!--               -->
-	<model name="box">
+	<!--<model name="box">
 		<link name="link">
 		<pose>2.0 2.0 0.5 0 0 0</pose>
 		
@@ -456,7 +456,6 @@
 					<size>0.45 0.45 0.45</size>
 				</box>
 			</geometry>
-			<!-- TODO see default Gz models for ODE friction params -->
 		</collision>
 
 		<visual name="visual">
@@ -482,7 +481,7 @@
 			</contact>
 		</sensor>
 		</link>
-	</model>
+	</model>-->
 
 
 	<!--               -->
@@ -491,7 +490,6 @@
 	<model name="ball">
 		<link name="link">
 		<pose>2.0 0.0 0.5 0 0 0</pose>
-		
 		<collision name="ball_collision">
 			<geometry>
 				<sphere>

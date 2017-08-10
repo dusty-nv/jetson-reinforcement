@@ -46,10 +46,15 @@ public:
 	virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/);
 	virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
 
+	void ResetDynamics();
+
 	physics::ModelPtr model;	// Pointer to the model
 
 private:
 	
+	// Original pose the prop was created in
+	math::Pose originalPose;
+
 	// Pointer to the update event connection
 	event::ConnectionPtr updateConnection;
 };
@@ -70,6 +75,10 @@ PropPlugin* GetProp( size_t index );
  */
 PropPlugin* GetPropByName( const char* name );
 
+/**
+ * Reset all prop poses and dynamics
+ */
+void ResetPropDynamics();
 
 }
 

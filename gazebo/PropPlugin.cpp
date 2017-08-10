@@ -39,6 +39,15 @@ PropPlugin* GetPropByName( const char* name )
 
 	return NULL;
 }
+
+void ResetPropDynamics()
+{
+	const size_t numProps = props.size();
+
+	for( size_t n=0; n < numProps; n++ )
+		props[n]->ResetDynamics();
+}
+
 //---------------------------------------------------------------------------------------
 
 
@@ -49,6 +58,9 @@ void PropPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Store the pointer to the model
 	this->model = _parent;
+
+	// Store the original pose of the model
+	this->originalPose = model->GetWorldPose();
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&PropPlugin::OnUpdate, this, _1));
@@ -76,9 +88,19 @@ void PropPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	const math::Vector3 bbSize = bbox.GetSize();
 
 	printf("arm bounding:  center=%lf %lf %lf  size=%lf %lf %lf\n", center.x, center.y, center.z, bbSize.x, bbSize.y, bbSize.z); */
-
-	
 }
 
 
+// Reset the model's dynamics and pose to original
+void PropPlugin::ResetDynamics()
+{
+	model->SetAngularAccel(math::Vector3(0.0, 0.0, 0.0));
+	model->SetAngularVel(math::Vector3(0.0, 0.0, 0.0));
+	model->SetLinearAccel(math::Vector3(0.0, 0.0, 0.0));
+	model->SetLinearVel(math::Vector3(0.0, 0.0, 0.0));
+
+	model->SetWorldPose(originalPose);
 }
+
+}
+

@@ -47,6 +47,8 @@ public:
 	virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/); 
 	virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
 
+	float resetPosition( uint32_t dof );  // center servo positions
+
 	bool updateAgent();
 	bool updateJoints();
 	
@@ -77,7 +79,9 @@ private:
 	bool     testAnimation;		// true for test animation mode
 	bool     loopAnimation;		// loop the test animation while true
 	uint32_t animationStep;
+	float    resetPos[DOF];
 	float    lastBBoxDistance;
+
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;
 	physics::JointController* j2_controller;

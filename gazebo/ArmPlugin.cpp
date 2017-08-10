@@ -13,7 +13,7 @@
 
 #define ANIMATION_STEPS 2000
 #define JOINT_MIN	-0.75f
-#define JOINT_MAX	 0.75f
+#define JOINT_MAX	 1.75f
 
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
@@ -38,7 +38,14 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	printf("ArmPlugin::ArmPlugin()\n");
 
 	for( uint32_t n=0; n < DOF; n++ )
-		ref[n] = JOINT_MIN;
+		resetPos[n] = 0.0f;
+
+	resetPos[0] = 0.0f;  // custom reset position
+	resetPos[1] = 0.0f;
+	resetPos[2] = 0.25;
+
+	for( uint32_t n=0; n < DOF; n++ )
+		ref[n] = resetPos[n]; //JOINT_MIN;
 
 	agent 	       = NULL;
 	inputState       = NULL;
@@ -88,7 +95,7 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Create our node for collision detection
 	collisionNode->Init();
-	collisionSub = collisionNode->Subscribe("/gazebo/default/box/link/my_contact", &ArmPlugin::onCollisionMsg, this);
+	collisionSub = collisionNode->Subscribe("/gazebo/default/" PROP_NAME "/link/my_contact", &ArmPlugin::onCollisionMsg, this);
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&ArmPlugin::OnUpdate, this, _1));
@@ -159,7 +166,7 @@ void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 // onCollisionMsg
 void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 {
-	//printf("collision callback\n");
+	//printf("collision callback (%u contacts)\n", contacts->contact_size());
 
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{
@@ -183,7 +190,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		}
 
 		// issue learning reward
-		rewardHistory = 100.0f;
+		rewardHistory = 200.0f;
 
 		newReward  = true;
 		endEpisode = true;
@@ -288,10 +295,23 @@ bool ArmPlugin::updateJoints()
 		// return to base position
 		for( uint32_t n=0; n < DOF; n++ )
 		{
-			ref[n] -= step;
+			/*float diff = ref[n] - resetPos[n];
+
+			if( diff < 0.0f )
+				diff = -diff;
+
+			if( diff < step )
+				step = diff;*/
+
+			if( ref[n] < resetPos[n] )
+				ref[n] += step;
+			else if( ref[n] > resetPos[n] )
+				ref[n] -= step;
 
 			if( ref[n] < JOINT_MIN )
 				ref[n] = JOINT_MIN;
+			else if( ref[n] > JOINT_MAX )
+				ref[n] = JOINT_MAX;
 		}
 
 		animationStep++;
@@ -305,6 +325,8 @@ bool ArmPlugin::updateJoints()
 			if( !loopAnimation )
 				testAnimation = false;
 		}
+		else if( animationStep == ANIMATION_STEPS / 2 )
+			ResetPropDynamics();
 
 		return true;
 	}
@@ -322,6 +344,13 @@ bool ArmPlugin::updateJoints()
 	}
 
 	return false;
+}
+
+
+// get the servo center for a particular degree of freedom
+float ArmPlugin::resetPosition( uint32_t dof )
+{
+	return resetPos[dof];
 }
 
 
@@ -422,7 +451,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 			if( distDiff >= epsilon )
 			{
-				float multiplier = 5.0f - distBBox;
+				float multiplier = 4.0f - distBBox;
 				
 				if( multiplier < 1.0f )
 					multiplier = 1.0f;
@@ -433,17 +462,17 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			else if( distDiff <= -epsilon )
 			{
 				rewardHistory = -1.0f;
-				newReward = true;
+			}
+			else
+			{
+				rewardHistory = 0.0f;
 			}
 
-			if( newReward )	
-			{	
-				printf("distance reward = %f\n", rewardHistory);
-				lastBBoxDistance = distBBox;
-			}
+			newReward = true;	
+			printf("distance reward = %f\n", rewardHistory);
 		}
-		else
-			lastBBoxDistance = distBBox;	
+		
+		lastBBoxDistance = distBBox;	
 	}
 
 	// issue rewards and train DQN
@@ -458,11 +487,13 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		// reset for next episode
 		if( endEpisode )
 		{
-			testAnimation    = true;	// recall the robot to base position
+			testAnimation    = true;	// reset the robot to base position
 			loopAnimation    = false;
 			endEpisode       = false;
 			episodeFrames    = 0;
 			lastBBoxDistance = 0.0f;
+
+			// ResetPropDynamics();  // now handled mid-reset sequence
 		}
 	}
 }
