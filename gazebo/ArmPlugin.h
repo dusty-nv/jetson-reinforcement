@@ -57,7 +57,7 @@ public:
 	void onCameraMsg(ConstImageStampedPtr &_msg);
 	void onCollisionMsg(ConstContactsPtr &contacts);
 
-	static const uint32_t DOF = 3;
+	static const uint32_t DOF = 4;
 
 private:
 	float ref[DOF];			// joint reference positions

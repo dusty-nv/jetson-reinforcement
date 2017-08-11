@@ -40,9 +40,7 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	for( uint32_t n=0; n < DOF; n++ )
 		resetPos[n] = 0.0f;
 
-	resetPos[0] = 0.0f;  // custom reset position
-	resetPos[1] = 0.0f;
-	resetPos[2] = 0.25;
+	resetPos[2] = 0.25;    // custom reset positions
 
 	for( uint32_t n=0; n < DOF; n++ )
 		ref[n] = resetPos[n]; //JOINT_MIN;
@@ -399,6 +397,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[2]);
+		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[3]);
 		/*j2_controller->SetJointPosition(this->model->GetJoint("joint4"),  ref[3]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint5"),  ref[4]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint6"),  ref[5]);
@@ -465,7 +464,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			}
 			else
 			{
-				rewardHistory = 0.0f;
+				rewardHistory = -0.5f;	// 0.0f;
 			}
 
 			newReward = true;	
