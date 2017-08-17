@@ -61,6 +61,7 @@ public:
 
 private:
 	float ref[DOF];			// joint reference positions
+	float vel[DOF];			// joint velocity control
 	float dT[3];				// IK delta theta
 
 	rlAgent* agent;			// AI learning agent instance
@@ -73,14 +74,16 @@ private:
 	size_t   inputBufferSize;
 	size_t   inputRawWidth;
 	size_t   inputRawHeight;	
-	float    actionJointDelta;	// amount of offset caused to a joint
+	float    actionJointDelta;	// amount of offset caused to a joint by an action
+	float    actionVelDelta;		// amount of velocity offset caused to a joint by an action
 	int	    maxEpisodeLength;	// maximum number of frames to win episode (or <= 0 for unlimited)
 	int      episodeFrames;		// frame counter for the current episode	
 	bool     testAnimation;		// true for test animation mode
 	bool     loopAnimation;		// loop the test animation while true
 	uint32_t animationStep;
 	float    resetPos[DOF];
-	float    lastBBoxDistance;
+	float    lastGoalDistance;
+	float    avgGoalDelta;
 
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;

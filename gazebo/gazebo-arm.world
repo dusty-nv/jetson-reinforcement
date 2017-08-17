@@ -12,7 +12,7 @@
 	<!--             -->
 	<!-- ARM/GRIPPER -->
 	<!--             -->
-	<model name="my_model">
+	<model name="arm">
 		<static>false</static>
 		<link name="base">
 		<pose>0 0 .1 0 0 0</pose>
@@ -407,7 +407,9 @@
 	<model name="camera">
 		<link name="link">
 		<gravity>false</gravity>
-		<pose>-1.0 -3.0 0.85 0 0 0.95</pose>
+		<!--<pose>-1.0 -3.0 0.85 0 0 1.0</pose>-->
+		<!--<pose>0.75 -3.0 0.85 0 0 1.5</pose>-->
+		<pose>0.0 0.0 3.5 0 1.57079632679 0</pose>
 		<inertial>
 			<mass>0.1</mass>
 		</inertial>
@@ -436,11 +438,13 @@
 				</noise>
 			</camera>
 			<always_on>1</always_on>
-			<update_rate>30</update_rate>
+			<update_rate>10</update_rate>
 			<visualize>true</visualize>
 		</sensor>
 		</link>
 	</model>
+
+	
 
 
 	<!--               -->
@@ -489,7 +493,7 @@
 	<!--               -->
 	<model name="ball">
 		<link name="link">
-		<pose>2.0 0.0 0.5 0 0 0</pose>
+		<pose>0.75 0.75 0.0 0 0 0</pose>
 		<collision name="ball_collision">
 			<geometry>
 				<sphere>

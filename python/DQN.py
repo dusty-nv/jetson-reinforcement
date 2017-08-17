@@ -14,6 +14,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+import CRNN as crnn
+
 
 # if gpu is to be used
 use_cuda = torch.cuda.is_available()
@@ -29,14 +31,18 @@ parser.add_argument('--width', type=int, default=64, metavar='N', help='width of
 parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
 parser.add_argument('--channels', type=int, default=3, metavar='N', help='channels in the input image')
 parser.add_argument('--actions', type=int, default=3, metavar='N', help='number of output actions from the neural network')
+parser.add_argument('--rnn', action='store_true', help='use RNN/LSTM layers in network')
+
 args = parser.parse_args()
 
 input_width    = args.width
 input_height   = args.height
 input_channels = args.channels
 num_actions    = args.actions
+use_rnn		= args.rnn
 
 print('[deepRL]  use_cuda:       ' + str(use_cuda))
+print('[deepRL]  use_rnn:        ' + str(use_rnn))
 print('[deepRL]  input_width:    ' + str(input_width))
 print('[deepRL]  input_height:   ' + str(input_height))
 print('[deepRL]  input_channels: ' + str(input_channels))
@@ -171,6 +177,12 @@ class DQN(nn.Module):
 		self.bn2 = nn.BatchNorm2d(32)
 		self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
 		self.bn3 = nn.BatchNorm2d(32)
+		
+		if input_width >= 128 and input_height >= 128:
+			self.conv4 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+			self.bn4 = nn.BatchNorm2d(32)
+			self.conv5 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+			self.bn5 = nn.BatchNorm2d(32)
 
 		#print('done creating Conv2d() layers')
 		# from the convolutions find the size of the last filter
@@ -192,6 +204,11 @@ class DQN(nn.Module):
 		x = F.relu(self.bn1(self.conv1(x)))
 		x = F.relu(self.bn2(self.conv2(x)))
 		x = F.relu(self.bn3(self.conv3(x)))
+
+		if input_width >= 128 and input_height >= 128:
+			x = F.relu(self.bn4(self.conv4(x)))
+			x = F.relu(self.bn5(self.conv5(x)))
+
 		y = x.view(x.size(0), -1)
 
 		if self.head is None:
@@ -203,6 +220,16 @@ class DQN(nn.Module):
 
 		return self.head(y)
 
+
+
+# custom weights initialization called on crnn
+def crnn_weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        m.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
 
 
 ######################################################################
@@ -237,7 +264,12 @@ EPS_END = 0.05
 EPS_DECAY = 200
 
 print('[deepRL]  creating DQN model instance')
-model = DQN()
+
+if use_rnn:
+	model = crnn.CRNN(input_height, input_channels, num_actions, 256)
+else:
+	model = DQN()
+
 print('[deepRL]  DQN model instance created')
 
 if use_cuda:
@@ -354,7 +386,6 @@ def optimize_model():
 # the notebook and run lot more epsiodes.
 
 last_action = None
-
 last_state = None
 curr_state = None
 last_diff = None
@@ -367,8 +398,10 @@ def next_action(state):
 	global curr_diff
 	global last_diff
 
+	#print('state = ' + str(state.size()))
 	state = state.unsqueeze(0)
 	#print('state = ' + str(state))
+	#print('state = ' + str(state.size()))
 
 	last_state = curr_state
 	last_diff = curr_diff
@@ -379,7 +412,7 @@ def next_action(state):
 		#print('computing diff')
 		curr_diff = state - last_state
 		#curr_state = state - last_state
-		last_action = select_action(curr_diff, True)
+		last_action = select_action(curr_diff, False)
 	#else:
 	#	curr_state = None
 	#	curr_diff = None

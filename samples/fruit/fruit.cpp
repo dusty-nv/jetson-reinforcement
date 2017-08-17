@@ -7,8 +7,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GAME_WIDTH  40
-#define GAME_HEIGHT 80
+//#define GAME_WIDTH  40
+//#define GAME_HEIGHT 80
+#define GAME_WIDTH  64
+#define GAME_HEIGHT 64
+#define NUM_CHANNELS 1
 #define BALL_SIZE	8
 #define BALL_SIZE2  (BALL_SIZE/2)
 #define PLAY_SIZE   16
@@ -59,7 +62,7 @@ int main( int argc, char** argv )
 	
 
 	// create reinforcement learner agent in pyTorch
-	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, 3, NUM_ACTIONS);
+	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS);
 	
 	if( !agent )
 	{
@@ -68,7 +71,7 @@ int main( int argc, char** argv )
 	}
 	
 	// allocate memory for the game input
-	Tensor* input_state = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, 3);
+	Tensor* input_state = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
 	
 	if( !input_state )
 	{
@@ -103,7 +106,7 @@ int main( int argc, char** argv )
 					    (y == 0) )
 					cell_value = 100.0f;
 				
-				for( int c=0; c < 3; c++ )
+				for( int c=0; c < NUM_CHANNELS; c++ )
 					input_state->cpuPtr[c*GAME_WIDTH*GAME_HEIGHT+y*GAME_WIDTH+x] = cell_value;
 			}
 		}

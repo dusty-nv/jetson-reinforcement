@@ -47,6 +47,7 @@ public:
 	virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
 
 	void ResetDynamics();
+	void Randomize();
 
 	physics::ModelPtr model;	// Pointer to the model
 
@@ -79,6 +80,11 @@ PropPlugin* GetPropByName( const char* name );
  * Reset all prop poses and dynamics
  */
 void ResetPropDynamics();
+
+/**
+ * Randomize prop locations
+ */
+void RandomizeProps();
 
 }
 
