@@ -34,14 +34,13 @@
 				</geometry>
 			</visual>
 
-			<collision name='caster_collision'>
+			<!--<collision name='caster_collision'>
 				<pose>-0.15 0 -0.05 0 0 0</pose>
 				<geometry>
 					<sphere>
 						<radius>.05</radius>
 					</sphere>
 				</geometry>
-
 				<surface>
 					<friction>
 						<ode>
@@ -62,9 +61,10 @@
 					</sphere>
 				</geometry>
 			</visual>
+			-->
 		</link>
 
-		<link name="left_wheel">
+		<link name="front_left_wheel">
 			<pose>0.1 0.13 0.1 0 1.5707 1.5707</pose>
 			<collision name="collision">
 				<geometry>
@@ -84,7 +84,7 @@
 			</visual>
 		</link>
 
-		<link name="right_wheel">
+		<link name="front_right_wheel">
 			<pose>0.1 -0.13 0.1 0 1.5707 1.5707</pose>
 			<collision name="collision">
 				<geometry>
@@ -104,69 +104,135 @@
 			</visual>
 		</link>
 
-		<joint type="revolute" name="left_wheel_hinge">
+		<link name="back_left_wheel">
+			<pose>-0.1 0.13 0.1 0 1.5707 1.5707</pose>
+			<collision name="collision">
+				<geometry>
+					<cylinder>
+						<radius>.1</radius>
+						<length>.05</length>
+					</cylinder>
+				</geometry>
+			</collision>
+			<visual name="visual">
+				<geometry>
+					<cylinder>
+						<radius>.1</radius>
+						<length>.05</length>
+					</cylinder>
+				</geometry>
+			</visual>
+		</link>
+
+		<link name="back_right_wheel">
+			<pose>-0.1 -0.13 0.1 0 1.5707 1.5707</pose>
+			<collision name="collision">
+				<geometry>
+					<cylinder>
+						<radius>.1</radius>
+						<length>.05</length>
+					</cylinder>
+				</geometry>
+			</collision>
+			<visual name="visual">
+				<geometry>
+					<cylinder>
+						<radius>.1</radius>
+						<length>.05</length>
+					</cylinder>
+				</geometry>
+			</visual>
+		</link>
+
+		<joint type="revolute" name="front_left_wheel_hinge">
 			<pose>0 0 -0.03 0 0 0</pose>
-			<child>left_wheel</child>
+			<child>front_left_wheel</child>
 			<parent>chassis</parent>
 			<axis>
 				<xyz>0 1 0</xyz>
 			</axis>
 		</joint>
 
-		<joint type="revolute" name="right_wheel_hinge">
+		<joint type="revolute" name="front_right_wheel_hinge">
 			<pose>0 0 0.03 0 0 0</pose>
-			<child>right_wheel</child>
+			<child>front_right_wheel</child>
 			<parent>chassis</parent>
 			<axis>
 				<xyz>0 1 0</xyz>
 			</axis>
 		</joint>
+
+		<joint type="revolute" name="back_left_wheel_hinge">
+			<pose>0 0 -0.03 0 0 0</pose>
+			<child>back_left_wheel</child>
+			<parent>chassis</parent>
+			<axis>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+
+		<joint type="revolute" name="back_right_wheel_hinge">
+			<pose>0 0 0.03 0 0 0</pose>
+			<child>back_right_wheel</child>
+			<parent>chassis</parent>
+			<axis>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+
+		<!--        -->
+		<!-- CAMERA -->
+		<!--        -->
+		<model name="camera">
+			<link name="link">
+				<gravity>false</gravity>
+				<!--<pose>-1.0 -3.0 0.85 0 0 1.0</pose>-->
+				<!--<pose>0.75 -3.0 0.85 0 0 1.5</pose>-->
+				<pose>0.0 0.0 3.5 0 1.57079632679 0</pose>
+				<inertial>
+					<mass>0.1</mass>
+				</inertial>
+				<visual name="visual">
+					<geometry>
+						<box>
+							<size>0.1 0.1 0.1</size>
+						</box>
+					</geometry>
+				</visual>
+				<sensor name="camera" type="camera">
+					<camera>
+						<horizontal_fov>1.047</horizontal_fov>
+						<image>
+							<width>1024</width>
+							<height>1024</height>
+						</image>
+						<clip>
+							<near>0.1</near>
+							<far>100</far>
+						</clip>
+						<noise>
+							<type>gaussian</type>
+							<mean>0.0</mean>
+							<stddev>0.007</stddev>
+						</noise>
+					</camera>
+					<always_on>1</always_on>
+					<update_rate>10</update_rate>
+					<visualize>true</visualize>
+				</sensor>
+			</link>
+		</model>
+
+		<joint name="camera_joint" type="revolute">
+			<parent>chassis</parent>
+			<child>camera::link</child>
+			<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+			<axis>
+				<xyz>1.0 0.0 0.0</xyz>
+			</axis>
+		 </joint>
 
 		<!--<plugin name="RoverPlugin" filename="libgazeboRoverPlugin.so" />-->
-	</model>
-
-
-	<!--        -->
-	<!-- CAMERA -->
-	<!--        -->
-	<model name="camera">
-		<link name="link">
-		<gravity>false</gravity>
-		<!--<pose>-1.0 -3.0 0.85 0 0 1.0</pose>-->
-		<!--<pose>0.75 -3.0 0.85 0 0 1.5</pose>-->
-		<pose>0.0 0.0 3.5 0 1.57079632679 0</pose>
-		<inertial>
-			<mass>0.1</mass>
-		</inertial>
-		<visual name="visual">
-			<geometry>
-				<box>
-					<size>0.1 0.1 0.1</size>
-				</box>
-			</geometry>
-		</visual>
-		<sensor name="camera" type="camera">
-			<camera>
-				<horizontal_fov>1.047</horizontal_fov>
-				<image>
-					<width>1024</width>
-					<height>1024</height>
-				</image>
-				<clip>
-					<near>0.1</near>
-					<far>100</far>
-				</clip>
-				<noise>
-					<type>gaussian</type>
-					<mean>0.0</mean>
-					<stddev>0.007</stddev>
-				</noise>
-			</camera>
-			<always_on>1</always_on>
-			<update_rate>10</update_rate>
-			<visualize>true</visualize>
-		</sensor>
-		</link>
 	</model>
 
 </world>
