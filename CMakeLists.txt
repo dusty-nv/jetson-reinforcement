@@ -67,8 +67,8 @@ endif()
 
 
 # library sources
-file(GLOB deepRLSources c/*.cpp cuda/*.cu)
-file(GLOB deepRLIncludes c/*.h cuda/*.h)
+file(GLOB deepRLSources c/*.cpp cuda/*.cu util/*.cpp)
+file(GLOB deepRLIncludes c/*.h cuda/*.h util/*.h)
 
 cuda_add_library(jetson-reinforcement SHARED ${deepRLSources})
 
