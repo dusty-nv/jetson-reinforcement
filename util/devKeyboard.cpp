@@ -30,23 +30,24 @@
 
 
 // constructor
-keyboardDevice::keyboardDevice()
+KeyboardDevice::KeyboardDevice()
 {
-	mFD = -1;
+	mFD    = -1;
+	mDebug = false;
 
 	memset(mKeyMap, 0, sizeof(mKeyMap));
 }
 
 
 // destructor
-keyboardDevice::~keyboardDevice()
+KeyboardDevice::~KeyboardDevice()
 {
 
 }
 
 
 // Create
-keyboardDevice* keyboardDevice::Create( const char* path )
+KeyboardDevice* KeyboardDevice::Create( const char* path )
 {
 	if( !path )
 		return NULL;
@@ -59,7 +60,7 @@ keyboardDevice* keyboardDevice::Create( const char* path )
 		return NULL;
 	}
 
-	keyboardDevice* kbd = new keyboardDevice();
+	KeyboardDevice* kbd = new KeyboardDevice();
 
 	kbd->mFD   = fd;
 	kbd->mPath = path;
@@ -69,7 +70,7 @@ keyboardDevice* keyboardDevice::Create( const char* path )
 
 
 // Poll
-bool keyboardDevice::Poll( uint32_t timeout )
+bool KeyboardDevice::Poll( uint32_t timeout )
 {
 	const uint32_t max_ev = 64;
 	struct input_event ev[max_ev];
@@ -92,9 +93,9 @@ bool keyboardDevice::Poll( uint32_t timeout )
 	}
 	else if( result == 0 )
 	{
-#if DEBUG
-		printf("keyboard -- select() timed out...\n");
-#endif
+		if( mDebug && timeout > 0 )
+			printf("keyboard -- select() timed out...\n");
+
 		return false;	// timeout, not necessarily an error (TRY_AGAIN)
 	}
 
@@ -121,9 +122,8 @@ bool keyboardDevice::Poll( uint32_t timeout )
 
 		mKeyMap[ev[i].code] = (ev[i].value == 0) ? false : true;
 
-#if DEBUG
-		printf("keyboard -- code %02u  value %i\n", ev[i].code, ev[i].value);
-#endif
+		if( mDebug )
+			printf("keyboard -- code %02u  value %i\n", ev[i].code, ev[i].value);
 	}
 
 	return true;	
@@ -131,7 +131,7 @@ bool keyboardDevice::Poll( uint32_t timeout )
 
 
 // KeyDown
-bool keyboardDevice::KeyDown( uint32_t code ) const
+bool KeyboardDevice::KeyDown( uint32_t code ) const
 {
 	if( code >= MAX_KEYS )
 		return false;
@@ -139,4 +139,10 @@ bool keyboardDevice::KeyDown( uint32_t code ) const
 	return mKeyMap[code];
 }
 
+
+// Debug
+void KeyboardDevice::Debug( bool enable )
+{
+	mDebug = enable;
+}
 

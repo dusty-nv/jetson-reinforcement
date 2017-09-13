@@ -20,8 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __DEV_GAMEPAD_H__
-#define __DEV_GAMEPAD_H__
+#ifndef __DEV_JOYSTICK_H__
+#define __DEV_JOYSTICK_H__
 
 
 

@@ -20,40 +20,57 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __DEV_KEYBOARD_H__
-#define __DEV_KEYBOARD_H__
+#ifndef __DEV_INPUT_H__
+#define __DEV_INPUT_H__
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <string>
+#include "devKeyboard.h"
+#include "devJoystick.h"
+
+#include <utility>
+#include <vector>
 
 
 /**
- * Keyboard device
+ * Typedef of device <path, name> pairs
  */
-class KeyboardDevice
+typedef std::vector< std::pair<std::string, std::string> > DeviceList;
+
+
+/**
+ * Input device manager
+ */
+class InputDevices
 {
 public:
 	/**
 	 * Create device
 	 */
-	static KeyboardDevice* Create( const char* path="/dev/input/by-path/platform-i8042-serio-0-event-kbd" );
+	static InputDevices* Create();
 
 	/**
 	 * Destructor
 	 */
-	~KeyboardDevice();
+	~InputDevices();
 
 	/**
-	 * Poll the device for updates
+	 * Poll the devices for updates
 	 */
 	bool Poll( uint32_t timeout=0 );
 
 	/**
-	 * Check if a particular key is pressed
+ 	 * Retrieve the keyboard device
 	 */
-	bool KeyDown( uint32_t code ) const;
+	inline KeyboardDevice* GetKeyboard() const			{ return mKeyboard; }
+
+	/**
+ 	 * Retrieve the gamepad device
+	 */
+	//inline JoystickDevice* GetJoystick() const			{ return mJoystick; }
+
+	/**
+	 * Scan /dev/input for devices
+	 */
+	static void Enumerate( DeviceList& devices );
 
 	/**
 	 * Enable/disable verbose logging
@@ -62,15 +79,12 @@ public:
 
 protected:
 	// constructor
-	KeyboardDevice();
+	InputDevices();
 
-	static const int MAX_KEYS = 256;
+	KeyboardDevice* mKeyboard;
+	//JoystickDevice* mJoystick;
 
-	int  mKeyMap[MAX_KEYS];
-	int  mFD;
 	bool mDebug;
-
-	std::string mPath;
 };
 
 #endif
