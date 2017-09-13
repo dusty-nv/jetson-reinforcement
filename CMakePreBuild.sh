@@ -53,6 +53,7 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	# clone pyTorch repo
 	git clone http://github.com/pytorch/pytorch
 	cd pytorch
+	git submodule update --init
 
 	# install prereqs
 	sudo pip install -U setuptools
