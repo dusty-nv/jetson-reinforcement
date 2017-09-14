@@ -35,6 +35,7 @@
 InputDevices::InputDevices()
 {
 	mKeyboard = NULL;
+	mJoystick = NULL;
 	mDebug    = false;
 }
 
@@ -56,6 +57,8 @@ InputDevices* InputDevices::Create()
 	if( !mgr->mKeyboard )
 		return NULL;
 
+	mgr->mJoystick = JoystickDevice::Create();
+
 	return mgr;
 }
 
@@ -63,18 +66,22 @@ InputDevices* InputDevices::Create()
 // Poll
 bool InputDevices::Poll( uint32_t timeout )
 {
-	if( !mKeyboard )
+	if( !mKeyboard && !mJoystick )
 		return false;
 
-	if( !mKeyboard->Poll(timeout) )
-		return false;
+	if( mKeyboard != NULL )
+		mKeyboard->Poll(timeout);
+	
+	if( mJoystick != NULL )
+		mJoystick->Poll(timeout);
 
 	return true;	
 }
 
 
 // Path used to look for input devices
-#define DEV_PATH "/dev/input/by-path"
+#define DEV_PATH "/dev/input"
+//#define DEV_PATH "/dev/input/by-path"
 
 
 // Filter for the AutoDevProbe scandir on /dev/input.
@@ -82,11 +89,11 @@ bool InputDevices::Poll( uint32_t timeout )
 // @return Non-zero if the given directory entry starts with "event", or zero otherwise.
 static int is_event_device(const struct dirent *dir) 
 {
-	//return strncmp("event", dir->d_name, 5) == 0;
-	if( strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 )
-		return 0;
+	return strncmp("event", dir->d_name, 5) == 0;
+	//if( strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 )
+	//	return 0;
 
-	return 1;
+	//return 1;
 }
 
 
@@ -117,13 +124,37 @@ void InputDevices::Enumerate( DeviceList& devices )
 		if( ioctl(fd, EVIOCGNAME(sizeof(name)), name) < 0 )
 			continue;
 
-		printf("%s:	%s\n", fname, name);
+		printf("%s:	'%s'\n", fname, name);
 
 		close(fd);
 		free(namelist[i]);
 
 		devices.push_back(std::pair<std::string, std::string>(fname, name));
 	}
+}
+
+
+// FindPathByName
+std::string InputDevices::FindPathByName( const char* name )
+{
+	if( !name )
+		return "";
+
+	DeviceList list;
+	Enumerate(list);
+
+	const size_t numDevices = list.size();
+
+	if( numDevices == 0 )
+		return "";
+
+	for( size_t n=0; n < numDevices; n++ )
+	{
+		if( strcasecmp(name, list[n].second.c_str()) == 0 )
+			return list[n].first;
+	}
+
+	return "";
 }
 
 
@@ -134,6 +165,9 @@ void InputDevices::Debug( bool enable )
 
 	if( mKeyboard != NULL )
 		mKeyboard->Debug(enable);
+
+	if( mJoystick != NULL )
+		mJoystick->Debug(enable);
 }
 
 

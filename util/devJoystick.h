@@ -23,6 +23,50 @@
 #ifndef __DEV_JOYSTICK_H__
 #define __DEV_JOYSTICK_H__
 
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <string>
 
+
+/**
+ * Joystick device
+ */
+class JoystickDevice
+{
+public:
+	/**
+	 * Create device
+	 */
+	static JoystickDevice* Create( const char* device="Microntek              USB Joystick          " );
+
+	/**
+	 * Destructor
+	 */
+	~JoystickDevice();
+
+	/**
+	 * Poll the device for updates
+	 */
+	bool Poll( uint32_t timeout=0 );
+
+	/**
+	 * Enable/disable verbose logging
+	 */
+	void Debug( bool enabled=true );
+
+protected:
+	// constructor
+	JoystickDevice();
+
+	static const int MAX_AXIS = 256;
+
+	float mAxisNorm[MAX_AXIS];
+	int   mAxisRaw[MAX_AXIS];	
+	int   mFD;
+	bool  mDebug;
+
+	std::string mPath;
+};
 
 #endif

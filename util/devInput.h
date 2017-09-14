@@ -65,12 +65,17 @@ public:
 	/**
  	 * Retrieve the gamepad device
 	 */
-	//inline JoystickDevice* GetJoystick() const			{ return mJoystick; }
+	inline JoystickDevice* GetJoystick() const			{ return mJoystick; }
 
 	/**
 	 * Scan /dev/input for devices
 	 */
 	static void Enumerate( DeviceList& devices );
+
+	/**
+ 	 * Find /dev/input path by device name
+	 */
+	static std::string FindPathByName( const char* name );
 
 	/**
 	 * Enable/disable verbose logging
@@ -82,7 +87,7 @@ protected:
 	InputDevices();
 
 	KeyboardDevice* mKeyboard;
-	//JoystickDevice* mJoystick;
+	JoystickDevice* mJoystick;
 
 	bool mDebug;
 };
