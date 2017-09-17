@@ -13,6 +13,7 @@
 	<!-- ARM/GRIPPER -->
 	<!--             -->
 	<model name="arm">
+		<plugin name="ArmPlugin" filename="libgazeboArmPlugin.so" />
 		<static>false</static>
 		<link name="base">
 		<pose>0 0 .1 0 0 0</pose>
@@ -397,7 +398,7 @@
 				<xyz>0 1 0</xyz>
 			</axis>
 		</joint>
-		<plugin name="ArmPlugin" filename="libgazeboArmPlugin.so" />
+		
 	</model>
 
 

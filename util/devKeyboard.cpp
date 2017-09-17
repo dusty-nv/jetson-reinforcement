@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-// "linux/input-event-codes.h"
 
 
 // constructor

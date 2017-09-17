@@ -28,6 +28,8 @@
 #include <string.h>
 #include <string>
 
+#include <linux/input-event-codes.h>
+
 
 /**
  * Keyboard device

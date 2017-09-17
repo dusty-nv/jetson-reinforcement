@@ -62,7 +62,7 @@ void RandomizeProps()
 // Plugin init
 void PropPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
-	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
+	printf("PropPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Store the pointer to the model
 	this->model = _parent;

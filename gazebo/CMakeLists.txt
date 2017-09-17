@@ -21,9 +21,11 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 
 add_library(gazeboArmPlugin SHARED ArmPlugin.cpp)
 add_library(gazeboPropPlugin SHARED PropPlugin.cpp)
+add_library(gazeboRoverPlugin SHARED RoverPlugin.cpp)
 
 target_link_libraries(gazeboArmPlugin jetson-reinforcement ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread)
 target_link_libraries(gazeboPropPlugin jetson-reinforcement ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread)
+target_link_libraries(gazeboRoverPlugin jetson-reinforcement ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread)
 
 
 # transfer all LUA scripts to bin directory
