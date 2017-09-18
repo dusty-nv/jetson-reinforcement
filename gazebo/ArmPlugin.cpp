@@ -22,8 +22,9 @@
 #define INPUT_HEIGHT  128
 #define INPUT_CHANNELS 3
 
-#define PROP_NAME "ball"
-#define GRIP_NAME "gripperright"
+#define WORLD_NAME "arm_world"
+#define PROP_NAME  "ball"
+#define GRIP_NAME  "gripperright"
 
 #define REWARD_WIN  1000.0f
 #define REWARD_LOSS -1000.0f
@@ -104,11 +105,11 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Create our node for camera communication
 	cameraNode->Init();
-	cameraSub = cameraNode->Subscribe("/gazebo/default/camera/link/camera/image", &ArmPlugin::onCameraMsg, this);
+	cameraSub = cameraNode->Subscribe("/gazebo/" WORLD_NAME "/camera/link/camera/image", &ArmPlugin::onCameraMsg, this);
 
 	// Create our node for collision detection
 	collisionNode->Init();
-	collisionSub = collisionNode->Subscribe("/gazebo/default/" PROP_NAME "/link/my_contact", &ArmPlugin::onCollisionMsg, this);
+	collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" PROP_NAME "/link/my_contact", &ArmPlugin::onCollisionMsg, this);
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&ArmPlugin::OnUpdate, this, _1));

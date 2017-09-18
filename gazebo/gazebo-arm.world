@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
-<world name="default">
+<world name="arm_world">
 	<!-- Ground Plane -->>
 	<include>
 		<uri>model://ground_plane</uri>

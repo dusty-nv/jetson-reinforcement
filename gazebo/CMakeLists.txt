@@ -29,7 +29,7 @@ target_link_libraries(gazeboRoverPlugin jetson-reinforcement ${GAZEBO_LIBRARIES}
 
 
 # transfer all LUA scripts to bin directory
-file(GLOB gazeboScripts *.world *.sh)
+file(GLOB gazeboScripts *.world *.sdf *.sh)
 
 foreach(gazeboScript ${gazeboScripts})
 	message("-- Copying ${gazeboScript}")

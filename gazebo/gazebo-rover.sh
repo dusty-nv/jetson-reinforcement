@@ -10,8 +10,11 @@ MY_PLUGIN_PATH=$SCRIPT_DIR/../lib
 echo "plugin path $MY_PLUGIN_PATH"
 
 export GAZEBO_PLUGIN_PATH=$MY_PLUGIN_PATH:$GAZEBO_PLUGIN_PATH
-echo "new GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH"
+echo "GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH"
+
+export GAZEBO_MODEL_PATH=$SCRIPT_DIR:$GAZEBO_MODEL_PATH
+echo "GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH"
 
 echo " "
 echo "starting gazebo7 simulator"
-gazebo
+gazebo gazebo-rover.world --verbose

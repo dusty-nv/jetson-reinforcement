@@ -25,7 +25,9 @@
 #define INPUT_HEIGHT  128
 #define INPUT_CHANNELS 3
 
-#define PROP_NAME "ball"
+#define WORLD_NAME "rover_world"
+#define ROVER_NAME "rover"
+#define PROP_NAME  "ball"
 
 #define REWARD_WIN  1000.0f
 #define REWARD_LOSS -1000.0f
@@ -77,6 +79,7 @@ bool RoverPlugin::configJoint( const char* name )
 	std::vector<physics::JointPtr> jnt = model->GetJoints();
 	const size_t numJoints = jnt.size();
 
+	// find the joint with the specified name
 	for( uint32_t n=0; n < numJoints; n++ )
 	{
 		if( strcmp(name, jnt[n]->GetScopedName().c_str()) == 0 )
@@ -86,20 +89,6 @@ bool RoverPlugin::configJoint( const char* name )
 			return true;
 		}
 	}
-
-	/*model->GetJoints()[0]->SetVelocity(0, 10.0);
-	model->GetJoints()[1]->SetVelocity(0, 10.0);
-	model->GetJoints()[2]->SetVelocity(0, 10.0);
-	model->GetJoints()[3]->SetVelocity(0, 10.0);*/
-
-	/*common::PID pid = common::PID(0.1, 0, 0);
-	j2_controller->SetVelocityPID(name, pid);
-
-	if( !j2_controller->SetVelocityTarget(name, 0.0) )
-	{
-		printf("RoverPlugin::configJoint() failed to set velocity for '%s'\n", name);
-		return false;
-	}*/
 
 	printf("RoverPlugin -- failed to find joint '%s'\n", name);
 	return false;
@@ -113,8 +102,8 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Store the pointer to the model
 	this->model = _parent;
-	//this->j2_controller = new physics::JointController(model);
-
+	
+	// Configure the drive joints
 	configJoint(LF_HINGE);
 	configJoint(LB_HINGE);
 	configJoint(RF_HINGE);
@@ -125,11 +114,11 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Create our node for camera communication
 	cameraNode->Init();
-	cameraSub = cameraNode->Subscribe("/gazebo/default/camera/link/camera/image", &RoverPlugin::onCameraMsg, this);
+	cameraSub = cameraNode->Subscribe("/gazebo/" WORLD_NAME "/" ROVER_NAME "/camera/link/camera/image", &RoverPlugin::onCameraMsg, this);
 
 	// Create our node for collision detection
 	collisionNode->Init();
-	collisionSub = collisionNode->Subscribe("/gazebo/default/" PROP_NAME "/link/my_contact", &RoverPlugin::onCollisionMsg, this);
+	collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" PROP_NAME "/link/my_contact", &RoverPlugin::onCollisionMsg, this);
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&RoverPlugin::OnUpdate, this, _1));
