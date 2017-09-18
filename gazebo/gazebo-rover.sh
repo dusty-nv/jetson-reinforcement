@@ -14,4 +14,4 @@ echo "new GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH"
 
 echo " "
 echo "starting gazebo7 simulator"
-gazebo gazebo-rover.world
+gazebo

@@ -53,6 +53,7 @@ public:
 
 	bool createAgent();
 	bool updateAgent();
+	bool configJoint( const char* name );
 	bool updateJoints();
 	
 	void onCameraMsg(ConstImageStampedPtr &_msg);
@@ -93,6 +94,7 @@ private:
 
 	InputDevices* HID;
 	event::ConnectionPtr updateConnection;
+	std::vector<physics::JointPtr> joints;
 	physics::JointController* j2_controller;
 
 	gazebo::transport::NodePtr cameraNode;

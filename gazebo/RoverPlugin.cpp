@@ -8,8 +8,12 @@
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
 
-
 #define PI 3.141592653589793238462643383279502884197169f
+
+#define LF_HINGE "rover::front_left_wheel_hinge"
+#define LB_HINGE "rover::back_left_wheel_hinge"
+#define RF_HINGE "rover::front_right_wheel_hinge"
+#define RB_HINGE "rover::back_right_wheel_hinge"
 
 #define JOINT_MIN	-0.75f
 #define JOINT_MAX	 2.0f
@@ -67,6 +71,41 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 }
 
 
+// configJoint 
+bool RoverPlugin::configJoint( const char* name )
+{
+	std::vector<physics::JointPtr> jnt = model->GetJoints();
+	const size_t numJoints = jnt.size();
+
+	for( uint32_t n=0; n < numJoints; n++ )
+	{
+		if( strcmp(name, jnt[n]->GetScopedName().c_str()) == 0 )
+		{
+			jnt[n]->SetVelocity(0, 1.0);
+			joints.push_back(jnt[n]);
+			return true;
+		}
+	}
+
+	/*model->GetJoints()[0]->SetVelocity(0, 10.0);
+	model->GetJoints()[1]->SetVelocity(0, 10.0);
+	model->GetJoints()[2]->SetVelocity(0, 10.0);
+	model->GetJoints()[3]->SetVelocity(0, 10.0);*/
+
+	/*common::PID pid = common::PID(0.1, 0, 0);
+	j2_controller->SetVelocityPID(name, pid);
+
+	if( !j2_controller->SetVelocityTarget(name, 0.0) )
+	{
+		printf("RoverPlugin::configJoint() failed to set velocity for '%s'\n", name);
+		return false;
+	}*/
+
+	printf("RoverPlugin -- failed to find joint '%s'\n", name);
+	return false;
+}
+
+
 // Load
 void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/) 
 {
@@ -74,7 +113,12 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Store the pointer to the model
 	this->model = _parent;
-	this->j2_controller = new physics::JointController(model);
+	//this->j2_controller = new physics::JointController(model);
+
+	configJoint(LF_HINGE);
+	configJoint(LB_HINGE);
+	configJoint(RF_HINGE);
+	configJoint(RB_HINGE);
 
 	// Store the original pose of the model
 	this->originalPose = model->GetWorldPose();
@@ -329,11 +373,10 @@ bool RoverPlugin::updateJoints()
 }
 
 
-
-
 // called by the world update start event
 void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
+#if 0
    /*const math::Pose& pose = model->GetWorldPose();
 	printf("%s location:  %lf %lf %lf\n", model->GetName().c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
 	
@@ -350,16 +393,24 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	if( updateJoints() )
 	{
 		//printf("%f  %f  %f  %s\n", ref[0], ref[1], ref[2], testAnimation ? "(testAnimation)" : "(agent)"); 
-		if( !j2_controller->SetVelocityTarget("front_left_wheel_hinge",  0.0) )
+		/*if( !j2_controller->SetVelocityTarget(LF_HINGE,  0.0) )
 			printf("RoverPlugin - failed to set front_left_wheel_hinge velocity\n");
 
-		if( !j2_controller->SetVelocityTarget("rover::back_left_wheel_hinge",   vel[0]) ||
-		    !j2_controller->SetVelocityTarget("rover::front_right_wheel_hinge", vel[1]) ||
-		    !j2_controller->SetVelocityTarget("rover::back_right_wheel_hinge",  vel[1]) )
+		if( !j2_controller->SetVelocityTarget(LB_HINGE, vel[0]) ||
+		    !j2_controller->SetVelocityTarget(RF_HINGE, vel[1]) ||
+		    !j2_controller->SetVelocityTarget(RB_HINGE, vel[1]) )
 		{
 			printf("RoverPlugin - j2_controller failed to set joint velocity target\n");
 			return;
-		}
+		}*/
+
+		if( joints.size() != 4 )
+			printf("RoverPlugin -- could only find %zu of 4 drive joints\n", joints.size());
+
+		joints[0]->SetVelocity(0, vel[0]);
+		joints[1]->SetVelocity(0, vel[0]);
+		joints[2]->SetVelocity(0, vel[1]);
+		joints[3]->SetVelocity(0, vel[1]);
 	}
 
 	// episode timeout
@@ -407,6 +458,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			model->SetWorldPose(originalPose);
 		}
 	}
+#endif
 }
 
 }
