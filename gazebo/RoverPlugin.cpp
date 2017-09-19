@@ -21,8 +21,8 @@
 #define VELOCITY_MIN -1.0f
 #define VELOCITY_MAX  1.0f
 
-#define INPUT_WIDTH   128
-#define INPUT_HEIGHT  128
+#define INPUT_WIDTH   64
+#define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
 
 #define WORLD_NAME "rover_world"
@@ -50,7 +50,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	printf("RoverPlugin::RoverPlugin()\n");
 
 	agent 	       = NULL;
-	opMode		  = USER_MANUAL;
+	opMode		  = AGENT_LEARN;
 	inputState       = NULL;
 	inputBuffer[0]   = NULL;
 	inputBuffer[1]   = NULL;
@@ -58,7 +58,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	inputRawWidth    = 0;
 	inputRawHeight   = 0;
 	actionVelDelta   = 0.1f;
-	maxEpisodeLength = 0;	// set to # frames to limit ep length
+	maxEpisodeLength = 50;	// set to # frames to limit ep length
 	episodeFrames    = 0;
 
 	newState         = false;
@@ -295,17 +295,7 @@ bool RoverPlugin::updateAgent()
 
 	// if the action is even, increase the joint position by the delta parameter
 	// if the action is odd,  decrease the joint position by the delta parameter
-
-	float velocity = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
-
-	if( velocity < VELOCITY_MIN )
-		velocity = VELOCITY_MIN;
-
-	if( velocity > VELOCITY_MAX )
-		velocity = VELOCITY_MAX;
-
-	vel[action/2] = velocity;
-	
+	vel[action/2] = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
 	return true;
 }
 
@@ -315,11 +305,15 @@ bool RoverPlugin::updateJoints()
 {
 	if( opMode == USER_MANUAL )	
 	{
-#if 0
 		// make sure the HID interface is open
 		if( !HID )
 		{
-			HID = InputDevices::Create();
+			static int count = 0;	// BUG:  gazebo glitches when dev opened early
+	
+			if( count > 1000 )
+				HID = InputDevices::Create();
+
+			count++;
 
 			if( !HID )
 				return false;	// TODO: print Try running sudo?
@@ -335,14 +329,26 @@ bool RoverPlugin::updateJoints()
 			return false;
 
 		if( keyboard->KeyDown(KEY_W) )
+		{
 			vel[0] += actionVelDelta;
+			printf("KEY_W\n");
+		}
 		if( keyboard->KeyDown(KEY_S) )
+		{
 			vel[0] -= actionVelDelta;
+			printf("KEY_S\n");
+		}
 		if( keyboard->KeyDown(KEY_I) )
+		{
 			vel[1] += actionVelDelta;
+			printf("KEY_I\n");
+		}
 		if( keyboard->KeyDown(KEY_K) )
+		{
 			vel[1] -= actionVelDelta;
-#endif
+			printf("KEY_K\n");
+		}
+
 		return true;
 	}
 	else if( newState )
@@ -365,36 +371,25 @@ bool RoverPlugin::updateJoints()
 // called by the world update start event
 void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
-#if 0
-   /*const math::Pose& pose = model->GetWorldPose();
-	printf("%s location:  %lf %lf %lf\n", model->GetName().c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
-	
-	const math::Box& bbox = model->GetBoundingBox();
-	printf("%s bounding:  min=%lf %lf %lf  max=%lf %lf %lf\n", model->GetName().c_str(), bbox.min.x, bbox.min.y, bbox.min.z,bbox.max.x, bbox.max.y, bbox.max.z);
-   */
-   /*const math::Vector3 center = bbox.GetCenter();
-	const math::Vector3 bbSize = bbox.GetSize();
-
-	printf("arm bounding:  center=%lf %lf %lf  size=%lf %lf %lf\n", center.x, center.y, center.z, bbSize.x, bbSize.y, bbSize.z); */
 	const bool hadNewState = newState && (opMode == AGENT_LEARN);
 
 	// update the robot positions with vision/DQN
 	if( updateJoints() )
 	{
-		//printf("%f  %f  %f  %s\n", ref[0], ref[1], ref[2], testAnimation ? "(testAnimation)" : "(agent)"); 
-		/*if( !j2_controller->SetVelocityTarget(LF_HINGE,  0.0) )
-			printf("RoverPlugin - failed to set front_left_wheel_hinge velocity\n");
-
-		if( !j2_controller->SetVelocityTarget(LB_HINGE, vel[0]) ||
-		    !j2_controller->SetVelocityTarget(RF_HINGE, vel[1]) ||
-		    !j2_controller->SetVelocityTarget(RB_HINGE, vel[1]) )
+		for( int i=0; i < DOF; i++ )
 		{
-			printf("RoverPlugin - j2_controller failed to set joint velocity target\n");
-			return;
-		}*/
+			if( vel[i] < VELOCITY_MIN )
+				vel[i] = VELOCITY_MIN;
+
+			if( vel[i] > VELOCITY_MAX )
+				vel[i] = VELOCITY_MAX;
+		}
 
 		if( joints.size() != 4 )
+		{
 			printf("RoverPlugin -- could only find %zu of 4 drive joints\n", joints.size());
+			return;
+		}
 
 		joints[0]->SetVelocity(0, vel[0]);
 		joints[1]->SetVelocity(0, vel[0]);
@@ -447,7 +442,6 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			model->SetWorldPose(originalPose);
 		}
 	}
-#endif
 }
 
 }
