@@ -58,7 +58,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	inputRawWidth    = 0;
 	inputRawHeight   = 0;
 	actionVelDelta   = 0.1f;
-	maxEpisodeLength = 50;	// set to # frames to limit ep length
+	maxEpisodeLength = 100;	// set to # frames to limit ep length
 	episodeFrames    = 0;
 
 	newState         = false;
@@ -118,7 +118,8 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Create our node for collision detection
 	collisionNode->Init();
-	collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" PROP_NAME "/link/my_contact", &RoverPlugin::onCollisionMsg, this);
+	collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" ROVER_NAME "/chassis/my_contact", &RoverPlugin::onCollisionMsg, this);
+	//collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" PROP_NAME "/link/my_contact", &RoverPlugin::onCollisionMsg, this);
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&RoverPlugin::OnUpdate, this, _1));
@@ -198,6 +199,7 @@ void RoverPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 
 		std::cout << "Collision between[" << contacts->contact(i).collision1()
 			     << "] and [" << contacts->contact(i).collision2() << "]\n";
+
 
 		for (unsigned int j = 0; j < contacts->contact(i).position_size(); ++j)
 		{
