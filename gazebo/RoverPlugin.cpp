@@ -31,8 +31,8 @@
 #define ROVER_NAME "rover"
 #define GOAL_NAME  "goal"
 
-#define REWARD_WIN  100.0f
-#define REWARD_LOSS -100.0f
+#define REWARD_WIN  500.0f
+#define REWARD_LOSS -500.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -118,7 +118,7 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Create our node for camera communication
 	cameraNode->Init();
-	cameraSub = cameraNode->Subscribe("/gazebo/" WORLD_NAME "/" ROVER_NAME "/camera/link/camera/image", &RoverPlugin::onCameraMsg, this);
+	cameraSub = cameraNode->Subscribe("/gazebo/" WORLD_NAME "/" ROVER_NAME "/camera_link/camera/image", &RoverPlugin::onCameraMsg, this);
 
 	// Create our node for collision detection
 	collisionNode->Init();
