@@ -88,6 +88,8 @@ private:
 	float    actionVelDelta;		// amount of velocity offset caused to a joint by an action
 	int	    maxEpisodeLength;	// maximum number of frames to win episode (or <= 0 for unlimited)
 	int      episodeFrames;		// frame counter for the current episode	
+	int      episodesCompleted;
+	float    lastGoalDistance;
 
 	physics::ModelPtr model;
 	math::Pose originalPose;

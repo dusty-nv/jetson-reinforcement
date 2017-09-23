@@ -46,7 +46,7 @@
 			<collision name="collision">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -54,7 +54,7 @@
 			<visual name="visual">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -66,7 +66,7 @@
 			<collision name="collision">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -74,7 +74,7 @@
 			<visual name="visual">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -86,7 +86,7 @@
 			<collision name="collision">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -94,7 +94,7 @@
 			<visual name="visual">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -106,7 +106,7 @@
 			<collision name="collision">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -114,7 +114,7 @@
 			<visual name="visual">
 				<geometry>
 					<cylinder>
-						<radius>.1</radius>
+						<radius>.075</radius>
 						<length>.05</length>
 					</cylinder>
 				</geometry>
@@ -166,7 +166,7 @@
 				<gravity>false</gravity>
 				<!--<pose>-1.0 -3.0 0.85 0 0 1.0</pose>-->
 				<!--<pose>0.75 -3.0 0.85 0 0 1.5</pose>-->
-				<pose>0.0 0.0 1.5 0 1.57079632679 0</pose>
+				<pose>0.0 0.0 1.75 0 1.57079632679 0</pose>
 				<inertial>
 					<mass>0.1</mass>
 				</inertial>
@@ -206,19 +206,19 @@
 			<child>camera::link</child>
 			<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
 			<axis>
-				<xyz>1.0 0.0 0.0</xyz>
+				<xyz>0.1 0.0 0.0</xyz>
 			</axis>
 		 </joint>
 
 		<plugin name="RoverPlugin" filename="libgazeboRoverPlugin.so" />
 	</model>
 
-	<!--               -->
-	<!-- BALL/COLLISION -->
-	<!--               -->
+	<!--            -->
+	<!-- OBSTACLES  -->
+	<!--            -->
 	<model name="ball">
 		<link name="link">
-		<pose>0.4 0.0 0.0 0 0 0</pose>
+		<pose>0.75 0.0 0.0 0 0 0</pose>
 		<collision name="ball_collision">
 			<geometry>
 				<sphere>
@@ -252,6 +252,131 @@
 		</link>
 
 		<plugin name="PropPlugin" filename="libgazeboPropPlugin.so" />
+	</model>
+
+	<model name="goal">
+		<link name="link">
+		<pose>2.0 0.0 0.0 0 0 0</pose>
+		
+		<collision name="box_collision">
+			<geometry>
+				<box>
+					<size>0.25 0.25 0.25</size>
+				</box>
+			</geometry>
+		</collision>
+
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>0.25 0.25 0.25</size>
+				</box>
+			</geometry>
+			<material>
+				<ambient>0.3 0.3 0.3 1</ambient>
+				<diffuse>0.0 1.0 1.0 1</diffuse>
+				<specular>0.01 0.01 0.01 1</specular>
+				<emissive>0 0 0 1</emissive>
+				<shader type='vertex'>
+					<normal_map>__default__</normal_map>
+				</shader>
+			</material>
+		</visual>
+		</link>
+
+		<plugin name="PropPlugin" filename="libgazeboPropPlugin.so" />
+	</model>
+
+	<!--               -->
+	<!--     MAZE      -->
+	<!--               -->
+	<model name="maze">
+		<link name="wall_0">
+			<pose>-1.0 0.0 0.0 0 0 0</pose>
+		
+			<collision name="box_collision">
+				<geometry>
+					<box>
+						<size>0.25 2.0 0.15</size>
+					</box>
+				</geometry>
+			</collision>
+
+			<visual name="visual">
+				<geometry>
+					<box>
+						<size>0.25 2.0 0.15</size>
+					</box>
+				</geometry>
+				<material>
+					<ambient>0.3 0.3 0.3 1</ambient>
+					<diffuse>1.0 0.5 0.0 1</diffuse>
+					<specular>0.01 0.01 0.01 1</specular>
+					<emissive>0 0 0 1</emissive>
+					<shader type='vertex'>
+						<normal_map>__default__</normal_map>
+					</shader>
+				</material>
+			</visual>
+		</link>
+
+		<link name="wall_1">
+			<pose>1.0 1.0 0.0 0 0 0</pose>
+		
+			<collision name="box_collision">
+				<geometry>
+					<box>
+						<size>4.0 0.25 0.15</size>
+					</box>
+				</geometry>
+			</collision>
+
+			<visual name="visual">
+				<geometry>
+					<box>
+						<size>4.0 0.25 0.15</size>
+					</box>
+				</geometry>
+				<material>
+					<ambient>0.3 0.3 0.3 1</ambient>
+					<diffuse>1.0 0.5 0.0 1</diffuse>
+					<specular>0.01 0.01 0.01 1</specular>
+					<emissive>0 0 0 1</emissive>
+					<shader type='vertex'>
+						<normal_map>__default__</normal_map>
+					</shader>
+				</material>
+			</visual>
+		</link>
+
+		<link name="wall_2">
+			<pose>1.0 -1.0 0.0 0 0 0</pose>
+		
+			<collision name="box_collision">
+				<geometry>
+					<box>
+						<size>4.0 0.25 0.15</size>
+					</box>
+				</geometry>
+			</collision>
+
+			<visual name="visual">
+				<geometry>
+					<box>
+						<size>4.0 0.25 0.15</size>
+					</box>
+				</geometry>
+				<material>
+					<ambient>0.3 0.3 0.3 1</ambient>
+					<diffuse>1.0 0.5 0.0 1</diffuse>
+					<specular>0.01 0.01 0.01 1</specular>
+					<emissive>0 0 0 1</emissive>
+					<shader type='vertex'>
+						<normal_map>__default__</normal_map>
+					</shader>
+				</material>
+			</visual>
+		</link>
 	</model>
 
 </world>

@@ -403,7 +403,7 @@ float ArmPlugin::resetPosition( uint32_t dof )
 
 
 // compute the distance between two bounding boxes
-float BoxDistance(const math::Box& a, const math::Box& b)
+static float BoxDistance(const math::Box& a, const math::Box& b)
 {
 	float sqrDist = 0;
 

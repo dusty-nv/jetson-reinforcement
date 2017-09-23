@@ -25,12 +25,14 @@
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
 
+#define NET_OUTPUTS 4
+
 #define WORLD_NAME "rover_world"
 #define ROVER_NAME "rover"
-#define PROP_NAME  "ball"
+#define GOAL_NAME  "goal"
 
-#define REWARD_WIN  1000.0f
-#define REWARD_LOSS -1000.0f
+#define REWARD_WIN  100.0f
+#define REWARD_LOSS -100.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -49,22 +51,24 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 {
 	printf("RoverPlugin::RoverPlugin()\n");
 
-	agent 	       = NULL;
-	opMode		  = AGENT_LEARN;
-	inputState       = NULL;
-	inputBuffer[0]   = NULL;
-	inputBuffer[1]   = NULL;
-	inputBufferSize  = 0;
-	inputRawWidth    = 0;
-	inputRawHeight   = 0;
-	actionVelDelta   = 0.1f;
-	maxEpisodeLength = 100;	// set to # frames to limit ep length
-	episodeFrames    = 0;
+	agent 	        = NULL;
+	opMode		   = AGENT_LEARN;
+	inputState        = NULL;
+	inputBuffer[0]    = NULL;
+	inputBuffer[1]    = NULL;
+	inputBufferSize   = 0;
+	inputRawWidth     = 0;
+	inputRawHeight    = 0;
+	actionVelDelta    = 0.1f;
+	maxEpisodeLength  = 200;	// set to # frames to limit ep length
+	episodeFrames     = 0;
+	episodesCompleted = 0;
 
-	newState         = false;
-	newReward        = false;
-	endEpisode       = false;
-	rewardHistory    = 0.0f;
+	newState          = false;
+	newReward         = false;
+	endEpisode        = false;
+	rewardHistory     = 0.0f;
+	lastGoalDistance  = 0.0f;
 
 	for( uint32_t n=0; n < DOF; n++ )
 		vel[n] = 0.0f;
@@ -84,7 +88,7 @@ bool RoverPlugin::configJoint( const char* name )
 	{
 		if( strcmp(name, jnt[n]->GetScopedName().c_str()) == 0 )
 		{
-			jnt[n]->SetVelocity(0, 1.0);
+			jnt[n]->SetVelocity(0, 0.0);
 			joints.push_back(jnt[n]);
 			return true;
 		}
@@ -119,7 +123,6 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	// Create our node for collision detection
 	collisionNode->Init();
 	collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" ROVER_NAME "/chassis/my_contact", &RoverPlugin::onCollisionMsg, this);
-	//collisionSub = collisionNode->Subscribe("/gazebo/" WORLD_NAME "/" PROP_NAME "/link/my_contact", &RoverPlugin::onCollisionMsg, this);
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&RoverPlugin::OnUpdate, this, _1));
@@ -129,6 +132,13 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 // onCameraMsg
 void RoverPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 {
+	static int iter = 0;
+	iter++;
+	
+	if( iter < 10 )
+		return;
+
+
 	// check the validity of the message contents
 	if( !_msg )
 	{
@@ -194,7 +204,9 @@ void RoverPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{
-		if( strcmp(contacts->contact(i).collision2().c_str(), COLLISION_FILTER) == 0 )
+		const char* name = contacts->contact(i).collision2().c_str();
+
+		if( strcmp(name, COLLISION_FILTER) == 0 )
 			continue;
 
 		std::cout << "Collision between[" << contacts->contact(i).collision1()
@@ -218,7 +230,7 @@ void RoverPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		if( opMode == AGENT_LEARN )
 		{
 			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
-			rewardHistory = REWARD_LOSS;
+			rewardHistory = strcmp(name, GOAL_NAME) == 0 ? REWARD_WIN : REWARD_LOSS;
 
 			newReward  = true;
 			endEpisode = true;
@@ -234,7 +246,7 @@ bool RoverPlugin::createAgent()
 		return true;
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2+1);
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, /*DOF*2+1*/NET_OUTPUTS);
 
 	if( !agent )
 	{
@@ -281,7 +293,7 @@ bool RoverPlugin::updateAgent()
 	}
 
 	// make sure the selected action is in-bounds
-	if( action < 0 || action >= DOF * 2 + 1 )
+	if( action < 0 || action >= /*DOF * 2 + 1*/ NET_OUTPUTS )
 	{
 		printf("RoverPlugin - agent selected invalid action, %i\n", action);
 		return false;
@@ -289,6 +301,7 @@ bool RoverPlugin::updateAgent()
 
 	printf("RoverPlugin - agent selected action %i\n", action);
 
+#if 0
 	// action 0 does nothing, the others index a joint
 	if( action == 0 )
 		return false;	// not an error, but didn't cause an update
@@ -298,6 +311,29 @@ bool RoverPlugin::updateAgent()
 	// if the action is even, increase the joint position by the delta parameter
 	// if the action is odd,  decrease the joint position by the delta parameter
 	vel[action/2] = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
+#endif
+
+	if( action == 0 )
+	{
+		for( uint32_t n=0; n < DOF; n++ )
+			vel[n] = VELOCITY_MIN;
+	}
+	else if( action == 1 )
+	{
+		for( uint32_t n=0; n < DOF; n++ )
+			vel[n] = VELOCITY_MAX;
+	}
+	else if( action == 2 )
+	{
+		vel[0] = VELOCITY_MIN;
+		vel[1] = VELOCITY_MAX;
+	}
+	else if( action == 3 )
+	{
+		vel[0] = VELOCITY_MAX;
+		vel[1] = VELOCITY_MIN;
+	}
+
 	return true;
 }
 
@@ -357,7 +393,7 @@ bool RoverPlugin::updateJoints()
 	{
 		// update the AI agent when new camera frame is ready
 		episodeFrames++;
-		printf("episode frame = %i\n", episodeFrames);
+		printf("episode %i frame = %i\n", episodesCompleted, episodeFrames);
 
 		// reset camera ready flag
 		newState = false;
@@ -370,9 +406,58 @@ bool RoverPlugin::updateJoints()
 }
 
 
+// compute the distance between two bounding boxes
+static float BoxDistance(const math::Box& a, const math::Box& b)
+{
+	float sqrDist = 0;
+
+	if( b.max.x < a.min.x )
+	{
+		float d = b.max.x - a.min.x;
+		sqrDist += d * d;
+	}
+	else if( b.min.x > a.max.x )
+	{
+		float d = b.min.x - a.max.x;
+		sqrDist += d * d;
+	}
+
+	if( b.max.y < a.min.y )
+	{
+		float d = b.max.y - a.min.y;
+		sqrDist += d * d;
+	}
+	else if( b.min.y > a.max.y )
+	{
+		float d = b.min.y - a.max.y;
+		sqrDist += d * d;
+	}
+
+	if( b.max.z < a.min.z )
+	{
+		float d = b.max.z - a.min.z;
+		sqrDist += d * d;
+	}
+	else if( b.min.z > a.max.z )
+	{
+		float d = b.min.z - a.max.z;
+		sqrDist += d * d;
+	}
+	
+	return sqrtf(sqrDist);
+}
+
+
+
 // called by the world update start event
 void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
+	static int iter = 0;
+	iter++;
+	
+	if( iter < 1000 )
+		return;
+
 	const bool hadNewState = newState && (opMode == AGENT_LEARN);
 
 	// update the robot positions with vision/DQN
@@ -404,7 +489,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	{
 		printf("RoverPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
 
-		rewardHistory = REWARD_WIN;
+		rewardHistory = REWARD_LOSS;
 		newReward     = true;
 		endEpisode    = true;
 	}
@@ -412,7 +497,46 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	// if an EOE reward hasn't already been issued, compute one
 	if( hadNewState && !newReward )
 	{
-		rewardHistory = 1.0f;	// the rover hasn't run into anything this frame (pos reward)
+		PropPlugin* goal = GetPropByName(GOAL_NAME);
+
+		if( !goal )
+		{
+			printf("RoverPlugin - failed to find Prop '%s'\n", GOAL_NAME);
+			return;
+		}
+
+		// get the bounding box for the prop object
+		const math::Box& goalBBox = goal->model->GetBoundingBox();
+		physics::LinkPtr chassis  = model->GetLink("chassis");
+
+		if( !chassis )
+		{
+			printf("RoverPlugin - failed to find chassis link\n");
+			return;
+		}
+
+		const math::Box& chassisBBox = chassis->GetBoundingBox();
+		const float distGoal  = BoxDistance(goalBBox, chassisBBox); 
+		const float distDelta = lastGoalDistance - distGoal;
+
+		rewardHistory = (episodeFrames > 1) ? distDelta * 100.0f : 0.0f;
+
+		if( distGoal < 0.01 )
+			rewardHistory = REWARD_WIN;
+
+		lastGoalDistance = distGoal;
+
+		/*bool isMoving = false;
+
+		for( uint32_t n=0; n < DOF; n++ )
+			if( vel[n] != 0.0f )	// TODO epsilon of actionVelDelta?
+				isMoving = true;
+
+		if( isMoving && episodeFrames % 10 == 0 )
+			rewardHistory = 1.0f;	// the rover hasn't run into anything this frame (pos reward)
+		else
+			rewardHistory = 0.0f;*/
+
 		newReward = true;	
 	}
 
@@ -428,8 +552,9 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		// reset for next episode
 		if( endEpisode )
 		{
-			endEpisode    = false;
-			episodeFrames = 0;
+			endEpisode       = false;
+			episodeFrames    = 0;
+			lastGoalDistance = 0.0f;
 			
 			ResetPropDynamics();
 
@@ -442,6 +567,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			model->SetLinearVel(math::Vector3(0.0, 0.0, 0.0));
 
 			model->SetWorldPose(originalPose);
+			episodesCompleted++;
 		}
 	}
 }
