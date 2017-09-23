@@ -216,7 +216,7 @@
 	<!--            -->
 	<model name="ball">
 		<link name="link">
-		<pose>0.75 0.0 0.0 0 0 0</pose>
+		<pose>0.75 -2.0 0.0 0 0 0</pose>
 		<collision name="ball_collision">
 			<geometry>
 				<sphere>
@@ -254,7 +254,7 @@
 
 	<model name="goal">
 		<link name="link">
-		<pose>2.0 0.0 0.0 0 0 0</pose>
+		<pose>1.0 0.0 0.0 0 0 0</pose>
 		
 		<collision name="box_collision">
 			<geometry>

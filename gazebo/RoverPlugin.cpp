@@ -31,8 +31,9 @@
 #define ROVER_NAME "rover"
 #define GOAL_NAME  "goal"
 
-#define REWARD_WIN  500.0f
+#define REWARD_WIN   500.0f
 #define REWARD_LOSS -500.0f
+#define REWARD_MULTIPLIER 100.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -60,7 +61,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	inputRawWidth     = 0;
 	inputRawHeight    = 0;
 	actionVelDelta    = 0.1f;
-	maxEpisodeLength  = 200;	// set to # frames to limit ep length
+	maxEpisodeLength  = 100;	// set to # frames to limit ep length
 	episodeFrames     = 0;
 	episodesCompleted = 0;
 
@@ -204,9 +205,7 @@ void RoverPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{
-		const char* name = contacts->contact(i).collision2().c_str();
-
-		if( strcmp(name, COLLISION_FILTER) == 0 )
+		if( strcmp(contacts->contact(i).collision2().c_str(), COLLISION_FILTER) == 0 )
 			continue;
 
 		std::cout << "Collision between[" << contacts->contact(i).collision1()
@@ -229,8 +228,12 @@ void RoverPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		// issue learning reward
 		if( opMode == AGENT_LEARN )
 		{
-			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
-			rewardHistory = strcmp(name, GOAL_NAME) == 0 ? REWARD_WIN : REWARD_LOSS;
+			#define GOAL_COLLISION "goal::link::box_collision"
+
+			bool hitTarget = (strcmp(contacts->contact(i).collision2().c_str(), GOAL_COLLISION) == 0) ||
+						  (strcmp(contacts->contact(i).collision1().c_str(), GOAL_COLLISION) == 0);
+
+			rewardHistory = hitTarget ? REWARD_WIN : REWARD_LOSS;
 
 			newReward  = true;
 			endEpisode = true;
@@ -519,7 +522,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		const float distGoal  = BoxDistance(goalBBox, chassisBBox); 
 		const float distDelta = lastGoalDistance - distGoal;
 
-		rewardHistory = (episodeFrames > 1) ? distDelta * 100.0f : 0.0f;
+		rewardHistory = (episodeFrames > 1) ? distDelta * REWARD_MULTIPLIER : 0.0f;
 
 		if( distGoal < 0.01 )
 			rewardHistory = REWARD_WIN;
