@@ -108,7 +108,7 @@ echo "[Pre-build]  build OpenBLAS?  $1"
 if [ $1 = "ON" ] || [ $1 = "YES" ] || [ $1 = "Y" ]; then
 	echo "[Pre-build]  building OpenBLAS...";
 	rm -rf OpenBLAS
-	git clone http://github.org/xianyi/OpenBLAS
+	git clone http://github.com/xianyi/OpenBLAS
 	cd OpenBLAS
 	mkdir build
 	make
