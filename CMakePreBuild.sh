@@ -51,7 +51,7 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	sudo apt-get install python-gi-cairo
 
 	# clone pyTorch repo
-	git clone http://github.com/pytorch/pytorch
+	git clone https://github.com/pytorch/pytorch
 	cd pytorch
 	git submodule update --init
 
@@ -70,10 +70,10 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	ln -s libTHC.so.1 libTHC.so
 	cd ../../
 
-	git clone http://github.com/pytorch/examples
+	git clone https://github.com/pytorch/examples
 	sudo pip install -r examples/reinforcement_learning/requirements.txt 
 
-	git clone http://github.com/pytorch/vision
+	git clone https://github.com/pytorch/vision
 	cd vision
 	sudo python setup.py install
 
@@ -108,7 +108,7 @@ echo "[Pre-build]  build OpenBLAS?  $1"
 if [ $1 = "ON" ] || [ $1 = "YES" ] || [ $1 = "Y" ]; then
 	echo "[Pre-build]  building OpenBLAS...";
 	rm -rf OpenBLAS
-	git clone http://github.com/xianyi/OpenBLAS
+	git clone https://github.com/xianyi/OpenBLAS
 	cd OpenBLAS
 	mkdir build
 	make
@@ -150,7 +150,7 @@ sudo apt-get install gnuplot gnuplot-qt
 echo "[Pre-build]  installing luarocks packages"
 
 cd $BUILD_ROOT
-git clone http://github.com/torch/rocks
+git clone https://github.com/torch/rocks
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/luaffi-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/cwrap-scm-1.rockspec
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/paths-scm-1.rockspec
@@ -158,7 +158,7 @@ $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/paths-scm-1.rockspec
 #$TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/rocks/torch-scm-1.rockspec
 echo "[Pre-build]  installing torch7 from source"
 cd $BUILD_ROOT
-git clone http://github.com/torch/torch7
+git clone https://github.com/torch/torch7
 cd torch7
 
 # patch neon vector itrinsics (this should be fixed in master now)
@@ -195,7 +195,7 @@ echo "[Pre-build]  done installing torch7 package"
 echo "[Pre-build]  installing additional packages for Torch"
 
 echo "[Pre-build]  installing nn from source"
-git clone http://github.com/torch/nn
+git clone https://github.com/torch/nn
 cd nn
 #sed -i 's/ptrdiff_t/long/g' lib/THNN/init.c
 #sed -i 's/ptrdiff_t/long/g' lib/THNN/generic/* 
@@ -231,8 +231,8 @@ echo "[Pre-build]  done installing cutorch package"
 
 echo "[Pre-build]  installing cudnn bindings from source"
 # install cudnn v5 bindings
-#git clone -b R5 http://github.com/soumith/cudnn.torch 
-git clone http://github.com/soumith/cudnn.torch 
+#git clone -b R5 https://github.com/soumith/cudnn.torch 
+git clone https://github.com/soumith/cudnn.torch 
 #sed -i 's/ffi.sizeof('half'),/2,/g' cudnn.torch/init.lua
 $TORCH_PREFIX/bin/luarocks install $BUILD_ROOT/cudnn.torch/cudnn-scm-1.rockspec
 echo "[Pre-build]  done installing cudnn bindings package"
