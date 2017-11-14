@@ -46,6 +46,7 @@ file(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR})
 
 message("-- system arch:  ${CMAKE_SYSTEM_PROCESSOR}")
 message("-- output path:  ${PROJECT_OUTPUT_DIR}")
+message("-- nvcuda path:  ${CUDA_TOOLKIT_ROOT_DIR}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
@@ -63,6 +64,7 @@ if( ${USE_PYTHON} )
 	add_definitions(-DUSE_PYTHON)
 	include_directories(/usr/include/python2.7 ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include ${PROJECT_BINARY_DIR}/pytorch/torch/csrc ${PROJECT_BINARY_DIR}/pytorch/torch/csrc/cuda ${PROJECT_BINARY_DIR}/pytorch ${PROJECT_BINARY_DIR}/pytorch/torch/lib/include/TH ${PROJECT_INCLUDE_DIR})
 	link_directories(${PROJECT_BINARY_DIR}/pytorch/torch/lib ${PROJECT_BINARY_DIR}/pytorch/torch)
+	link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 endif()
 
 
@@ -82,7 +84,7 @@ endforeach()
 
 # Python post-build steps
 if( ${USE_PYTHON} )
-	target_link_libraries(jetson-reinforcement python2.7 _C TH THC)
+	target_link_libraries(jetson-reinforcement python2.7 _C ATen cuda nvrtc)
 
 	# transfer all python scripts to bin directory
 	file(GLOB pyScripts python/*.py)
