@@ -69,6 +69,7 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	cd torch
 	ln -s _C.so lib_C.so
 	cd lib
+	ln -s libATen.so.1 libATen.so
 	#ln -s libTH.so.1 libTH.so
 	#ln -s libTHC.so.1 libTHC.so
 	cd ../../
