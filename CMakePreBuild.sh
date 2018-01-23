@@ -50,6 +50,11 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	sudo pip install numpy
 	sudo apt-get install python-gi-cairo
 
+	# see https://github.com/torch/cutorch/issues/797
+	# use <= v0.2.0
+	#export TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"
+	echo $TORCH_NVCC_FLAGS 
+
 	# clone pyTorch repo
 	git clone https://github.com/pytorch/pytorch
 	cd pytorch
