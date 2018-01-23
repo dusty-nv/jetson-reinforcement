@@ -223,9 +223,7 @@ class DQN(nn.Module):
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
-        y = x.view(x.size(0), -1)
-        #print('forward y = ' + str(y))
-        return self.head(y)
+        return self.head(x.view(x.size(0), -1))
 
 
 ######################################################################
@@ -328,14 +326,13 @@ steps_done = 0
 
 def select_action(state):
     global steps_done
-    #print('state ' + str(state))
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
         return model(
-            Variable(state, volatile=True).type(FloatTensor)).data.max(1)[1].unsqueeze(0)
+            Variable(state, volatile=True).type(FloatTensor)).data.max(1)[1].view(1, 1)
     else:
         return LongTensor([[random.randrange(2)]])
 
@@ -445,13 +442,10 @@ for i_episode in range(num_episodes):
     last_screen = get_screen()
     current_screen = get_screen()
     state = current_screen - last_screen
-    #print(state.size())
     for t in count():
         # Select and perform an action
         action = select_action(state)
-        #print(action)
-        #print(action[0][0])
-        _, reward, done, _ = env.step(action[0][0])
+        _, reward, done, _ = env.step(action[0, 0])
         reward = Tensor([reward])
 
         # Observe new state
