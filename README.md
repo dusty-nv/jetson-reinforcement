@@ -1,7 +1,9 @@
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/jetson-reinforcement-header.jpg">
 
 # Reinforcement Learning in Robotics
-In this tutorial, we'll be creating artificially intelligent agents that learn interactively from experience and a system of rewards using deep reinforcement learning (RL).  RL-powered agents are capable of exhibiting intuitive behaviors and performing complex tasks in their environments.  Ultimately our aim will be to train agents from robotic simulation and transfer the agent to a real-world robot.  Reinforcement learners choose the best action for the agent to perform based on environmental state and a system of rewards that provide feedback.  They provide an AI agent that can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
+In this tutorial, we'll be creating artificially intelligent agents that learn from interacting with their environment, gathering experience, and a system of rewards with deep reinforcement learning (deep RL).  Using end-to-end neural networks that translate raw pixels into actions, RL-trained agents are capable of exhibiting intuitive behaviors and performing complex tasks.  
+
+Ultimately our aim will be to train agents from robotic simulation and transfer the agent to a real-world robot.  Reinforcement learners choose the best action for the agent to perform based on environmental state and a system of rewards that provide feedback.  They provide an AI agent that can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
 
 In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to estimate the Q-function, which approximates the future reward based on state sequence.
 
