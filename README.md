@@ -1,6 +1,6 @@
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/jetson-reinforcement-header.jpg">
 
-# Learning Agents
+# Reinforcement Learning Agents
 In this tutorial, we'll be creating AI agents that learn from experience and are capable of completing complex tasks and exhibiting advanced behaviors in their environments. Reinforcement learners choose the best action for the agent to perform based on environmental state and a system of rewards that provide feedback.  They provide an AI agent that can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
 
 In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to estimate the Q-function, which approximates the future reward based on state sequence.
@@ -133,12 +133,12 @@ Included in the repo are different implementations of the agent, including DQN. 
 
 ## Testing the API
 
-To make sure that the reinforcement learners are still functioning properly from C++, a simple example of using the API called [`fruit`](samples/fruit/fruit.cpp) is provided.  Similar in concept to pong, a fruit drops from the top of the screen which the agent must catch by moving it's paddle left or right.
+To make sure that the reinforcement learners are still functioning properly from C++, a simple example of using the API called [`catch`](samples/catch/catch.cpp) is provided.  Similar in concept to pong, a ball drops from the top of the screen which the agent must catch before the ball reaches the bottom of the screen, by moving it's paddle left or right.
 
-To test the fruit sample, run the following executable from the terminal:
+To test the catch sample, run the following executable from the terminal:
 
 ``` bash
-$ ./fruit
+$ ./catch
 use_cuda: True
 [deepRL]  nn.Conv2d() output size = 448
 [cuda]  cudaAllocMapped 38400 bytes, CPU 0x1020a600000 GPU 0x1020a600000
@@ -184,7 +184,7 @@ WON! episode 19
 WON! episode 20
 ```
 
-After around 100 episodes or so, the agent should start winning the episodes most of the time, between 70-80%.  Unlike the previous examples which were standalone Python scripts, the [`fruit`](samples/fruit/fruit.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.
+After around 100 episodes or so, the agent should start winning the episodes most of the time, between 70-80%.  Unlike the previous examples which were standalone Python scripts, the [`catch`](samples/catch/catch.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.
 
 
 # Simulation

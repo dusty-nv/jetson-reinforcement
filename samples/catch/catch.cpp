@@ -23,7 +23,7 @@ bool gameHistory[GAME_HISTORY];
 int  gameHistoryIdx = 0;
 
 
-enum fruitAction
+enum catchAction
 {
 	ACTION_STAY  = 0,
 	ACTION_LEFT  = 1,
@@ -31,7 +31,7 @@ enum fruitAction
 	NUM_ACTIONS
 };
 
-static const char* fruitStr( int action )
+static const char* catchStr( int action )
 {
 	if( action == 0 )
 	{
@@ -57,7 +57,7 @@ static inline int rand_x()
 
 int main( int argc, char** argv )
 {
-	printf("deepRL-fruit\n\n");
+	printf("deepRL-catch\n\n");
 	srand(time(NULL));
 	
 
