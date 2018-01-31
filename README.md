@@ -25,7 +25,7 @@ Run the following commands from terminal to build from source:
 ``` bash
 $ sudo apt-get install cmake
 $ git clone http://github.com/dusty-nv/jetson-reinforcement
-$ git submodules update --init
+$ git submodule update --init
 $ cd jetson-reinforcement
 $ mkdir build
 $ cd build
