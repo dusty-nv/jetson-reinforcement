@@ -15,7 +15,8 @@ This repository includes Q-learning algorithms in PyTorch and Torch7, and an API
 	* [Lunar Lander](#lunar-lander)
 * [Digging into the C++ API](#digging-into-the-c-api)
 	* [Testing the API](#testing-the-api)
-* [Simulation](#simulation)
+* [3D Simulation](#3d-simulation)
+	* [Robotic Manipulation](#manipulation)
 * [Using LUA](#using-lua)
 
 # Building from Source
@@ -187,9 +188,18 @@ WON! episode 20
 After around 100 episodes or so, the agent should start winning the episodes most of the time, between 70-80%.  Unlike the previous examples which were standalone Python scripts, the [`catch`](samples/catch/catch.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.
 
 
-# Simulation
+# 3D Simulation
 
-Coming soon!  To start playing around with it now, run the following script:
+Up until this point in the tutorial, the RL environments have been 2D.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebo.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
+
+<!---
+Discussion of Gazebo plugin architecture
+(or maybe this should be high-level, then more specific info under #Robotic-Manipulation/#Navigation)
+-->
+
+## Robotic Manipulation
+
+Our first Gazebo environment we'll be using involves training a robotic arm to manipulate objects.  To get started, run the following script:
 
 ``` bash
 $ ./gazebo-arm.sh
@@ -200,6 +210,10 @@ If you press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic, y
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo.png">
 
 The plugins which hook the learning into the simulation are located in the `gazebo/` directory of the repo.
+
+<!---
+#Navigation section
+-->
 
 # Using LUA
 
