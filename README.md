@@ -7,7 +7,7 @@ Ultimately, our aim will be to train RL agents from virtual robotic simulation i
 
 In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to estimate the Q-function, which approximates the future reward based on state sequence.
 
-This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, and an accessibility API in C++ for integrating with applications in robotics, simulation, and elsewhere.
+This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, and an interoperability API in C++ for integrating with applications in robotics, simulation, and elsewhere.
 
 ### **Table of Contents**
 
