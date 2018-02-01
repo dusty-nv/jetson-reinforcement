@@ -1,0 +1,3 @@
+[submodule "python/A3G"]
+	path = python/A3G
+	url = https://github.com/dusty-nv/a3c_continuous
