@@ -68,9 +68,11 @@ if( ${USE_PYTHON} )
 endif()
 
 
+
+
 # library sources
-file(GLOB deepRLSources c/*.cpp cuda/*.cu util/*.cpp)
-file(GLOB deepRLIncludes c/*.h cuda/*.h util/*.h)
+file(GLOB deepRLSources c/*.cpp cuda/*.cu)
+file(GLOB deepRLIncludes c/*.h cuda/*.h)
 
 cuda_add_library(jetson-reinforcement SHARED ${deepRLSources})
 
@@ -84,7 +86,7 @@ endforeach()
 
 # Python post-build steps
 if( ${USE_PYTHON} )
-	target_link_libraries(jetson-reinforcement python2.7 _C ATen cuda nvrtc)
+	target_link_libraries(jetson-reinforcement jetson-utils python2.7 _C ATen cuda nvrtc)
 
 	# transfer all python scripts to bin directory
 	file(GLOB pyScripts python/*.py)
@@ -98,7 +100,7 @@ endif()
 
 # LUA post-build steps
 if( ${USE_LUA} )
-	target_link_libraries(jetson-reinforcement luajit luaT TH THC)
+	target_link_libraries(jetson-reinforcement jetson-utils luajit luaT TH THC)
 
 	# transfer all LUA scripts to bin directory
 	file(GLOB luaScripts lua/*.lua lua/*.ipynb)
@@ -115,4 +117,6 @@ endif()
 add_subdirectory(gazebo)
 add_subdirectory(samples)
 add_subdirectory(tools)
+add_subdirectory(utils)
 
+target_link_libraries(jetson-reinforcement jetson-utils)
