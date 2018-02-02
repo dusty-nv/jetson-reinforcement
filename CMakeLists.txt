@@ -9,7 +9,7 @@ set(BUILD_OPENBLAS "YES" CACHE BOOL "If YES, will download & build OpenBLAS (for
 set(USE_PYTHON "YES" CACHE BOOL "If YES, will build PyTorch and PyTorch examples")
 set(USE_LUA "NO" CACHE BOOL "If YES, will build LUA, Torch, and Torch examples")
 
-
+	
 # configure CUDA
 find_package(CUDA)
 
