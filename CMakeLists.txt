@@ -86,7 +86,7 @@ endforeach()
 
 # Python post-build steps
 if( ${USE_PYTHON} )
-	target_link_libraries(jetson-reinforcement jetson-utils python2.7 _C ATen cuda nvrtc)
+	target_link_libraries(jetson-reinforcement python2.7 _C ATen cuda nvrtc)
 
 	# transfer all python scripts to bin directory
 	file(GLOB pyScripts python/*.py)
@@ -100,7 +100,7 @@ endif()
 
 # LUA post-build steps
 if( ${USE_LUA} )
-	target_link_libraries(jetson-reinforcement jetson-utils luajit luaT TH THC)
+	target_link_libraries(jetson-reinforcement luajit luaT TH THC)
 
 	# transfer all LUA scripts to bin directory
 	file(GLOB luaScripts lua/*.lua lua/*.ipynb)
