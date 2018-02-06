@@ -1,7 +1,7 @@
 
 
-file(GLOB fruitSources *.cpp)
-file(GLOB fruitIncludes *.h )
+file(GLOB catchSources *.cpp)
+file(GLOB catchIncludes *.h )
 
-add_executable(fruit ${fruitSources})
-target_link_libraries(fruit jetson-reinforcement)
+add_executable(catch ${catchSources})
+target_link_libraries(catch jetson-reinforcement)
