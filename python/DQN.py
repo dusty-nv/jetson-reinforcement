@@ -178,11 +178,11 @@ class DQN(nn.Module):
 		self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
 		self.bn3 = nn.BatchNorm2d(32)
 		
-		if input_width >= 128 and input_height >= 128:
-			self.conv4 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
-			self.bn4 = nn.BatchNorm2d(32)
-			self.conv5 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
-			self.bn5 = nn.BatchNorm2d(32)
+		#if input_width >= 128 and input_height >= 128:
+		#	self.conv4 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+		#	self.bn4 = nn.BatchNorm2d(32)
+		#	self.conv5 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+		#	self.bn5 = nn.BatchNorm2d(32)
 
 		#print('done creating Conv2d() layers')
 		# from the convolutions find the size of the last filter
@@ -205,9 +205,9 @@ class DQN(nn.Module):
 		x = F.relu(self.bn2(self.conv2(x)))
 		x = F.relu(self.bn3(self.conv3(x)))
 
-		if input_width >= 128 and input_height >= 128:
-			x = F.relu(self.bn4(self.conv4(x)))
-			x = F.relu(self.bn5(self.conv5(x)))
+		#if input_width >= 128 and input_height >= 128:
+		#	x = F.relu(self.bn4(self.conv4(x)))
+		#	x = F.relu(self.bn5(self.conv5(x)))
 
 		y = x.view(x.size(0), -1)
 
