@@ -28,8 +28,8 @@ Run the following commands from terminal to build from source:
 ``` bash
 $ sudo apt-get install cmake
 $ git clone http://github.com/dusty-nv/jetson-reinforcement
-$ git submodule update --init
 $ cd jetson-reinforcement
+$ git submodule update --init
 $ mkdir build
 $ cd build
 $ cmake ../
