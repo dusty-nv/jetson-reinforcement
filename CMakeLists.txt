@@ -17,6 +17,7 @@ set(
 	CUDA_NVCC_FLAGS
 	${CUDA_NVCC_FLAGS}; 
     -O3 
+	-gencode arch=compute_37,code=sm_37
 	-gencode arch=compute_53,code=sm_53
 	-gencode arch=compute_60,code=sm_60
 	-gencode arch=compute_61,code=sm_61
