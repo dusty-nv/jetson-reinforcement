@@ -27,18 +27,19 @@ enum AgentAction
 /**
  * Fruit Environment
  */
-class fruitEnv
+class FruitEnv
 {
 public:
 	/**
 	 * Create
 	 */
-	static fruitEnv* Create( int env_width=512, int env_height=512 );
+	static FruitEnv* Create( uint32_t world_width=512, uint32_t world_height=512,
+							 uint32_t render_width=512, uint32_t render_height=512 );
 	
 	/**
 	 * Destructor
 	 */
-	~fruitEnv();
+	~FruitEnv();
 	
 	/**
 	 * Perform the agent's next action
@@ -50,9 +51,33 @@ public:
 	bool Action( AgentAction action, float* reward );
 	
 	/**
-	 * Render
+	 * Retrieve the scrolling width of the world, in pixels.
 	 */
-	bool Render( uint32_t width, uint32_t height );
+	inline uint32_t GetWorldWidth() const		{ return worldWidth; }
+	
+	/**
+	 * Retrieve the scrolling height of the world, in pixels.
+	 */
+	inline uint32_t GetRenderHeight() const		{ return worldHeight; }
+	
+	/**
+	 * Retrieve the width of the rendered image, in pixels.
+	 */
+	inline uint32_t GetRenderWidth() const		{ return renderWidth; }
+	
+	/**
+	 * Retrieve the height of the rendered image, in pixels.
+	 */
+	inline uint32_t GetRenderHeight() const		{ return renderHeight; }
+	
+	/**
+	 * Render the environment into an image.
+	 * @returns pointer to float4 CUDA RGBA image of the rendered environment, 
+	 *          with normalized pixel intensities 0.0f-1.0f
+	 * @see GetRenderWidth for the width of the returned image pointer
+	 * @see GetRenderHeight for the height of the returned image pointer
+	 */
+	float* Render();
 	
 	/**
 	 * Reset environment
@@ -60,16 +85,21 @@ public:
 	void Reset();
 	
 private:
-	fruitEnv();
+	FruitEnv();
 	bool init( int env_width, int env_height );
 	
-	int agentX;		// location of the agent (x-coordinate)
-	int agentY;		// location of the agent (y-coordinate)
-	int agentDir;	//  heading of the agent (0-359 degrees)
-	int agentVel;	// velocity of the agent (-N to N)
+	int agentX;		 // location of the agent (x-coordinate)
+	int agentY;		 // location of the agent (y-coordinate)
+	int agentDir;	 //  heading of the agent (0-359 degrees)
+	int agentVel;	 // velocity of the agent (-N to N)
 	
-	int envWidth;	// width of the environment (in pixels)
-	int envHeight;	// height of the environment (in pixels)
+	int worldWidth;	 // width of the environment (in pixels)
+	int worldHeight; // height of the environment (in pixels)
+	int renderWidth;
+	int renderHeight;
+	
+	float* imageCPU;
+	float* imageGPU;
 	
 	// fruit objects
 	struct envObject

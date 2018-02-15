@@ -2,39 +2,44 @@
  * http://github.com/dusty-nv/jetson-reinforcement
  */
  
-#include "fruitEnv.h"
+#include "FruitEnv.h"
 
 
 
 // constructor
-fruitEnv::fruitEnv()
+FruitEnv::FruitEnv()
 {
 	agentX   = 0;
 	agentY   = 0;
 	agentDir = 0;
 	agentVel = 0;
 	
-	envWidth  = 0;
-	envHeight = 0;
+	worldWidth   = 0;
+	worldHeight  = 0;
+	renderWidth  = 0;
+	renderHeight = 0;
+	
+	imageCPU = NULL;
+	imageGPU = NULL;
 }
 
 
 // destructor
-fruitEnv::~fruitEnv()
+FruitEnv::~FruitEnv()
 {
 	
 }
 
 
 // Create
-fruitEnv* fruitEnv::Create( int env_width, int env_height )
+FruitEnv* FruitEnv::Create( uint32_t world_width, uint32_t world_height, uint32_t render_width, uint32_t render_height )
 {
-	fruitEnv* env = new fruitEnv();
+	FruitEnv* env = new FruitEnv();
 	
 	if( !env )
 		return NULL;
 	
-	if( !env->init(env_width, env_height) )
+	if( !env->init(world_width, world_height, render_width, render_height) )
 		return NULL;
 	
 	return env;
@@ -42,17 +47,19 @@ fruitEnv* fruitEnv::Create( int env_width, int env_height )
 
 
 // init
-bool fruitEnv::init( int env_width, int env_height )
+bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t render_width, uint32_t render_height )
 {
-	envWidth  = env_width;
-	envHeight = env_height;
+	worldWidth   = world_width;
+	worldHeight  = world_height;
+	renderWidth  = render_width;
+	renderHeight = render_height;
 	
 	return true;
 }
 
 
 // Action
-void fruitEnv::Action( AgentAction action )
+void FruitEnv::Action( AgentAction action )
 {
 	if( action == ACTION_FORWARD )
 		agentVel++;
@@ -80,14 +87,14 @@ void fruitEnv::Action( AgentAction action )
 	
 
 // Render
-bool fruitEnv::Render( uint32_t width, uint32_t height )
+float* FruitEnv::Render()
 {
 	return true;
 }
 	
 
 // Reset
-void fruitEnv::Reset()
+void FruitEnv::Reset()
 {
 	
 }
