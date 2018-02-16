@@ -5,6 +5,7 @@
 #include "fruitEnv.h"
 #include "cudaMappedMemory.h"
 
+#include <math.h>
 #include "rand.h"
 #include "pi.h"
 
@@ -74,7 +75,7 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 	epMaxFrames  = episode_max_length;
 	
 	// allocate render image memory
-	if( !cudaAllocMapped(&renderCPU, &renderGPU, renderWidth * renderHeight * sizeof(float) * 4) )
+	if( !cudaAllocMapped((void**)&renderCPU, (void**)&renderGPU, renderWidth * renderHeight * sizeof(float) * 4) )
 		return false;
 	
 	// allocate fruit objects
@@ -92,8 +93,10 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 
 // Action
 bool FruitEnv::Action( AgentAction action, float* reward )
-{
+{	
 	// apply action
+	const float delta = 1.0f;
+		
 	if( action == ACTION_FORWARD )
 		agentVel += delta;
 	else if( action == ACTION_BACKWARD )
@@ -196,7 +199,7 @@ static inline bool check_inside( float x, float y, float cx, float cy, float rad
 }
 
 
-#define copy_color(src, dst)	{ src[0] = dst[0]; src[1] = dst[1]; src[2] = dst[2]; src[3] = dst[3]; }
+inline static void copy_color(float* src,float* dst)	{ src[0] = dst[0]; src[1] = dst[1]; src[2] = dst[2]; src[3] = dst[3]; }
 
 
 // Render

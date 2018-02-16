@@ -88,6 +88,7 @@ public:
 	
 private:
 	FruitEnv();
+	
 	bool init( uint32_t world_width, uint32_t world_height,
 			   uint32_t render_width, uint32_t render_height,
 			   uint32_t episode_max_length );
