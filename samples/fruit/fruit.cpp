@@ -5,7 +5,7 @@
 #include "deepRL.h"
 
 #include <stdlib.h>
-#include <time.h>
+#include <rand.h>
 
 //#define GAME_WIDTH  40
 //#define GAME_HEIGHT 80
@@ -51,7 +51,7 @@ static const char* catchStr( int action )
 
 static inline int rand_x()
 {
-	return float(rand()) / float(RAND_MAX) * (GAME_WIDTH-1);
+	return randf() * (GAME_WIDTH-1);
 }
 
 

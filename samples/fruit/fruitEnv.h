@@ -34,7 +34,8 @@ public:
 	 * Create
 	 */
 	static FruitEnv* Create( uint32_t world_width=512, uint32_t world_height=512,
-							 uint32_t render_width=512, uint32_t render_height=512 );
+							 uint32_t render_width=512, uint32_t render_height=512,
+							 uint32_t max_episode_length=100 );
 	
 	/**
 	 * Destructor
@@ -86,34 +87,73 @@ public:
 	
 private:
 	FruitEnv();
-	bool init( int env_width, int env_height );
-	
-	int agentX;		 // location of the agent (x-coordinate)
-	int agentY;		 // location of the agent (y-coordinate)
-	int agentDir;	 //  heading of the agent (0-359 degrees)
-	int agentVel;	 // velocity of the agent (-N to N)
-	
-	int worldWidth;	 // width of the environment (in pixels)
-	int worldHeight; // height of the environment (in pixels)
-	int renderWidth;
-	int renderHeight;
-	
-	float* imageCPU;
-	float* imageGPU;
-	
-	// fruit objects
-	struct envObject
-	{
-		int x;
-		int y;
-		int reward;
-	};
-	
-	std::vector<envObject*> envObjects;	// list of objects in the environment
-	
+	bool init( uint32_t world_width, uint32_t world_height,
+			   uint32_t render_width, uint32_t render_height,
+			   uint32_t episode_max_length );
+			   
 	static const int MAX_REWARD  = 100;	// max/min reward obtainable
 	static const int MAX_OBJECTS = 10;	// max number of objects in world
 	static const int MIX_OBJECTS = 50;  // mix of pos/neg objects (0-100%)
+	static const int DEFAULT_RAD = 4;	// default radius of agent/fruit (in pixels)
+	
+	void randomize_pos( float* x, float* y );
+	
+	float agentX;		 // location of the agent (x-coordinate)
+	float agentY;		 // location of the agent (y-coordinate)
+	float agentDir;	 	 //  heading of the agent (0-359 degrees)
+	float agentVel;	 	 // velocity of the agent (-N to N)
+	float agentRad;		 //   radius of the agent (in pixels)
+	float agentColor[4]; //    color of the agent (RGBA)
+	float bgColor[4];	 // color of the background (RGBA)
+	
+	uint32_t epMaxFrames;	// maximum number of frames per episode
+	uint32_t epFrameCount;	// frame counter for current episode
+	uint32_t worldWidth; 	// width of the environment (in pixels)
+	uint32_t worldHeight; 	// height of the environment (in pixels)
+	uint32_t renderWidth;	// width of the output image (in pixels)
+	uint32_t renderHeight;	// height of the output image (in pixels)
+	
+	float* renderCPU;
+	float* renderGPU;
+	
+	// fruit objects
+	struct fruitObject
+	{
+		float x;
+		float y;
+		float reward;
+		float radius;
+		float color[4];
+		
+		inline fruitObject()
+		{
+			x = 0.0f;
+			y = 0.0f;
+			
+			reward = MAX_REWARD;
+			radius = DEFAULT_RAD;
+			
+			color[0] = 1.0f;
+			color[1] = 1.0f;
+			color[2] = 0.0f;
+			color[3] = 1.0f;
+		}
+		
+		inline bool checkCollision( float obj_x, float obj_y, float obj_radius )	
+		{ 
+			const float sx = x - bx;
+			const float sy = y - by;
+			const float s2 = sx * sx + sy * sy;
+			
+			const float r0 = radius - obj_radius;
+			const float r1 = radius + obj_radius;
+			
+			// (R0-R1)^2 <= (x0-x1)^2+(y0-y1)^2 <= (R0+R1)^2
+			return ((r0 * r0) <= s2) && (s2 <= (r1 * r1)); 
+		}
+	};
+	
+	std::vector<fruitObject*> fruitObjects;	// list of objects in the environment
 };
 
 #endif
