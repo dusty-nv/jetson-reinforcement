@@ -2,9 +2,11 @@
  * http://github.com/dusty-nv/jetson-reinforcement
  */
 
-#include "pi.h"
 #include "fruitEnv.h"
 #include "cudaMappedMemory.h"
+
+#include "rand.h"
+#include "pi.h"
 
 
 // constructor
@@ -82,6 +84,7 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 		fruitObjects.push_back(obj);
 	}
 	
+	// reset the first time
 	Reset();
 	return true;
 }

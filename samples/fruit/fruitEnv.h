@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include <stdint.h>
 
 
 /**
@@ -59,7 +60,7 @@ public:
 	/**
 	 * Retrieve the scrolling height of the world, in pixels.
 	 */
-	inline uint32_t GetRenderHeight() const		{ return worldHeight; }
+	inline uint32_t GetWorldHeight() const		{ return worldHeight; }
 	
 	/**
 	 * Retrieve the width of the rendered image, in pixels.
@@ -92,7 +93,7 @@ private:
 			   uint32_t episode_max_length );
 			   
 	static const int MAX_REWARD  = 100;	// max/min reward obtainable
-	static const int MAX_OBJECTS = 10;	// max number of objects in world
+	static const int MAX_OBJECTS = 3;	// max number of objects in world
 	static const int MIX_OBJECTS = 50;  // mix of pos/neg objects (0-100%)
 	static const int DEFAULT_RAD = 4;	// default radius of agent/fruit (in pixels)
 	
@@ -141,8 +142,8 @@ private:
 		
 		inline bool checkCollision( float obj_x, float obj_y, float obj_radius )	
 		{ 
-			const float sx = x - bx;
-			const float sy = y - by;
+			const float sx = x - obj_x;
+			const float sy = y - obj_y;
 			const float s2 = sx * sx + sy * sy;
 			
 			const float r0 = radius - obj_radius;

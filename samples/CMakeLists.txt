@@ -1,3 +1,3 @@
 
 add_subdirectory(catch)
-#add_subdirectory(fruit)
+add_subdirectory(fruit)
