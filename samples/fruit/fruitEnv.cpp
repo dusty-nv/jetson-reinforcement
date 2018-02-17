@@ -206,7 +206,7 @@ static inline bool check_inside( float x, float y, float cx, float cy, float rad
 }
 
 
-inline static void copy_color(float* src,float* dst)	{ src[0] = dst[0]; src[1] = dst[1]; src[2] = dst[2]; src[3] = dst[3]; }
+inline static void copy_color(float* src, float* dst)	{ dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2]; dst[3] = src[3]; }
 
 
 // Render
@@ -219,7 +219,7 @@ float* FruitEnv::Render()
 		for( uint32_t x = 0; x < renderWidth; x++ )
 		{
 			float* px = renderCPU + (y * renderWidth * 4 + x * 4);
-			
+	
 			// check if this pixel is a fruit object
 			bool is_fruit = false;
 			
@@ -243,6 +243,7 @@ float* FruitEnv::Render()
 		}
 	}
 	
+	printf("FruitEnv::Render()\n");
 	return renderCPU;
 }
 	

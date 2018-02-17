@@ -115,7 +115,7 @@ int main( int argc, char** argv )
 					texture->Unmap();
 				}
 
-				texture->Render(10,10);		
+				texture->Render(50,50);		
 			}
 
 			display->EndRender();
