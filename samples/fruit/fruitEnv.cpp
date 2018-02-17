@@ -10,6 +10,20 @@
 #include "pi.h"
 
 
+
+// ActionToStr
+const char* FruitEnv::ActionToStr( AgentAction action )
+{
+	if( action == ACTION_FORWARD )		return "FORWARD ";
+	else if( action == ACTION_BACKWARD )	return "BACKWARD";
+	else if( action == ACTION_LEFT )		return "LEFT    ";
+	else if( action == ACTION_RIGHT )		return "RIGHT   ";
+	else if( action == ACTION_NONE )		return "NONE    ";
+
+	return "unknown ";
+}
+
+
 // constructor
 FruitEnv::FruitEnv()
 {
@@ -101,6 +115,13 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 // Action
 bool FruitEnv::Action( AgentAction action, float* reward )
 {	
+	// first, make sure the action is valid
+	if( action >= NUM_ACTIONS )
+	{
+		printf("FruitEnv::Action() -- invalid action selected (%i)\n", (int)action);
+		return false;
+	}
+	
 	// apply action
 	const float delta = 1.0f;
 		
@@ -148,8 +169,8 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	else if( agentY > worldHeight )
 		agentY = worldHeight;
 	
-	printf("fruit agent:  action %i - location %f %f - heading %f - velocity %f\n",
-		   (int)action, agentX, agentY, agentDir, agentVel );
+	//printf("fruit agent:  action %i - location %f %f - heading %f - velocity %f\n",
+	//	   (int)action, agentX, agentY, agentDir, agentVel );
 		   
 	
 	// check if agent has reached a goal
@@ -243,7 +264,6 @@ float* FruitEnv::Render()
 		}
 	}
 	
-	printf("FruitEnv::Render()\n");
 	return renderCPU;
 }
 	

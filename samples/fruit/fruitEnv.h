@@ -57,6 +57,11 @@ public:
 	 *         false if the action did not result in EOE
 	 */
 	bool Action( AgentAction action, float* reward );
+
+	/**
+	 * Convert an AgentAction enum to a string.
+	 */
+	static const char* ActionToStr( AgentAction action );
 	
 	/**
 	 * Retrieve the scrolling width of the world, in pixels.
@@ -77,6 +82,11 @@ public:
 	 * Retrieve the height of the rendered image, in pixels.
 	 */
 	inline uint32_t GetRenderHeight() const		{ return renderHeight; }
+
+	/**
+	 * Get the maximum reward value (signifies a win)
+	 */
+	inline float GetMaxReward() const			{ return MAX_REWARD; }
 	
 	/**
 	 * Render the environment into an image.

@@ -4,9 +4,12 @@
 
 #include "deepRL.h"
 #include "fruitEnv.h"
+#include "rand.h"
 
 #include "glDisplay.h"
 #include "glTexture.h"
+
+#include "cudaFont.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -14,6 +17,7 @@
 
 #define GAME_WIDTH 128
 #define GAME_HEIGHT 128
+#define RENDER_ZOOM 4
 #define NUM_CHANNELS 3
 
 #define EPISODE_MAX_LENGTH 200
@@ -86,7 +90,16 @@ int main( int argc, char** argv )
 		printf("[deepRL]  failed to create openGL display\n");
 	
 	
+	// create font object
+	cudaFont* font = cudaFont::Create();
+	
+	if( !font )
+		printf("failed to create cudaFont object\n");
+
+
 	// game loop
+	float reward = 0.0f;
+
 	while( !quit_signal )
 	{
 		// render fruit environment
@@ -98,6 +111,15 @@ int main( int argc, char** argv )
 			return 0;
 		}
 		
+		if( font != NULL )
+		{
+			/*char str[256];
+			sprintf(str, "%f", reward);
+
+			font->RenderOverlay((float4*)imgRGBA, (float4*)imgRGBA, GAME_WIDTH, GAME_HEIGHT,
+							    str, 0, 0, make_float4(0.0f, 0.75f, 1.0f, 255.0f));*/
+		}
+
 		// draw environment to display
 		if( display != NULL )
 		{
@@ -115,20 +137,24 @@ int main( int argc, char** argv )
 					texture->Unmap();
 				}
 
-				texture->Render(50,50);		
+				texture->Render(50, 50, GAME_WIDTH * RENDER_ZOOM, GAME_HEIGHT * RENDER_ZOOM);		
 			}
 
 			display->EndRender();
 		}
 		
 		// ask the AI agent for their action
-		/*int action = ACTION_STAY;
+		int action = rand(0, NUM_ACTIONS);
+
+		const bool eoe = fruit->Action((AgentAction)action, &reward);
 		
-		if( !agent->NextAction(input_state, &action) )
+		printf("action = %s  reward = %f  %s\n", FruitEnv::ActionToStr((AgentAction)action), reward, eoe ? "EOE" : "");
+
+		/*if( !agent->NextAction(input_state, &action) )
 		{
 			printf("[deepRL]  agent->NextAction() failed.\n");
 			return 0;
-		}
+		}*/
 
 		//printf("RL action: %i %s\n", action, actionStr(action));*/
 		
