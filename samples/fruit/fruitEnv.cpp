@@ -51,6 +51,13 @@ FruitEnv::~FruitEnv()
 
 
 // Create
+FruitEnv* FruitEnv::Create( uint32_t world_width, uint32_t world_height, uint32_t episode_max_length )
+{
+	return Create(world_width, world_height, world_width, world_height, episode_max_length);
+}
+
+
+// Create
 FruitEnv* FruitEnv::Create( uint32_t world_width, uint32_t world_height, uint32_t render_width, uint32_t render_height, uint32_t episode_max_length )
 {
 	FruitEnv* env = new FruitEnv();

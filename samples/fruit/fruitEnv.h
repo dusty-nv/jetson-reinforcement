@@ -34,8 +34,14 @@ public:
 	/**
 	 * Create
 	 */
-	static FruitEnv* Create( uint32_t world_width=512, uint32_t world_height=512,
-							 uint32_t render_width=512, uint32_t render_height=512,
+	static FruitEnv* Create( uint32_t world_width, uint32_t world_height,
+							 uint32_t max_episode_length=100 );
+							 
+	/**
+	 * Create
+	 */
+	static FruitEnv* Create( uint32_t world_width, uint32_t world_height,
+							 uint32_t render_width, uint32_t render_height,
 							 uint32_t max_episode_length=100 );
 	
 	/**
