@@ -10,6 +10,7 @@
 #include "glTexture.h"
 
 #include "cudaFont.h"
+#include "cudaPlanar.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -64,9 +65,9 @@ int main( int argc, char** argv )
 	}
 	
 	// allocate memory for the game input
-	Tensor* input_state = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
+	Tensor* input_tensor = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
 	
-	if( !input_state )
+	if( !input_tensor )
 	{
 		printf("[deepRL]  failed to allocate input tensor with %ux%xu elements", GAME_WIDTH, GAME_HEIGHT);
 		return 0;
@@ -97,9 +98,14 @@ int main( int argc, char** argv )
 		printf("failed to create cudaFont object\n");
 
 
-	// game loop
+	// global variables for tracking agent progress
+	uint32_t episode_count = 0;
+	uint32_t episode_wins  = 0;
+
 	float reward = 0.0f;
 
+
+	// game loop
 	while( !quit_signal )
 	{
 		// render fruit environment
@@ -143,24 +149,38 @@ int main( int argc, char** argv )
 			display->EndRender();
 		}
 		
-		// ask the AI agent for their action
-		int action = rand(0, NUM_ACTIONS);
+		// convert from RGBA to pyTorch tensor format (CHW)
+		CUDA(cudaRGBAToPlanarBGR((float4*)imgRGBA, GAME_WIDTH, GAME_HEIGHT,
+							(float*)input_tensor->gpuPtr, GAME_WIDTH, GAME_HEIGHT));
+	
+	
+		// ask the agent for their action
+		int action = ACTION_NONE;	//rand(0, NUM_ACTIONS);
 
-		const bool eoe = fruit->Action((AgentAction)action, &reward);
-		
-		printf("action = %s  reward = %f  %s\n", FruitEnv::ActionToStr((AgentAction)action), reward, eoe ? "EOE" : "");
-
-		/*if( !agent->NextAction(input_state, &action) )
-		{
+		if( !agent->NextAction(input_tensor, &action) )
 			printf("[deepRL]  agent->NextAction() failed.\n");
-			return 0;
-		}*/
 
-		//printf("RL action: %i %s\n", action, actionStr(action));*/
+	
+		// provide the agent's action to the environment
+		const bool end_episode = fruit->Action((AgentAction)action, &reward);
 		
-		
-		//if( !agent->NextReward(reward, end_episode) )
-		//	printf("[deepRL]  agent->NextReward() failed\n");
+		if( end_episode )
+		{
+			if( reward >= fruit->GetMaxReward() )
+				episode_wins++;
+
+			episode_count++;
+		}
+
+		printf("action = %s  reward = %f  %s  wins = %u of %u (%f)\n", 
+			  FruitEnv::ActionToStr((AgentAction)action), 
+			  reward, end_episode ? "EOE" : "",
+			  episode_wins, episode_count, float(episode_wins)/float(episode_count));
+
+
+		// train the agent with the reward
+		if( !agent->NextReward(reward, end_episode) )
+			printf("[deepRL]  agent->NextReward() failed\n");
 	}
 	
 	return 0;
