@@ -16,13 +16,17 @@
 #include <signal.h>
 
 
-#define GAME_WIDTH 128
-#define GAME_HEIGHT 128
+#define EPISODE_MAX_LENGTH 200
+
 #define RENDER_ZOOM 4
 #define NUM_CHANNELS 3
 
-#define EPISODE_MAX_LENGTH 200
+#define GAME_WIDTH 64
+#define GAME_HEIGHT 64
+#define GAME_HISTORY 25
 
+bool gameHistory[GAME_HISTORY];
+int  gameHistoryIdx = 0;
 
 
 bool quit_signal = false;
@@ -155,7 +159,7 @@ int main( int argc, char** argv )
 	
 	
 		// ask the agent for their action
-		int action = ACTION_NONE;	//rand(0, NUM_ACTIONS);
+		int action = 0;	//ACTION_NONE;	//rand(0, NUM_ACTIONS);
 
 		if( !agent->NextAction(input_tensor, &action) )
 			printf("[deepRL]  agent->NextAction() failed.\n");
@@ -167,16 +171,36 @@ int main( int argc, char** argv )
 		if( end_episode )
 		{
 			if( reward >= fruit->GetMaxReward() )
+			{
+				gameHistory[gameHistoryIdx] = true;
 				episode_wins++;
+			}
+			else
+				gameHistory[gameHistoryIdx] = false;
 
+			gameHistoryIdx = (gameHistoryIdx + 1) % GAME_HISTORY;
 			episode_count++;
 		}
 
-		printf("action = %s  reward = %f  %s  wins = %u of %u (%f)\n", 
+		printf("action = %s  reward = %0.4f %s wins = %u of %u (%0.4f)   ", 
 			  FruitEnv::ActionToStr((AgentAction)action), 
-			  reward, end_episode ? "EOE" : "",
+			  reward, end_episode ? "EOE" : "  ",  
 			  episode_wins, episode_count, float(episode_wins)/float(episode_count));
 
+		if( episode_count >= GAME_HISTORY )
+		{
+			uint32_t historyWins = 0;
+
+			for( uint32_t n=0; n < GAME_HISTORY; n++ )
+			{
+				if( gameHistory[n] )
+					historyWins++;
+			}
+
+			printf("%02u of last %u  (%0.4f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY));
+		}
+
+		printf("\n");
 
 		// train the agent with the reward
 		if( !agent->NextReward(reward, end_episode) )

@@ -15,8 +15,8 @@
  */
 enum AgentAction
 {
-	ACTION_NONE = 0,
-	ACTION_FORWARD,
+	//ACTION_NONE = 0,
+	ACTION_FORWARD = 0,
 	ACTION_BACKWARD,
 	ACTION_LEFT,
 	ACTION_RIGHT,
@@ -109,8 +109,8 @@ private:
 			   uint32_t render_width, uint32_t render_height,
 			   uint32_t episode_max_length );
 			   
-	static const int MAX_REWARD  = 100;	// max/min reward obtainable
-	static const int MAX_OBJECTS = 3;	// max number of objects in world
+	static const int MAX_REWARD  = 200;	// max/min reward obtainable
+	static const int MAX_OBJECTS = 1;	// max number of objects in world
 	static const int MIX_OBJECTS = 50;  // mix of pos/neg objects (0-100%)
 	static const int DEFAULT_RAD = 8;	// default radius of agent/fruit (in pixels)
 	
@@ -169,9 +169,22 @@ private:
 			// (R0-R1)^2 <= (x0-x1)^2+(y0-y1)^2 <= (R0+R1)^2
 			return ((r0 * r0) <= s2) && (s2 <= (r1 * r1)); 
 		}
+
+		inline float distanceSq( float obj_x, float obj_y )
+		{
+			const float sx = x - obj_x;
+			const float sy = y - obj_y;
+
+			return sx * sx + sy * sy;
+		}
 	};
 	
-	std::vector<fruitObject*> fruitObjects;	// list of objects in the environment
+	std::vector<fruitObject*> fruitObjects;	   // list of objects in the environment
+
+	// return the closest fruit to the agent, return the object and distance squared
+	fruitObject* findClosest( float* distanceSq ) const;	
+
+	float lastDistanceSq;
 };
 
 #endif
