@@ -432,6 +432,8 @@ def next_reward(reward, end_episode):
 	global last_state
 	global curr_state
 	global last_action
+	global curr_diff
+	global last_diff
 	#print('reward = ' + str(reward))
 	reward = Tensor([reward])
 	
@@ -447,4 +449,6 @@ def next_reward(reward, end_episode):
 		last_state = None
 		curr_state = None
 		last_action = None
+		curr_diff = None
+		last_diff = None
 
