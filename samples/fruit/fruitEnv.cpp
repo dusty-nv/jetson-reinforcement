@@ -18,7 +18,7 @@ const char* FruitEnv::ActionToStr( AgentAction action )
 	else if( action == ACTION_BACKWARD )	return "BACKWARD";
 	else if( action == ACTION_LEFT )		return "LEFT    ";
 	else if( action == ACTION_RIGHT )		return "RIGHT   ";
-	//else if( action == ACTION_NONE )		return "NONE    ";
+	else if( action == ACTION_NONE )		return "NONE    ";
 
 	return "UNKNOWN ";
 }
@@ -33,9 +33,9 @@ FruitEnv::FruitEnv()
 	agentVel = 0;
 	agentRad = DEFAULT_RAD;
 	
-	agentColor[0] = 1.0f; 
+	agentColor[0] = 255.0f; 
 	agentColor[1] = 0.0f; 
-	agentColor[2] = 1.0f; 
+	agentColor[2] = 255.0f; 
 	agentColor[3] = 1.0f;
 	
 	bgColor[0] = 1.0f; 
@@ -117,13 +117,14 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 bool FruitEnv::Action( AgentAction action, float* reward )
 {	
 	// first, make sure the action is valid
-	if( action >= NUM_ACTIONS )
+	/*if( action >= NUM_ACTIONS )
 	{
 		printf("FruitEnv::Action() -- invalid action selected (%i)\n", (int)action);
 		return false;
-	}
+	}*/
 	
 	// apply action
+#if 0
 	const float delta = 1.0f;
 
 	if( action == ACTION_FORWARD )
@@ -134,21 +135,22 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		agentX += delta;
 	else if( action == ACTION_LEFT )
 		agentX -= delta;
+#endif
 
-#if 0
-	const float delta = 1.0f;
-		
+	const float vel_delta = 0.25f;
+	const float dir_delta = 2.5f;
+
 	if( action == ACTION_FORWARD )
-		agentVel += delta;
+		agentVel += vel_delta;
 	else if( action == ACTION_BACKWARD )
-		agentVel -= delta;
+		agentVel -= vel_delta;
 	else if( action == ACTION_RIGHT )
-		agentDir += delta;
+		agentDir += dir_delta;
 	else if( action == ACTION_LEFT )
-		agentDir -= delta;
+		agentDir -= dir_delta;
 	
 	// limit velocity
-	const float maxVelocity = 1.0f;	
+	const float maxVelocity = 1.5f;	
 	
 	if( agentVel < -maxVelocity )
 		agentVel = -maxVelocity;
@@ -169,7 +171,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	
 	agentX += vx;
 	agentY += vy;
-#endif
+
 	
 	// limit location
 	bool outOfBounds = false;
@@ -246,9 +248,9 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		fruitObject* closestFruit = findClosest(&fruitDistSq);
 
 		if( reward != NULL )
-			*reward = (lastDistanceSq > fruitDistSq) ? 0.1f : -0.1f;
-			//*reward = (lastDistanceSq - fruitDistSq) * 0.1f;
-			//*reward = float(MAX_REWARD) * 0.005f * (1.0f - (fruitDistSq / float(worldWidth*worldWidth)));
+			//*reward = (lastDistanceSq > fruitDistSq) ? 0.1f : -0.1f;
+			*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.5f;
+			//*reward = float(MAX_REWARD) * 0.01f * (1.0f - (fruitDistSq / float(worldWidth*worldWidth)));
 			// *reward = 0.0f;
 
 		lastDistanceSq = fruitDistSq;

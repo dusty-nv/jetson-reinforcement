@@ -16,13 +16,13 @@
 #include <signal.h>
 
 
-#define EPISODE_MAX_LENGTH 200
+#define EPISODE_MAX_LENGTH 350
 
 #define RENDER_ZOOM 4
 #define NUM_CHANNELS 3
 
-#define GAME_WIDTH 64
-#define GAME_HEIGHT 64
+#define GAME_WIDTH 48
+#define GAME_HEIGHT 48
 #define GAME_HISTORY 25
 
 bool gameHistory[GAME_HISTORY];
@@ -164,7 +164,9 @@ int main( int argc, char** argv )
 		if( !agent->NextAction(input_tensor, &action) )
 			printf("[deepRL]  agent->NextAction() failed.\n");
 
-	
+		if( action < 0 || action >= NUM_ACTIONS )
+			action = ACTION_NONE;
+
 		// provide the agent's action to the environment
 		const bool end_episode = fruit->Action((AgentAction)action, &reward);
 		

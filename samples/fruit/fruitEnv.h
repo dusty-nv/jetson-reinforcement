@@ -21,7 +21,8 @@ enum AgentAction
 	ACTION_LEFT,
 	ACTION_RIGHT,
 	/* new actions */
-	NUM_ACTIONS
+	NUM_ACTIONS,
+	ACTION_NONE
 };
 
 
@@ -151,8 +152,8 @@ private:
 			reward = MAX_REWARD;
 			radius = DEFAULT_RAD;
 			
-			color[0] = 1.0f;
-			color[1] = 1.0f;
+			color[0] = 255.0f;
+			color[1] = 255.0f;
 			color[2] = 0.0f;
 			color[3] = 1.0f;
 		}
