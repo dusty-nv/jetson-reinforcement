@@ -435,7 +435,7 @@ def optimize_model():
 # Below, `num_episodes` is set small. You should download
 # the notebook and run lot more epsiodes.
 
-num_episodes = 100
+num_episodes = 1000
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
