@@ -110,17 +110,18 @@ private:
 			   uint32_t render_width, uint32_t render_height,
 			   uint32_t episode_max_length );
 			   
-	static const int MAX_REWARD  = 200;	// max/min reward obtainable
+	static const int MAX_REWARD  = 1;	// max/min reward obtainable
 	static const int MAX_OBJECTS = 1;	// max number of objects in world
 	static const int MIX_OBJECTS = 50;  // mix of pos/neg objects (0-100%)
-	static const int DEFAULT_RAD = 8;	// default radius of agent/fruit (in pixels)
+	static const int DEFAULT_RAD = 4;	// default radius of agent/fruit (in pixels)
 	
 	void randomize_pos( float* x, float* y );
 	
 	float agentX;		 // location of the agent (x-coordinate)
 	float agentY;		 // location of the agent (y-coordinate)
 	float agentDir;	 	 //  heading of the agent (0-359 degrees)
-	float agentVel;	 	 // velocity of the agent (-N to N)
+	float agentVelX;	 	 // velocity of the agent (-N to N)
+	float agentVelY;
 	float agentRad;		 //   radius of the agent (in pixels)
 	float agentColor[4]; //    color of the agent (RGBA)
 	float bgColor[4];	 // color of the background (RGBA)
@@ -152,8 +153,8 @@ private:
 			reward = MAX_REWARD;
 			radius = DEFAULT_RAD;
 			
-			color[0] = 255.0f;
-			color[1] = 255.0f;
+			color[0] = 1.0f;
+			color[1] = 1.0f;
 			color[2] = 0.0f;
 			color[3] = 1.0f;
 		}
@@ -186,6 +187,7 @@ private:
 	fruitObject* findClosest( float* distanceSq ) const;	
 
 	float lastDistanceSq;
+	float spawnDistanceSq;
 };
 
 #endif

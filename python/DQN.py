@@ -262,7 +262,7 @@ BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
-EPS_DECAY = 1000
+EPS_DECAY = 200
 
 print('[deepRL]  creating DQN model instance')
 
@@ -284,7 +284,7 @@ def save_model(filename):
 	print('[deepRL]  saving model checkpoint to ' + filename)
 	torch.save(model.state_dict(), filename)
 
-optimizer = optim.Adam(model.parameters())
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 #optimizer = optim.RMSprop(model.parameters(), lr=0.05)
 memory = ReplayMemory(10000)
 
@@ -393,7 +393,7 @@ curr_state = None
 last_diff = None
 curr_diff = None
 
-def next_action(state):
+def next_action(state_in):
 	global last_state
 	global curr_state
 	global last_action
@@ -401,26 +401,28 @@ def next_action(state):
 	global last_diff
 
 	#print('state = ' + str(state.size()))
-	state = state.unsqueeze(0)
-	#print('state = ' + str(state))
+	state = state_in.clone().unsqueeze(0)
 	#print('state = ' + str(state.size()))
+	
+	if curr_state is not None:
+		last_state = curr_state.clone()
 
-	last_state = curr_state
-	last_diff = curr_diff
+	if curr_diff is not None:
+		last_diff = curr_diff.clone()
 
-	curr_state = state
+	curr_state = state.clone()
+
+	last_action = select_action(curr_state, allow_random)
 
 	if last_state is not None:
-		#print('computing diff')
 		curr_diff = state - last_state
-		#curr_state = state - last_state
-		last_action = select_action(curr_diff, allow_random)
+		#print('curr_diff = ' + str(curr_diff.abs().sum()) + ' ' + str(curr_diff.max()) + ' ' + str(curr_diff.min()))
+		#last_action = select_action(curr_diff, allow_random)
+		
 	#else:
 	#	curr_state = None
 	#	curr_diff = None
 	#	last_action = None
-
-	#print('last_action = ' + str(last_action))
 
 	if last_action is not None:
 		#print('ret action = ' + str(last_action[0][0]))
@@ -439,13 +441,13 @@ def next_reward(reward, end_episode):
 	#print('reward = ' + str(reward))
 	reward = Tensor([reward])
 	
-	if last_diff is not None and curr_diff is not None and last_action is not None:
-		#print('storing transition')		
+	if last_diff is not None and curr_diff is not None and last_action is not None:	
 		# store the transition in memory
-		memory.push(last_diff, last_action, curr_diff, reward)
+		#memory.push(last_diff, last_action, curr_diff, reward)
+		memory.push(last_state, last_action, curr_state, reward)
 
-		if end_episode:
-			memory.push(curr_diff, last_action, None, reward)
+		#if end_episode:
+		#	memory.push(curr_diff, last_action, None, reward)
 
 		# perform one step of optimization on the target network
 		optimize_model()

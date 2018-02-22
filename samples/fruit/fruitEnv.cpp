@@ -30,18 +30,20 @@ FruitEnv::FruitEnv()
 	agentX   = 0;
 	agentY   = 0;
 	agentDir = 0;
-	agentVel = 0;
+	//agentVel = 0;
 	agentRad = DEFAULT_RAD;
-	
-	agentColor[0] = 255.0f; 
+	agentVelX = 0;
+	agentVelY = 0;
+
+	agentColor[0] = 1.0f; 
 	agentColor[1] = 0.0f; 
-	agentColor[2] = 255.0f; 
+	agentColor[2] = 1.0f; 
 	agentColor[3] = 1.0f;
 	
-	bgColor[0] = 1.0f; 
-	bgColor[1] = 1.0f; 
-	bgColor[2] = 1.0f; 
-	bgColor[3] = 1.0f;
+	bgColor[0] = 0.0f; 
+	bgColor[1] = 0.0f; 
+	bgColor[2] = 0.0f; 
+	bgColor[3] = 0.0f;
 	
 	epMaxFrames  = 0;
 	epFrameCount = 0;
@@ -49,7 +51,9 @@ FruitEnv::FruitEnv()
 	worldHeight  = 0;
 	renderWidth  = 0;
 	renderHeight = 0;
-	lastDistanceSq = 0;
+
+	lastDistanceSq  = 0;
+	spawnDistanceSq = 0;
 	
 	renderCPU = NULL;
 	renderGPU = NULL;
@@ -123,8 +127,9 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		return false;
 	}*/
 	
+//#define FIRST_ORDER
+#ifdef FIRST_ORDER
 	// apply action
-#if 0
 	const float delta = 1.0f;
 
 	if( action == ACTION_FORWARD )
@@ -135,30 +140,34 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		agentX += delta;
 	else if( action == ACTION_LEFT )
 		agentX -= delta;
-#endif
-
-	const float vel_delta = 0.25f;
+#else
+	const float vel_delta = 0.5f;
 	const float dir_delta = 2.5f;
 
 	if( action == ACTION_FORWARD )
-		agentVel += vel_delta;
+		agentVelY += vel_delta;
 	else if( action == ACTION_BACKWARD )
-		agentVel -= vel_delta;
+		agentVelY -= vel_delta;
 	else if( action == ACTION_RIGHT )
-		agentDir += dir_delta;
+		agentVelX += vel_delta;
 	else if( action == ACTION_LEFT )
-		agentDir -= dir_delta;
+		agentVelX -= vel_delta;
 	
 	// limit velocity
-	const float maxVelocity = 1.5f;	
+	const float maxVelocity = 0.5f;	
 	
-	if( agentVel < -maxVelocity )
-		agentVel = -maxVelocity;
-	else if( agentVel > maxVelocity )
-		agentVel = maxVelocity;
+	if( agentVelX < -maxVelocity )
+		agentVelX = -maxVelocity;
+	else if( agentVelX > maxVelocity )
+		agentVelX = maxVelocity;
+
+	if( agentVelY < -maxVelocity )
+		agentVelY = -maxVelocity;
+	else if( agentVelY > maxVelocity )
+		agentVelY = maxVelocity;
 	
 	// limit heading
-	if( agentDir < 0.0f )
+	/*if( agentDir < 0.0f )
 		agentDir += 360.0f;
 	else if( agentDir >= 360.0f )
 		agentDir -= 360.0f;
@@ -170,7 +179,10 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	const float vy  = agentVel * sinf(rad);
 	
 	agentX += vx;
-	agentY += vy;
+	agentY += vy;*/
+	agentX += agentVelX;
+	agentY += agentVelY;
+#endif
 
 	
 	// limit location
@@ -248,10 +260,12 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		fruitObject* closestFruit = findClosest(&fruitDistSq);
 
 		if( reward != NULL )
-			//*reward = (lastDistanceSq > fruitDistSq) ? 0.1f : -0.1f;
-			*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.5f;
+			//*reward = (lastDistanceSq > fruitDistSq) ? 1.0f : 0.0f;
+			//*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.5f;
+			//*reward = (1.0f - (fruitDistSq / spawnDistanceSq)) * 0.1f;
+			*reward = (1.0f - (fruitDistSq / float(worldWidth*worldWidth))) * 0.25f;
 			//*reward = float(MAX_REWARD) * 0.01f * (1.0f - (fruitDistSq / float(worldWidth*worldWidth)));
-			// *reward = 0.0f;
+			//*reward = 0.0f;
 
 		lastDistanceSq = fruitDistSq;
 	}
@@ -367,14 +381,22 @@ void FruitEnv::Reset()
 	const uint32_t numFruit = fruitObjects.size();
 	
 	for( uint32_t n = 0; n < numFruit; n++ )
-		randomize_pos(&fruitObjects[n]->x, &fruitObjects[n]->y);
+	{
+		//randomize_pos(&fruitObjects[n]->x, &fruitObjects[n]->y);
+		fruitObjects[n]->x = float(worldWidth) * 0.5f;
+		fruitObjects[n]->y = float(worldHeight) * 0.5f;
+	}
 	
 	// reset agent dynamics
 	agentDir = 0;
-	agentVel = 0;
+	//agentVel = 0;
+	agentVelX = 0;
+	agentVelY = 0;
 
 	// reset agent position
 	randomize_pos(&agentX, &agentY);
+	//agentX = float(worldWidth) * 0.5f;
+	//agentY = float(worldHeight) * 0.5f;
 
 	// check if there happen to be random overlap
 	for( uint32_t n=0; n < numFruit; n++ )
@@ -382,5 +404,6 @@ void FruitEnv::Reset()
 			Reset();
 
 	findClosest(&lastDistanceSq);
+	spawnDistanceSq = lastDistanceSq;
 	//printf("RESET -- lastDistanceSq = %f\n", lastDistanceSq);
 }
