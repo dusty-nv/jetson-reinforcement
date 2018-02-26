@@ -16,7 +16,7 @@
 #include <signal.h>
 
 
-#define EPISODE_MAX_LENGTH 350
+#define EPISODE_MAX_LENGTH 75
 
 #define RENDER_ZOOM 4
 #define NUM_CHANNELS 3

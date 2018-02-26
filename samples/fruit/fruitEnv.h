@@ -113,7 +113,7 @@ private:
 	static const int MAX_REWARD  = 1;	// max/min reward obtainable
 	static const int MAX_OBJECTS = 1;	// max number of objects in world
 	static const int MIX_OBJECTS = 50;  // mix of pos/neg objects (0-100%)
-	static const int DEFAULT_RAD = 4;	// default radius of agent/fruit (in pixels)
+	static const int DEFAULT_RAD = 6;	// default radius of agent/fruit (in pixels)
 	
 	void randomize_pos( float* x, float* y );
 	
