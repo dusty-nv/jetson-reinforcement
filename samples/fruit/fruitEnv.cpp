@@ -30,8 +30,8 @@ FruitEnv::FruitEnv()
 	agentX   = 0;
 	agentY   = 0;
 	agentDir = 0;
+	//agentVel = 0;
 	agentRad = DEFAULT_RAD;
-
 	agentVelX = 0;
 	agentVelY = 0;
 
@@ -260,13 +260,13 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		fruitObject* closestFruit = findClosest(&fruitDistSq);
 
 		if( reward != NULL )
-			//*reward = (lastDistanceSq > fruitDistSq) ? 1.0f : -1.0f;
-			*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.35f;
+			//*reward = (lastDistanceSq > fruitDistSq) ? 1.0f : 0.0f;
+			//*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.5f;
 			//*reward = (1.0f - (fruitDistSq / spawnDistanceSq)) * 0.1f;
-			//*reward = (1.0f - (fruitDistSq / float(worldWidth*worldWidth))) * 0.25f;
-			//*reward = float(MAX_REWARD) * 0.01f * (1.0f - (fruitDistSq / float(worldWidth*worldWidth)));
-			//*reward = exp(-(fruitDistSq/worldWidth/1.5f))
-			//*reward = 0.0f;
+			*reward = (sqrtf(lastDistanceSq) - sqrtf(fruitDistSq)) * 0.35f;
+			//*reward = 1.0f - (1.0f/(1.0f + (fruitDistSq / float(worldWidth*worldWidth))));
+			//*reward = exp(-(fruitDistSq/worldWidth/1.5f));
+			//*reward = (exp(fruitDistSq)-1.0f)/sqrtf(pow(worldWidth,2));
 
 		lastDistanceSq = fruitDistSq;
 	}
@@ -383,24 +383,21 @@ void FruitEnv::Reset()
 	
 	for( uint32_t n = 0; n < numFruit; n++ )
 	{
-		randomize_pos(&fruitObjects[n]->x, &fruitObjects[n]->y);
-		//fruitObjects[n]->x = float(worldWidth) * 0.5f;
-		//fruitObjects[n]->y = float(worldHeight) * 0.5f;
-		//fruitObjects[n]->x = float(worldWidth) * 0.8f;
-		//fruitObjects[n]->y = float(worldHeight) * 0.8f;
+		//randomize_pos(&fruitObjects[n]->x, &fruitObjects[n]->y);
+		fruitObjects[n]->x = float(worldWidth) * 0.5f;
+		fruitObjects[n]->y = float(worldHeight) * 0.5f;
 	}
 	
 	// reset agent dynamics
-	agentDir  = 0;
+	agentDir = 0;
+	//agentVel = 0;
 	agentVelX = 0;
 	agentVelY = 0;
 
 	// reset agent position
-	//randomize_pos(&agentX, &agentY);
+	randomize_pos(&agentX, &agentY);
 	//agentX = float(worldWidth) * 0.5f;
 	//agentY = float(worldHeight) * 0.5f;
-	agentX = float(worldWidth) * 0.25f;
-	agentY = float(worldHeight) * 0.25f;
 
 	// check if there happen to be random overlap
 	for( uint32_t n=0; n < numFruit; n++ )

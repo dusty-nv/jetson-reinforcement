@@ -23,13 +23,16 @@
 #define INPUT_CHANNELS 3
 
 #define WORLD_NAME "arm_world"
-#define PROP_NAME  "ball"
-#define GRIP_NAME  "gripperright"
+#define PROP_NAME  "tube"
+#define GRIP_NAME  "gripper_middle"
 
 #define REWARD_WIN  1000.0f
 #define REWARD_LOSS -1000.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
+
+#define COLLISION_ITEM   "tube::link::tube_collision"
+#define COLLISION_POINT  "arm::gripper_middle::middle_collision"
 
 #define ANIMATION_STEPS 2000
 
@@ -202,16 +205,34 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 					 << contacts->contact(i).normal(j).z() << "\n";
 			 std::cout << "   Depth:" << contacts->contact(i).depth(j) << "\n";
 		}
+//		
+//		std::cout << "\n" << contacts->contact(i).collision1().c_str() << "\n" << std::endl;
+//		std::cout << (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) << std::endl;	
+//		std::cout << "\n" << contacts->contact(i).collision2().c_str() << "\n" << std::endl;
+//		std::cout << (contacts->contact(i).collision2().c_str() == "arm::gripper_middle::middle_collision") << std::endl;		
+//		std::cout << "\n";
 
 		// issue learning reward
-		if( !testAnimation )
+		//if( !testAnimation )
+		if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) and (strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 and !testAnimation))
 		{
 			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
+			printf("Give max reward and execute gripper \n");
 			rewardHistory = REWARD_WIN;
+			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0.5);
+			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -0.5);
+
+			sleep(10);
+		
 
 			newReward  = true;
 			endEpisode = true;
 		}
+//		else{
+//			rewardHistory = REWARD_LOSS;
+//			newReward  = true;
+//			endEpisode = true;
+//		}
 	}
 }
 
@@ -359,6 +380,7 @@ bool ArmPlugin::updateJoints()
 				ref[n] = JOINT_MIN;
 			else if( ref[n] > JOINT_MAX )
 				ref[n] = JOINT_MAX;
+			
 		}
 
 		animationStep++;
@@ -373,8 +395,12 @@ bool ArmPlugin::updateJoints()
 				testAnimation = false;
 		}
 		else if( animationStep == ANIMATION_STEPS / 2 )
-			RandomizeProps();
-			//ResetPropDynamics();
+			
+			printf("Reset gripper \n");
+			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
+			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
+			//RandomizeProps();
+			ResetPropDynamics();
 
 		return true;
 	}
@@ -466,10 +492,19 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 		double angle(1);
 		//std::string j2name("joint1");  
-		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[0]); 
-		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[1]);
-		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[2]);
-		j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[3]);
+		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	0);
+		//j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[0]); 
+		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[2]);
+
+
+//		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[1]);
+//		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[2]);
+//		j2_controller->SetJointPosition(this->model->GetJoint("joint3"),  ref[3]);
+
+		//j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  1);
+		//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -1);
 		
 		/*j2_controller->SetJointPosition(this->model->GetJoint("joint4"),  ref[3]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint5"),  ref[4]);
@@ -612,6 +647,9 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			episodeFrames    = 0;
 			lastGoalDistance = 0.0f;
 			avgGoalDelta     = 0.0f;
+//			printf("Reset gripper \n");
+//			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
+//			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
 			// ResetPropDynamics();  // now handled mid-reset sequence
 
 			for( uint32_t n=0; n < DOF; n++ )

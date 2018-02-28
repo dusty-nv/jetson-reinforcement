@@ -284,8 +284,8 @@ def save_model(filename):
 	print('[deepRL]  saving model checkpoint to ' + filename)
 	torch.save(model.state_dict(), filename)
 
-#optimizer = optim.Adam(model.parameters(), lr=0.001)
-optimizer = optim.RMSprop(model.parameters(), lr=0.01)		#lr=0.05
+#optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.RMSprop(model.parameters(), lr=0.01)
 memory = ReplayMemory(10000)
 
 steps_done = 0
@@ -302,7 +302,7 @@ def select_action(state, allow_rand):
 		#print('select_action = ' + str(action))
 		return action
 	else:
-		print('[deepRL]  DQN selected exploratory random action')
+#		print('[deepRL]  DQN selected exploratory random action')
 		return LongTensor([[random.randrange(num_actions)]])
 
 
