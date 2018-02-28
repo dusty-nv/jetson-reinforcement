@@ -265,6 +265,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 			//*reward = (1.0f - (fruitDistSq / spawnDistanceSq)) * 0.1f;
 			//*reward = (1.0f - (fruitDistSq / float(worldWidth*worldWidth))) * 0.25f;
 			//*reward = float(MAX_REWARD) * 0.01f * (1.0f - (fruitDistSq / float(worldWidth*worldWidth)));
+			//*reward = exp(-(fruitDistSq/worldWidth/1.5f))
 			//*reward = 0.0f;
 
 		lastDistanceSq = fruitDistSq;
