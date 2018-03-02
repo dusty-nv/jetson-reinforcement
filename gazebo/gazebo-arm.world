@@ -102,6 +102,7 @@
 		</visual>
 		</link>
 
+
 		<link name="joint2">
 		<pose>0 0 1.01 0 1.5707 1.5707</pose>
 		<collision name="collision">
@@ -135,55 +136,6 @@
 				<izz>0.083</izz>
 			</inertia>
 		</inertial>
-		<collision name="collision1">
-			<geometry>
-				<box>
-					<size>.1 .1 .6</size>
-				</box>
-			</geometry>
-		</collision>
-		<visual name="visual1">
-			<geometry>
-				<box>
-					<size>.1 .1 .6</size>
-				</box>
-			</geometry>
-		</visual>
-		</link>
-
-		<link name="joint3">
-		<pose>0 0 1.72 0 1.5707 1.5707</pose>
-		<collision name="collision">
-			<geometry>
-				<cylinder>
-					<radius>.1</radius>
-					<length>.15</length>
-				</cylinder>
-			</geometry>
-		</collision>
-		<visual name="visual">
-			<geometry>
-				<cylinder>
-					<radius>.1</radius>
-					<length>.15</length>
-				</cylinder>
-			</geometry>
-		</visual>
-		</link>
-
-		<link name="link3">
-		<pose>0 0 2.07 0 0 0</pose>
-		<inertial>
-			<mass>.2</mass>
-			<inertia>
-				<ixx>0.083</ixx>
-				<ixy>0.0</ixy>
-				<ixz>0.0</ixz>
-				<iyy>0.083</iyy>
-				<iyz>0.0</iyz>
-				<izz>0.083</izz>
-			</inertia>
-		</inertial>
 		<collision name="collision2">
 			<geometry>
 				<box>
@@ -201,7 +153,7 @@
 		</link>
         
 		<link name="gripperbase">
-		    <pose>0 0 2.38 0 0 0</pose>
+		    <pose>0 0 1.68 0 0 0</pose>
 			<inertial>
 		        <mass>0.3</mass>
 		        <inertia>
@@ -226,7 +178,7 @@
 		</link>
 
 		<link name="gripper_middle">
-			<pose>0 0 2.47 0 0 0</pose>
+			<pose>0 0 1.77 0 0 0</pose>
 			<collision name="middle_collision">
 			<geometry>
 				<box>
@@ -244,7 +196,7 @@
 		</link>
 
 		<link name="gripper_right">
-			<pose>0 0.075 2.505 0 -1.57 -3.14</pose>
+			<pose>0 0.075 1.805 0 -1.57 -3.14</pose>
 			<inertial>
 				<mass>0.1</mass>
 				<inertia>
@@ -269,7 +221,7 @@
 		</link>
 
 		<link name="gripper_left">
-			<pose>0 -0.075 2.505 0 -1.57 -3.14</pose>
+			<pose>0 -0.075 1.805 0 -1.57 -3.14</pose>
 			<inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -319,7 +271,7 @@
 			</axis>
 		</joint>
 
-		<joint name="link1-join1" type="revolute">
+		<joint name="link1-joint1" type="revolute">
 			<pose>0 0 -0.05 0 0 0</pose>
 			<child>link1</child>
 			<parent>joint1</parent>
@@ -349,32 +301,6 @@
 			<pose>0 0 -0.05 0 0 0</pose>
 			<child>link2</child>
 			<parent>joint2</parent>
-			<axis>
-				<limit>
-					<lower>0</lower>
-					<upper>0</upper>
-				</limit>
-				<xyz>0 1 0</xyz>
-			</axis>
-		</joint>
-
-		<joint name="joint3" type="revolute">
-			<pose>0 0 -0.05 0 0 0</pose>
-			<child>joint3</child>
-			<parent>link2</parent>
-			<axis>
-				<limit>
-					<lower>-2</lower>
-					<upper>2</upper>
-				</limit>
-				<xyz>0 1 0</xyz>
-			</axis>
-		</joint>
-
-		<joint name="link3-joint3" type="revolute">
-			<pose>0 0 -0.05 0 0 0</pose>
-			<child>link3</child>
-			<parent>joint3</parent>
 			<axis>
 				<limit>
 					<lower>0</lower>
@@ -422,7 +348,7 @@
 		  
 		<joint name="gripperbase" type="fixed">
             <pose>0 0 -0.05 0 0 0</pose>
-            <parent>link3</parent>
+            <parent>link2</parent>
             <child>gripperbase</child>
             <axis>
                 <xyz>0 1 0</xyz>
@@ -592,7 +518,7 @@
 	<!--               -->
 	<model name="tube">
 		<link name="link">
-		<pose>1.25 0 0 0 0 0</pose>
+		<pose>0.75 0.5 0 0 0 0</pose>
 		
 		<collision name="tube_collision">
 			<geometry>
