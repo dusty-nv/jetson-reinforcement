@@ -260,7 +260,7 @@ def crnn_weights_init(m):
 
 BATCH_SIZE = 64
 GAMMA = 0.9
-EPS_START = 0.9
+EPS_START = 1.0
 EPS_END = 0.05
 EPS_DECAY = 200
 
@@ -286,7 +286,7 @@ def save_model(filename):
 
 optimizer = optim.Adam(model.parameters(), lr=0.006)
 #optimizer = optim.RMSprop(model.parameters(), lr=0.01)
-memory = ReplayMemory(100000)
+memory = ReplayMemory(10000)
 
 steps_done = 0
 
@@ -416,7 +416,7 @@ def next_action(state_in):
 
 	if last_state is not None:
 		curr_diff = state - last_state
-		#print('curr_diff = ' + str(curr_diff.abs().sum()) + ' ' + str(curr_diff.max()) + ' ' + str(curr_diff.min()))
+		print('curr_diff = ' + str(curr_diff.abs().sum()) + ' ' + str(curr_diff.max()) + ' ' + str(curr_diff.min()))
 		#last_action = select_action(curr_diff, allow_random)
 		
 	#else:

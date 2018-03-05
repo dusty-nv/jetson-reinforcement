@@ -26,10 +26,10 @@
 #define PROP_NAME  "tube"
 #define GRIP_NAME  "gripper_middle"
 
-#define REWARD_WIN  1000.0f
-#define REWARD_LOSS -1000.0f
+#define REWARD_WIN  1.0f
+#define REWARD_LOSS -1.0f
 
-#define GAMMA 0.25f
+#define GAMMA 0.35f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -230,11 +230,11 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			newReward  = true;
 			endEpisode = true;
 		}
-//		else{
-//			rewardHistory = REWARD_LOSS;
-//			newReward  = true;
-//			endEpisode = true;
-//		}
+		else{
+			rewardHistory = REWARD_LOSS;
+			newReward  = true;
+			endEpisode = true;
+		}
 	}
 }
 
@@ -570,9 +570,11 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		
 				printf("AVG GOAL DELTA  %f\n", avgGoalDelta);
 		
-				rewardHistory = avgGoalDelta;
+//				rewardHistory = avgGoalDelta;
 
-//				rewardHistory = exp(-GAMMA * distGoal);
+//				rewardHistory = distGoal;
+
+				rewardHistory = exp(-GAMMA * distGoal);
 				
 #if 0
 				if( avgGoalDelta > 0.001f )
