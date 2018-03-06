@@ -258,9 +258,9 @@ def crnn_weights_init(m):
 #    episode.
 #
 
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 GAMMA = 0.9
-EPS_START = 1.0
+EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 200
 
@@ -284,8 +284,8 @@ def save_model(filename):
 	print('[deepRL]  saving model checkpoint to ' + filename)
 	torch.save(model.state_dict(), filename)
 
-optimizer = optim.Adam(model.parameters(), lr=0.006)
-#optimizer = optim.RMSprop(model.parameters(), lr=0.01)
+#optimizer = optim.Adam(model.parameters(), lr=0.006)
+optimizer = optim.RMSprop(model.parameters(), lr=0.01)
 memory = ReplayMemory(10000)
 
 steps_done = 0

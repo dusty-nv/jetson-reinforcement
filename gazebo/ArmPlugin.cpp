@@ -259,7 +259,7 @@ bool ArmPlugin::updateAgent()
 	}
 
 	// make sure the selected action is in-bounds
-	if( action < 0 || action >= DOF * 2 + 1 )
+	if( action < 0 || action >= DOF * 2 )
 	{
 		printf("ArmPlugin - agent selected invalid action, %i\n", action);
 		return false;
@@ -275,7 +275,7 @@ bool ArmPlugin::updateAgent()
 
 	// if the action is even, increase the joint position by the delta parameter
 	// if the action is odd,  decrease the joint position by the delta parameter
-#ifdef VELOCITY_CONTROL
+#if 0
 	float velocity = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
 
 	if( velocity < VELOCITY_MIN )
