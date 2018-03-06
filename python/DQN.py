@@ -416,7 +416,7 @@ def next_action(state_in):
 
 	if last_state is not None:
 		curr_diff = state - last_state
-		print('curr_diff = ' + str(curr_diff.abs().sum()) + ' ' + str(curr_diff.max()) + ' ' + str(curr_diff.min()))
+		#print('curr_diff = ' + str(curr_diff.abs().sum()) + ' ' + str(curr_diff.max()) + ' ' + str(curr_diff.min()))
 		#last_action = select_action(curr_diff, allow_random)
 		
 	#else:

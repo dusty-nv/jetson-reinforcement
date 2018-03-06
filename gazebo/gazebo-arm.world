@@ -518,7 +518,7 @@
 	<!--               -->
 	<model name="tube">
 		<link name="link">
-		<pose>0.75 0 0 0 0 0</pose>
+		<pose>1 0 0 0 0 0</pose>
 		
 		<collision name="tube_collision">
 			<geometry>
@@ -537,10 +537,10 @@
 		              </cylinder>
 			</geometry>
 			<material>
-				<ambient>0.3 0.3 0.3 1</ambient>
+				<ambient>0.5 0 0.5 1</ambient>
 				<diffuse>1.0 0.5 0.0 1</diffuse>
 				<specular>0.01 0.01 0.01 1</specular>
-				<emissive>0 0 0 1</emissive>
+				<emissive>0 1 0 0</emissive>
 				<shader type='vertex'>
 					<normal_map>__default__</normal_map>
 				</shader>

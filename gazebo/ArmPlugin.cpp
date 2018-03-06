@@ -1,4 +1,4 @@
-/*
+/* 
  * http://github.com/dusty-nv/jetson-reinforcement
  */
 
@@ -7,7 +7,6 @@
 
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
-
 
 #define PI 3.141592653589793238462643383279502884197169f
 
@@ -18,8 +17,8 @@
 #define VELOCITY_MIN -0.2f
 #define VELOCITY_MAX  0.2f
 
-#define INPUT_WIDTH   128
-#define INPUT_HEIGHT  128
+#define INPUT_WIDTH   64
+#define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
 
 #define WORLD_NAME "arm_world"
@@ -38,6 +37,8 @@
 
 #define ANIMATION_STEPS 1000
 
+#define DEBUG 0
+
 
 namespace gazebo
 {
@@ -54,9 +55,18 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	for( uint32_t n=0; n < DOF; n++ )
 		resetPos[n] = 0.0f;
 
-	//resetPos[1] = -0.25;
-	//resetPos[2] = 1.5;
-	resetPos[3] = 0.25;    // custom reset positions
+#if 0
+	// custom reset positions 
+	// Add randomizations
+	resetPos[1] = -0.25;
+	resetPos[2] = 1.5;
+	resetPos[3] = 0.25;   
+
+#else
+	// Set single reset position
+	resetPos[1] = 0.25;
+
+#endif
 
 	for( uint32_t n=0; n < DOF; n++ )
 	{
@@ -85,6 +95,8 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	animationStep    = 0;
 	lastGoalDistance = 0.0f;
 	avgGoalDelta     = 0.0f;
+	successful_grabs = 0;
+	total_runs = 0;
 }
 
 
@@ -94,7 +106,7 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2/*+1*/);
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2);
 
 	if( !agent )
 		printf("ArmPlugin - failed to create AI agent\n");
@@ -177,7 +189,7 @@ void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 	size = sizeof(this->data) - sizeof(this->data.image) +
 	_msg->image().data().size(); */
 
-	printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);
+	if(DEBUG){printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);}
 	//std::cout << _msg->DebugString();
 }
 
@@ -185,51 +197,36 @@ void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 // onCollisionMsg
 void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 {
-	//printf("collision callback (%u contacts)\n", contacts->contact_size());
+	if(DEBUG){printf("collision callback (%u contacts)\n", contacts->contact_size());}
 
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{
 		if( strcmp(contacts->contact(i).collision2().c_str(), COLLISION_FILTER) == 0 )
 			continue;
 
-		std::cout << "Collision between[" << contacts->contact(i).collision1()
-			     << "] and [" << contacts->contact(i).collision2() << "]\n";
+		if(DEBUG){std::cout << "Collision between[" << contacts->contact(i).collision1()
+			     << "] and [" << contacts->contact(i).collision2() << "]\n";}
 
-		for (unsigned int j = 0; j < contacts->contact(i).position_size(); ++j)
-		{
-			 std::cout << j << "  Position:"
-					 << contacts->contact(i).position(j).x() << " "
-					 << contacts->contact(i).position(j).y() << " "
-					 << contacts->contact(i).position(j).z() << "\n";
-			 std::cout << "   Normal:"
-					 << contacts->contact(i).normal(j).x() << " "
-					 << contacts->contact(i).normal(j).y() << " "
-					 << contacts->contact(i).normal(j).z() << "\n";
-			 std::cout << "   Depth:" << contacts->contact(i).depth(j) << "\n";
-		}
-//		
-//		std::cout << "\n" << contacts->contact(i).collision1().c_str() << "\n" << std::endl;
-//		std::cout << (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) << std::endl;	
-//		std::cout << "\n" << contacts->contact(i).collision2().c_str() << "\n" << std::endl;
-//		std::cout << (contacts->contact(i).collision2().c_str() == "arm::gripper_middle::middle_collision") << std::endl;		
-//		std::cout << "\n";
 
-		// issue learning reward
-		//if( !testAnimation )
+		// Check if there is collision between middle grippper and object then issue learning reward
 		if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) and (strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 and !testAnimation))
 		{
 			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
 			printf("Give max reward and execute gripper \n");
 			rewardHistory = REWARD_WIN;
-//			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0.5);
-//			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -0.5);
+
+			// Set controller
+			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0.5);
+			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -0.5);
 
 			//sleep(10);
-		
 
+			successful_grabs++;
+		
 			newReward  = true;
 			endEpisode = true;
 		}
+
 		else{
 			rewardHistory = REWARD_LOSS;
 			newReward  = true;
@@ -268,7 +265,7 @@ bool ArmPlugin::updateAgent()
 		return false;
 	}
 
-	printf("ArmPlugin - agent selected action %i\n", action);
+	if(DEBUG){printf("ArmPlugin - agent selected action %i\n", action);}
 
 	// action 0 does nothing, the others index a joint
 	/*if( action == 0 )
@@ -410,7 +407,7 @@ bool ArmPlugin::updateJoints()
 	{
 		// update the AI agent when new camera frame is ready
 		episodeFrames++;
-		printf("episode frame = %i\n", episodeFrames);
+		if(DEBUG){printf("episode frame = %i\n", episodeFrames);}
 
 		// reset camera ready flag
 		newState = false;
@@ -568,7 +565,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 				avgGoalDelta = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
 		
-				printf("AVG GOAL DELTA  %f\n", avgGoalDelta);
+				
 		
 //				rewardHistory = avgGoalDelta;
 
@@ -632,7 +629,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	// issue rewards and train DQN
 	if( newReward && agent != NULL )
 	{
-		printf("ArmPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" : (rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");
+//		printf("ArmPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" : (rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");
 		agent->NextReward(rewardHistory, endEpisode);
 
 		// reset reward indicator
@@ -647,6 +644,10 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			episodeFrames    = 0;
 			lastGoalDistance = 0.0f;
 			avgGoalDelta     = 0.0f;
+			total_runs++;
+
+			printf("Current Accuracy: %f\n", successful_grabs/(double)total_runs);
+
 //			printf("Reset gripper \n");
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
