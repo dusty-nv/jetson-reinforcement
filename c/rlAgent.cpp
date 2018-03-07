@@ -71,7 +71,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 
 
 // Init
-bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel )
+bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel, const char* optimizer, float learning_rate, uint32_t replay_mem, uint32_t batch_size, float gamma, float epsilon_start,  float epsilon_end,  float epsilon_decay, bool allow_random, bool debug_mode)
 {
 	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return false;
@@ -84,24 +84,61 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	char channelStr[32];
 	char widthStr[32];
 	char heightStr[32];
+	char optimizerStr[32];
+	char learning_rateStr[32];
+	char replay_memStr[32];
+	char batch_sizeStr[32]; 
+	char gammaStr[32];
+	char epsilon_startStr[32]; 
+	char epsilon_endStr[32]; 
+	char epsilon_decayStr[32]; 
+	char allow_randomStr[32];
+	char debug_modeStr[32]; 
 
 	//sprintf(inputsStr, "--inputs=%u", numInputs);
 	sprintf(widthStr, "--width=%u", width);
 	sprintf(heightStr, "--height=%u", height);
-	sprintf(actionStr, "--actions=%u", numActions);
 	sprintf(channelStr, "--channels=%u", channels);
+	sprintf(actionStr, "--actions=%u", numActions);
+	sprintf(optimizerStr, "--optimizer=%s", optimizer);
+	sprintf(learning_rateStr, "--learning_rate=%f", learning_rate);
+	sprintf(replay_memStr, "--replay_mem=%u", replay_mem);
+	sprintf(batch_sizeStr, "--batch_size=%u", batch_size);
+	sprintf(gammaStr, "--gamma=%f", gamma);
+	sprintf(epsilon_startStr, "--epsilon_start=%f", epsilon_start);
+	sprintf(epsilon_endStr, "--epsilon_end=%f", epsilon_end);
+	sprintf(epsilon_decayStr, "--epsilon_decay=%f", epsilon_decay);
+	sprintf(allow_randomStr, "--allow_random=%u", allow_random);
+	sprintf(debug_modeStr, "--debug_mode=%u", debug_mode);
+
 
 	// set python command line
-	int py_argc = 5;
-	char* py_argv[5];
+	int py_argc = 15;
+	char* py_argv[15];
 
 	py_argv[0] = (char*)module;
-	//py_argv[1] = inputsStr;
 	py_argv[1] = actionStr;
 	py_argv[2] = heightStr;
 	py_argv[3] = widthStr;
 	py_argv[4] = channelStr;
-	
+	py_argv[5] = optimizerStr;
+	py_argv[6] = learning_rateStr;
+	py_argv[7] = replay_memStr;
+	py_argv[8] = batch_sizeStr;
+	py_argv[9] = gammaStr;
+	py_argv[10] = epsilon_startStr;
+	py_argv[11] = epsilon_endStr;
+	py_argv[12] = epsilon_decayStr;
+	py_argv[13] = allow_randomStr;
+	py_argv[14] = debug_modeStr;
+
+	std::cout<< allow_randomStr<< std::endl;
+	std::cout<< debug_modeStr<< std::endl;
+
+	std::cout<< py_argv[13] << std::endl;
+	std::cout<< py_argv[14] << std::endl;
+
+
 	// load python module
 	if( !LoadModule(module, py_argc, py_argv) )
 		return false;

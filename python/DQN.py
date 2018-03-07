@@ -16,6 +16,8 @@ from torch.autograd import Variable
 
 import CRNN as crnn
 
+import sys
+
 
 # if gpu is to be used
 use_cuda = torch.cuda.is_available()
@@ -32,6 +34,16 @@ parser.add_argument('--height', type=int, default=64, metavar='N', help='height 
 parser.add_argument('--channels', type=int, default=3, metavar='N', help='channels in the input image')
 parser.add_argument('--actions', type=int, default=3, metavar='N', help='number of output actions from the neural network')
 parser.add_argument('--rnn', action='store_true', help='use RNN/LSTM layers in network')
+parser.add_argument('--optimizer', default='RMSprop', help='Optimizer of choice')
+parser.add_argument('--learning_rate', type=float, default=0.001, metavar='N', help='optimizer learning rate')
+parser.add_argument('--replay_mem', type=int, default=10000, metavar='N', help='replay memory')
+parser.add_argument('--batch_size', type=int, default=64, metavar='N', help='batch size')
+parser.add_argument('--gamma', type=float, default=0.9, metavar='N', help='gamma')
+parser.add_argument('--epsilon_start', type=float, default=0.9, metavar='N', help='epsilon_start')
+parser.add_argument('--epsilon_end', type=float, default=0.05, metavar='N', help='epsilon_end')
+parser.add_argument('--epsilon_decay', type=float, default=200, metavar='N', help='epsilon_decay')
+parser.add_argument('--allow_random', type=int, default=1, metavar='N', help='Allow DQN to select random actions')
+parser.add_argument('--debug_mode', type=int, default=0, metavar='N', help='debug mode')
 
 args = parser.parse_args()
 
@@ -40,7 +52,16 @@ input_height   = args.height
 input_channels = args.channels
 num_actions    = args.actions
 use_rnn		= args.rnn
-allow_random   = True
+optimizer = args.optimizer
+learning_rate = args.learning_rate
+replay_mem = args.replay_mem
+batch_size = args.batch_size
+gamma = args.gamma
+epsilon_start = args.epsilon_start
+epsilon_end = args.epsilon_end
+epsilon_decay = args.epsilon_decay
+allow_random = args.allow_random
+debug_mode = args.debug_mode
 
 print('[deepRL]  use_cuda:       ' + str(use_cuda))
 print('[deepRL]  use_rnn:        ' + str(use_rnn))
@@ -48,6 +69,17 @@ print('[deepRL]  input_width:    ' + str(input_width))
 print('[deepRL]  input_height:   ' + str(input_height))
 print('[deepRL]  input_channels: ' + str(input_channels))
 print('[deepRL]  num_actions:    ' + str(num_actions))
+print('[deepRL]  optimizer:      ' + str(optimizer))
+print('[deepRL]  learning rate:  ' + str(learning_rate))
+print('[deepRL]  replay_memory:  ' + str(replay_mem))
+print('[deepRL]  batch_size:     ' + str(batch_size))
+print('[deepRL]  gamma:          ' + str(gamma))
+print('[deepRL]  epsilon_start:  ' + str(epsilon_start))
+print('[deepRL]  epsilon_end:    ' + str(epsilon_end))
+print('[deepRL]  epsilon_decay:  ' + str(epsilon_decay))
+print('[deepRL]  allow_random:   ' + str(allow_random))
+print('[deepRL]  debug_mode:     ' + str(debug_mode))
+
 
 
 ######################################################################
@@ -258,11 +290,6 @@ def crnn_weights_init(m):
 #    episode.
 #
 
-BATCH_SIZE = 32
-GAMMA = 0.9
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 200
 
 print('[deepRL]  creating DQN model instance')
 
@@ -284,17 +311,25 @@ def save_model(filename):
 	print('[deepRL]  saving model checkpoint to ' + filename)
 	torch.save(model.state_dict(), filename)
 
-#optimizer = optim.Adam(model.parameters(), lr=0.006)
-optimizer = optim.RMSprop(model.parameters(), lr=0.01)
-memory = ReplayMemory(10000)
+if (optimizer == 'Adam'):
+	optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+elif (optimizer == 'RMSprop'):
+	optimizer = optim.RMSprop(model.parameters(), lr=learning_rate)
+
+else:
+	print('Optimizer Error. Make sure you have choosen the right optimizer and learning rate')
+	sys.exit()
+
+memory = ReplayMemory(replay_mem)
 
 steps_done = 0
 
 def select_action(state, allow_rand):
 	global steps_done
 	sample = random.random()
-	eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-		math.exp(-1. * steps_done / EPS_DECAY)
+	eps_threshold = epsilon_end + (epsilon_start - epsilon_end) * \
+		math.exp(-1. * steps_done / epsilon_decay)
 	steps_done += 1
 	if not allow_rand or sample > eps_threshold:
 		action = model(
@@ -330,9 +365,9 @@ last_sync = 0
 
 def optimize_model():
     global last_sync
-    if len(memory) < BATCH_SIZE:
+    if len(memory) < batch_size:
         return
-    transitions = memory.sample(BATCH_SIZE)
+    transitions = memory.sample(batch_size)
     # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
     # detailed explanation).
     batch = Transition(*zip(*transitions))
@@ -357,14 +392,14 @@ def optimize_model():
     state_action_values = model(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
-    next_state_values = Variable(torch.zeros(BATCH_SIZE).type(Tensor))
+    next_state_values = Variable(torch.zeros(batch_size).type(Tensor))
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
     # Now, we don't want to mess up the loss with a volatile flag, so let's
     # clear it. After this, we'll just end up with a Variable that has
     # requires_grad=False
     next_state_values.volatile = False
     # Compute the expected Q values
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    expected_state_action_values = (next_state_values * gamma) + reward_batch
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)

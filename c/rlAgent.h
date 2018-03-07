@@ -135,7 +135,11 @@ protected:
 	virtual bool Init( uint32_t width, uint32_t height, uint32_t channels, 
 				    uint32_t numActions, const char* module, 
 				    const char* nextAction, const char* nextReward,
-				    const char* loadModel, const char* saveModel );
+				    const char* loadModel, const char* saveModel,
+				    const char* optimizer = "RMSprop", float learning_rate = 0.001, 
+				    uint32_t replay_mem = 10000, uint32_t batch_size = 64, float gamma = 0.9, 
+				    float epsilon_start = 0.9,  float epsilon_end = 0.05,  float epsilon_decay = 200,
+				    bool allow_random = true, bool debug_mode = false);
 #ifdef USE_LUA
 	lua_State* L;		/**< Lua/Torch7 operating environment */
 	THCState*  THC;	/**< cutorch state */

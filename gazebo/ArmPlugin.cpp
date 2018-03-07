@@ -17,9 +17,22 @@
 #define VELOCITY_MIN -0.2f
 #define VELOCITY_MAX  0.2f
 
+
+// Define DQN Settings
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
+#define OPTIMIZER "RMSprop"
+#define LEARNING_RATE 0.001f
+#define REPLAY_MEMORY 10000
+#define BATCH_SIZE 32
+#define GAMMA 0.9f
+#define EPS_START 0.9f
+#define EPS_END 0.05f
+#define EPS_DECAY 200
+#define ALLOW_RANDOM true
+#define DEBUG_DQN false
+
 
 #define WORLD_NAME "arm_world"
 #define PROP_NAME  "tube"
@@ -28,7 +41,7 @@
 #define REWARD_WIN  1.0f
 #define REWARD_LOSS -1.0f
 
-#define GAMMA 0.35f
+#define GAMMA_FALLOFF 0.35f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -106,7 +119,8 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2);
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2, OPTIMIZER, LEARNING_RATE,
+	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
 
 	if( !agent )
 		printf("ArmPlugin - failed to create AI agent\n");
@@ -554,7 +568,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		{
 			const float distGoal = BoxDistance(gripBBox, propBBox); // compute the reward from distance to the goal
 
-			printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);
+			if(DEBUG){printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
 
 			if( episodeFrames > 1 )
 			{
@@ -571,7 +585,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 //				rewardHistory = distGoal;
 
-				rewardHistory = exp(-GAMMA * distGoal);
+				rewardHistory = exp(-GAMMA_FALLOFF * distGoal);
 				
 #if 0
 				if( avgGoalDelta > 0.001f )
