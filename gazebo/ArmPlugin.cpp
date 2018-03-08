@@ -23,12 +23,12 @@
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
-#define OPTIMIZER "RMSprop"
-#define LEARNING_RATE 0.001f
+#define OPTIMIZER "Adam"
+#define LEARNING_RATE 0.01f
 #define REPLAY_MEMORY 10000
-#define BATCH_SIZE 64
+#define BATCH_SIZE 48
 #define GAMMA 0.9f
-#define EPS_START 0.9f
+#define EPS_START 1.0f
 #define EPS_END 0.05f
 #define EPS_DECAY 200
 #define ALLOW_RANDOM true
@@ -53,9 +53,9 @@
 #define ANIMATION_STEPS 1000
 
 // Set Debug Mode
-#define DEBUG 0
+#define DEBUG true
 
-// Lock base rotation DOF (Add dof in header file if on)
+// Lock base rotation DOF (Add dof in header file if off)
 #define LOCKBASE true
 
 
@@ -224,7 +224,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 
 		else{
 			// Give penalty for non correct collisions
-			rewardHistory = 0.5 * REWARD_LOSS;
+//			rewardHistory = 0.1 * REWARD_LOSS;
 			newReward  = true;
 			endEpisode = true;
 		}
@@ -511,8 +511,8 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	if( maxEpisodeLength > 0 && episodeFrames > maxEpisodeLength )
 	{
 		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
-
-		rewardHistory = 0.5 * REWARD_LOSS;
+		rewardHistory = 0;
+//		rewardHistory = 0.1 * REWARD_LOSS;
 		newReward     = true;
 		endEpisode    = true;
 	}
@@ -547,7 +547,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			for( uint32_t n=0; n < 10; n++ )
 				printf("GROUND CONTACT, EOE\n");
 
-			rewardHistory = REWARD_LOSS;
+			rewardHistory = 0.5 * REWARD_LOSS;
 			newReward     = true;
 			endEpisode    = true;
 		}

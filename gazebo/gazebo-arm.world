@@ -537,10 +537,10 @@
 		              </cylinder>
 			</geometry>
 			<material>
-				<ambient>0.5 0 0.5 1</ambient>
-				<diffuse>1.0 0.5 0.0 1</diffuse>
+				<ambient>0.5 0.5 0.5 1</ambient>
+				<diffuse>0.01 0.5 0.5 1</diffuse>
 				<specular>0.01 0.01 0.01 1</specular>
-				<emissive>0 1 0 0</emissive>
+				<emissive>0.1 0.1 0 0</emissive>
 				<shader type='vertex'>
 					<normal_map>__default__</normal_map>
 				</shader>
