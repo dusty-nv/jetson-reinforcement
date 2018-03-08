@@ -132,13 +132,6 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	py_argv[13] = allow_randomStr;
 	py_argv[14] = debug_modeStr;
 
-	std::cout<< allow_randomStr<< std::endl;
-	std::cout<< debug_modeStr<< std::endl;
-
-	std::cout<< py_argv[13] << std::endl;
-	std::cout<< py_argv[14] << std::endl;
-
-
 	// load python module
 	if( !LoadModule(module, py_argc, py_argv) )
 		return false;

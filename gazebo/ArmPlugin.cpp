@@ -13,19 +13,20 @@
 #define JOINT_MIN	-0.75f
 #define JOINT_MAX	 2.0f
 
-#define VELOCITY_CONTROL
+// Turn on velocity based control
+#define VELOCITY_CONTROL false
 #define VELOCITY_MIN -0.2f
 #define VELOCITY_MAX  0.2f
 
 
-// Define DQN Settings
+// Define DQN API Settings
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
 #define OPTIMIZER "RMSprop"
 #define LEARNING_RATE 0.001f
 #define REPLAY_MEMORY 10000
-#define BATCH_SIZE 32
+#define BATCH_SIZE 64
 #define GAMMA 0.9f
 #define EPS_START 0.9f
 #define EPS_END 0.05f
@@ -33,24 +34,29 @@
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
 
-
+// Define Object Names
 #define WORLD_NAME "arm_world"
 #define PROP_NAME  "tube"
 #define GRIP_NAME  "gripper_middle"
 
+// Define Reward Parameters
 #define REWARD_WIN  1.0f
 #define REWARD_LOSS -1.0f
-
 #define GAMMA_FALLOFF 0.35f
 
+// Define Collision Parameters
 #define COLLISION_FILTER "ground_plane::link::collision"
-
 #define COLLISION_ITEM   "tube::link::tube_collision"
 #define COLLISION_POINT  "arm::gripper_middle::middle_collision"
 
+// Animation Steps
 #define ANIMATION_STEPS 1000
 
+// Set Debug Mode
 #define DEBUG 0
+
+// Lock base rotation DOF (Add dof in header file if on)
+#define LOCKBASE true
 
 
 namespace gazebo
@@ -68,18 +74,7 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	for( uint32_t n=0; n < DOF; n++ )
 		resetPos[n] = 0.0f;
 
-#if 0
-	// custom reset positions 
-	// Add randomizations
-	resetPos[1] = -0.25;
-	resetPos[2] = 1.5;
-	resetPos[3] = 0.25;   
-
-#else
-	// Set single reset position
 	resetPos[1] = 0.25;
-
-#endif
 
 	for( uint32_t n=0; n < DOF; n++ )
 	{
@@ -188,23 +183,8 @@ void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 	memcpy(inputBuffer[0], _msg->image().data().c_str(), inputBufferSize);
 	newState = true;
 
-	/* unsigned int oldCount = this->data.image_count;
-	this->data.image_count = _msg->image().data().size();
-
-	if (oldCount != this->data.image_count)
-	{
-		delete this->data.image;
-		this->data.image = new uint8_t[this->data.image_count];
-	}
-
-	// Set the image pixels
-	memcpy(this->data.image, _msg->image().data().c_str(),_msg->image().data().size());
-
-	size = sizeof(this->data) - sizeof(this->data.image) +
-	_msg->image().data().size(); */
-
 	if(DEBUG){printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);}
-	//std::cout << _msg->DebugString();
+
 }
 
 
@@ -222,19 +202,20 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			     << "] and [" << contacts->contact(i).collision2() << "]\n";}
 
 
-		// Check if there is collision between middle grippper and object then issue learning reward
+		// Check if there is collision between middle prong and object then issue learning reward
 		if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) and (strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 and !testAnimation))
 		{
-			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
 			printf("Give max reward and execute gripper \n");
+			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
 			rewardHistory = REWARD_WIN;
 
-			// Set controller
+			// Set gripper
 			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0.5);
 			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -0.5);
 
 			//sleep(10);
 
+			// Increment success
 			successful_grabs++;
 		
 			newReward  = true;
@@ -242,7 +223,8 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		}
 
 		else{
-			rewardHistory = REWARD_LOSS;
+			// Give penalty for non correct collisions
+			rewardHistory = 0.5 * REWARD_LOSS;
 			newReward  = true;
 			endEpisode = true;
 		}
@@ -287,9 +269,11 @@ bool ArmPlugin::updateAgent()
 	
 	action--;*/	// with action 0 = no-op, index 1 should map to joint 0
 
+
+#if VELOCITY_CONTROL
 	// if the action is even, increase the joint position by the delta parameter
 	// if the action is odd,  decrease the joint position by the delta parameter
-#if 0
+
 	float velocity = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
 
 	if( velocity < VELOCITY_MIN )
@@ -326,6 +310,7 @@ bool ArmPlugin::updateAgent()
 		joint = JOINT_MAX;
 
 	ref[action/2] = joint;
+
 #endif
 
 	return true;
@@ -338,6 +323,7 @@ bool ArmPlugin::updateJoints()
 	if( testAnimation )	// test sequence
 	{
 		const float step = (JOINT_MAX - JOINT_MIN) * (float(1.0f) / float(ANIMATION_STEPS));
+
 #if 0
 		// range of motion
 		if( animationStep < ANIMATION_STEPS )
@@ -372,6 +358,7 @@ bool ArmPlugin::updateJoints()
 			//const float r = float(rand()) / float(RAND_MAX);
 			//setAnimationTarget( 10000.0f, 0.0f );
 		}
+
 #else
 		// return to base position
 		for( uint32_t n=0; n < DOF; n++ )
@@ -417,10 +404,12 @@ bool ArmPlugin::updateJoints()
 
 		return true;
 	}
+
 	else if( newState && agent != NULL )
 	{
 		// update the AI agent when new camera frame is ready
 		episodeFrames++;
+
 		if(DEBUG){printf("episode frame = %i\n", episodeFrames);}
 
 		// reset camera ready flag
@@ -506,16 +495,16 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		double angle(1);
 		//std::string j2name("joint1");  
 
+#if LOCKBASE
 		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	0);
-
-//		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[0]); 
 		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
 
-
-		//j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  1);
-		//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -1);
-
+#else
+		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[0]); 
+		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[1]);
+		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[2]);
+#endif
 	}
 
 	// episode timeout
@@ -523,8 +512,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	{
 		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
 
-//		rewardHistory = REWARD_LOSS;
-		rewardHistory = 0;
+		rewardHistory = 0.5 * REWARD_LOSS;
 		newReward     = true;
 		endEpisode    = true;
 	}
@@ -560,7 +548,6 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 				printf("GROUND CONTACT, EOE\n");
 
 			rewardHistory = REWARD_LOSS;
-//			rewardHistory = 0;
 			newReward     = true;
 			endEpisode    = true;
 		}
@@ -578,12 +565,6 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 				const float movingAvg  = 0.9f;
 
 				avgGoalDelta = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
-		
-				
-		
-//				rewardHistory = avgGoalDelta;
-
-//				rewardHistory = distGoal;
 
 				rewardHistory = exp(-GAMMA_FALLOFF * distGoal);
 				
@@ -643,7 +624,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	// issue rewards and train DQN
 	if( newReward && agent != NULL )
 	{
-//		printf("ArmPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" : (rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");
+		if(DEBUG){printf("ArmPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" :(rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");}
 		agent->NextReward(rewardHistory, endEpisode);
 
 		// reset reward indicator
@@ -665,7 +646,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 //			printf("Reset gripper \n");
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
-//			 ResetPropDynamics();  // now handled mid-reset sequence
+//			ResetPropDynamics();  // now handled mid-reset sequence
 
 			for( uint32_t n=0; n < DOF; n++ )
 				vel[n] = 0.0f;
@@ -719,6 +700,12 @@ void ArmPlugin::setAnimationTarget( float x, float y )
 	dT[2] /= float(ANIMATION_STEPS);
 
 	printf("dT:  %f  %f  %f\n", dT[0], dT[1], dT[2]);
+}
+
+inline float randf( float rand_min, float rand_max )
+{
+	const float r = float(rand()) / float(RAND_MAX);
+	return (r * (rand_max - rand_min)) + rand_min;
 }
 
 }
