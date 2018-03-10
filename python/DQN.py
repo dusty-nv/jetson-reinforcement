@@ -30,7 +30,7 @@ parser.add_argument('--width', type=int, default=64, metavar='N', help='width of
 parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
 parser.add_argument('--channels', type=int, default=3, metavar='N', help='channels in the input image')
 parser.add_argument('--actions', type=int, default=3, metavar='N', help='number of output actions from the neural network')
-parser.add_argument('--lstm', action='store_true', help='use LSTM layers in network')
+parser.add_argument('--lstm', action='store_true', default=False, help='use LSTM layers in network')
 
 args = parser.parse_args()
 
@@ -39,6 +39,7 @@ input_height   = args.height
 input_channels = args.channels
 num_actions    = args.actions
 use_lstm		= args.lstm
+lstm_size      = 256
 allow_random   = True
 
 print('[deepRL]  use_cuda:       ' + str(use_cuda))
@@ -47,6 +48,7 @@ print('[deepRL]  input_width:    ' + str(input_width))
 print('[deepRL]  input_height:   ' + str(input_height))
 print('[deepRL]  input_channels: ' + str(input_channels))
 print('[deepRL]  num_actions:    ' + str(num_actions))
+
 
 
 ######################################################################
@@ -184,20 +186,6 @@ class DQN(nn.Module):
 		#	self.conv5 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
 		#	self.bn5 = nn.BatchNorm2d(32)
 
-		#print('done creating Conv2d() layers')
-		# from the convolutions find the size of the last filter
-		#x = Variable(torch.Tensor(1, input_channels, input_height, input_width).zero_())
-		#print('done Variable(torch.Tensor)')
-		#print(x)
-		#x = F.relu(self.bn1(self.conv1(x)))
-		#print('done relu 1')
-		#x = F.relu(self.bn2(self.conv2(x)))
-		#x = F.relu(self.bn3(self.conv3(x)))
-		#y = x.view(x.size(0), -1)
-		#print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
-
-		#self.head = nn.Linear(y.size(1), num_actions)
-		#self.head = nn.Linear(448, num_actions)
 		self.head = None
 
 	def forward(self, x):
@@ -221,15 +209,50 @@ class DQN(nn.Module):
 		return self.head(y)
 
 
+#
+# Deep Recurrent Q-Network (with LSTM)
+#
+class DRQN(nn.Module):
 
-# custom weights initialization called on crnn
-def crnn_weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        m.weight.data.normal_(0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        m.weight.data.normal_(1.0, 0.02)
-        m.bias.data.fill_(0)
+	def __init__(self):
+		print('[deepRL]  DRQN::__init__()')
+		super(DRQN, self).__init__()
+		self.conv1 = nn.Conv2d(input_channels, 16, kernel_size=5, stride=2)
+		self.bn1 = nn.BatchNorm2d(16)
+		self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
+		self.bn2 = nn.BatchNorm2d(32)
+		self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+		self.bn3 = nn.BatchNorm2d(32)
+
+		self.lstm = None
+		self.head = None
+
+	def forward(self, inputs):
+		x, (hx, cx) = inputs
+
+		x = F.relu(self.bn1(self.conv1(x)))
+		x = F.relu(self.bn2(self.conv2(x)))
+		x = F.relu(self.bn3(self.conv3(x)))
+
+		y = x.view(x.size(0), -1)
+
+		if self.lstm is None:
+			print('[deepRL]  nn.Conv2d() output size = ' + str(y.size(1)))
+			self.lstm = nn.LSTMCell(y.size(1), lstm_size)
+	
+			if use_cuda:
+				self.lstm.cuda()
+
+		if self.head is None:
+			self.head = nn.Linear(lstm_size, num_actions)
+
+			if use_cuda:
+				self.head.cuda()
+
+		hx, cx = self.lstm(y, (hx, cx))
+		y = hx
+
+		return self.head(y), (hx, cx)
 
 
 ######################################################################
@@ -265,7 +288,15 @@ EPS_DECAY = 200
 
 print('[deepRL]  creating DQN model instance')
 
-model = DQN()
+if use_lstm:
+	model = DRQN()
+
+	lstm_hx = Variable(torch.zeros(1, lstm_size))
+	lstm_cx = Variable(torch.zeros(1, lstm_size))
+	
+	print('[deepRL]  LSTM (hx, cx) size = ' + str(lstm_hx.size(1)))
+else:
+	model = DQN()
 
 print('[deepRL]  DQN model instance created')
 
@@ -301,6 +332,25 @@ def select_action(state, allow_rand):
 		print('[deepRL]  DQN selected exploratory random action')
 		return LongTensor([[random.randrange(num_actions)]])
 
+
+def select_action_lstm(state, allow_rand):
+	global steps_done
+	global lstm_hx
+	global lstm_cx
+
+	sample = random.random()
+	eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+		math.exp(-1. * steps_done / EPS_DECAY)
+	steps_done += 1
+	if not allow_rand or sample > eps_threshold:
+		action, (lstm_hx, lstm_cx) = model(
+			Variable(state, volatile=True).type(FloatTensor), (lstm_hx, lstm_cx))
+		action = action.data.max(1)[1].unsqueeze(0)
+		#print('select_action = ' + str(action))
+		return action
+	else:
+		print('[deepRL]  DQN selected exploratory random action')
+		return LongTensor([[random.randrange(num_actions)]])
 
 episode_durations = []
 
@@ -408,7 +458,10 @@ def next_action(state_in):
 
 	curr_state = state.clone()
 
-	last_action = select_action(curr_state, allow_random)
+	if use_lstm:
+		last_action = select_action_lstm(curr_state, allow_random)
+	else:
+		last_action = select_action(curr_state, allow_random)
 
 	if last_state is not None:
 		curr_diff = state - last_state
