@@ -14,7 +14,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-import CRNN as crnn
 
 
 # if gpu is to be used
@@ -31,7 +30,7 @@ parser.add_argument('--width', type=int, default=64, metavar='N', help='width of
 parser.add_argument('--height', type=int, default=64, metavar='N', help='height of virtual screen')
 parser.add_argument('--channels', type=int, default=3, metavar='N', help='channels in the input image')
 parser.add_argument('--actions', type=int, default=3, metavar='N', help='number of output actions from the neural network')
-parser.add_argument('--rnn', action='store_true', help='use RNN/LSTM layers in network')
+parser.add_argument('--lstm', action='store_true', help='use LSTM layers in network')
 
 args = parser.parse_args()
 
@@ -39,11 +38,11 @@ input_width    = args.width
 input_height   = args.height
 input_channels = args.channels
 num_actions    = args.actions
-use_rnn		= args.rnn
+use_lstm		= args.lstm
 allow_random   = True
 
 print('[deepRL]  use_cuda:       ' + str(use_cuda))
-print('[deepRL]  use_rnn:        ' + str(use_rnn))
+print('[deepRL]  use_lstm:       ' + str(use_lstm))
 print('[deepRL]  input_width:    ' + str(input_width))
 print('[deepRL]  input_height:   ' + str(input_height))
 print('[deepRL]  input_channels: ' + str(input_channels))
@@ -266,10 +265,7 @@ EPS_DECAY = 200
 
 print('[deepRL]  creating DQN model instance')
 
-if use_rnn:
-	model = crnn.CRNN(input_height, input_channels, num_actions, 256)
-else:
-	model = DQN()
+model = DQN()
 
 print('[deepRL]  DQN model instance created')
 
