@@ -7,11 +7,26 @@
 #include <stdlib.h>
 #include <time.h>
 
-//#define GAME_WIDTH  40
-//#define GAME_HEIGHT 80
-#define GAME_WIDTH  64
-#define GAME_HEIGHT 64
+// Define DQN API Settings
+#define GAME_WIDTH   64
+#define GAME_HEIGHT  64
 #define NUM_CHANNELS 1
+#define OPTIMIZER "RMSprop"
+#define LEARNING_RATE 0.01f
+#define REPLAY_MEMORY 10000
+#define BATCH_SIZE 32
+#define GAMMA 0.9f
+#define EPS_START 0.9f
+#define EPS_END 0.05f
+#define EPS_DECAY 200
+#define ALLOW_RANDOM true
+#define DEBUG_DQN false
+
+
+// Turn visualization on or off
+#define VISUALIZE false
+
+
 #define BALL_SIZE	8
 #define BALL_SIZE2  (BALL_SIZE/2)
 #define PLAY_SIZE   16
@@ -62,7 +77,8 @@ int main( int argc, char** argv )
 	
 
 	// create reinforcement learner agent in pyTorch
-	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS);
+	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS, OPTIMIZER, LEARNING_RATE,
+	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
 	
 	if( !agent )
 	{
@@ -136,9 +152,8 @@ int main( int argc, char** argv )
 		// advance the simulation (make the ball fall)
 		ball_y--;
 
-
-		// print screen
-#if 0
+#if VISUALIZE
+		// print screen		
 		printf("\n");
 
 		for( int y=0; y < GAME_HEIGHT; y++ )

@@ -15,15 +15,25 @@
 #include <stdlib.h>
 #include <signal.h>
 
-
-#define EPISODE_MAX_LENGTH 75
-
 #define RENDER_ZOOM 4
-#define NUM_CHANNELS 3
-
-#define GAME_WIDTH 48
-#define GAME_HEIGHT 48
+#define EPISODE_MAX_LENGTH 75
 #define GAME_HISTORY 25
+
+// Define DQN API Settings
+#define GAME_WIDTH   48
+#define GAME_HEIGHT  48
+#define NUM_CHANNELS 3
+#define OPTIMIZER "RMSprop"
+#define LEARNING_RATE 0.01f
+#define REPLAY_MEMORY 10000
+#define BATCH_SIZE 32
+#define GAMMA 0.9f
+#define EPS_START 0.9f
+#define EPS_END 0.05f
+#define EPS_DECAY 200
+#define ALLOW_RANDOM true
+#define DEBUG_DQN false
+
 
 bool gameHistory[GAME_HISTORY];
 int  gameHistoryIdx = 0;
@@ -31,6 +41,7 @@ int  gameHistoryIdx = 0;
 
 bool quit_signal = false;
 
+// Function to catch interupt and quit program
 void sig_handler(int signo)
 {
 	if( signo == SIGINT )
@@ -45,6 +56,7 @@ int main( int argc, char** argv )
 {
 	printf("deepRL-fruit\n\n");
 
+	// Catch quit signal to stop game
 	if( signal(SIGINT, sig_handler) == SIG_ERR )
 		printf("\ncan't catch SIGINT\n");
 
@@ -52,6 +64,7 @@ int main( int argc, char** argv )
 	// create Fruit environment
 	FruitEnv* fruit = FruitEnv::Create(GAME_WIDTH, GAME_HEIGHT, EPISODE_MAX_LENGTH);
 	
+
 	if( !fruit )
 	{
 		printf("[deepRL]  failed to create FruitEnv instance\n");
@@ -60,7 +73,8 @@ int main( int argc, char** argv )
 	
 	
 	// create reinforcement learner agent in pyTorch
-	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS);
+	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS, OPTIMIZER, LEARNING_RATE,
+	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
 	
 	if( !agent )
 	{
@@ -68,6 +82,7 @@ int main( int argc, char** argv )
 		return 0;
 	}
 	
+
 	// allocate memory for the game input
 	Tensor* input_tensor = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
 	
