@@ -14,22 +14,22 @@
 #define JOINT_MAX	 2.0f
 
 // Turn on velocity based control
-#define VELOCITY_CONTROL true
+#define VELOCITY_CONTROL false
 #define VELOCITY_MIN -0.2f
 #define VELOCITY_MAX  0.2f
 
 // Define DQN API Settings
-#define INPUT_WIDTH   84
-#define INPUT_HEIGHT  84
+#define INPUT_WIDTH   64
+#define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
-#define OPTIMIZER "Adam"
-#define LEARNING_RATE 0.0001f
+#define OPTIMIZER "RMSprop"
+#define LEARNING_RATE 0.01f
 #define REPLAY_MEMORY 10000
 #define BATCH_SIZE 32
-#define GAMMA 0.99f
-#define EPS_START 1.0f
-#define EPS_END 0.01f
-#define EPS_DECAY 50000
+#define GAMMA 0.9f
+#define EPS_START 0.9f
+#define EPS_END 0.05f
+#define EPS_DECAY 200
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
 
@@ -224,7 +224,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		else{
 			// Give penalty for non correct collisions
 //			rewardHistory = 0.1 * REWARD_LOSS;
-			rewardHistory = 0;
+			rewardHistory = REWARD_LOSS;
 			newReward  = true;
 			endEpisode = true;
 		}
@@ -511,7 +511,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	if( maxEpisodeLength > 0 && episodeFrames > maxEpisodeLength )
 	{
 		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
-		rewardHistory = -0.1;
+		rewardHistory = 0;
 //		rewardHistory = 0.1 * REWARD_LOSS;
 		newReward     = true;
 		endEpisode    = true;

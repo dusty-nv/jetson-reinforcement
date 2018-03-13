@@ -24,7 +24,7 @@ const char* FruitEnv::ActionToStr( AgentAction action )
 }
 
 
-// constructor
+// Constructor
 FruitEnv::FruitEnv()
 {
 	agentX   = 0;
@@ -62,7 +62,7 @@ FruitEnv::FruitEnv()
 }
 
 
-// destructor
+// Destructor
 FruitEnv::~FruitEnv()
 {
 	
@@ -91,7 +91,7 @@ FruitEnv* FruitEnv::Create( uint32_t world_width, uint32_t world_height, uint32_
 }
 
 
-// init
+// Initialize enviroment
 bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t render_width, uint32_t render_height, uint32_t episode_max_length )
 {
 	worldWidth   = world_width;
@@ -100,18 +100,18 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 	renderHeight = render_height;
 	epMaxFrames  = episode_max_length;
 	
-	// allocate render image memory
+	// Allocate render image memory
 	if( !cudaAllocMapped((void**)&renderCPU, (void**)&renderGPU, renderWidth * renderHeight * sizeof(float) * 4) )
 		return false;
 	
-	// allocate fruit objects
+	// Allocate fruit objects
 	for( uint32_t n=0; n < MAX_OBJECTS; n++ )
 	{
 		fruitObject* obj = new fruitObject();
 		fruitObjects.push_back(obj);
 	}
 	
-	// reset the first time
+	// Reset the first time
 	Reset();
 	return true;
 }
@@ -129,7 +129,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	
 //#define FIRST_ORDER
 #ifdef FIRST_ORDER
-	// apply action
+	// Apply action
 	const float delta = 1.0f;
 
 	if( action == ACTION_FORWARD )
@@ -153,7 +153,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	else if( action == ACTION_LEFT )
 		agentVelX -= vel_delta;
 	
-	// limit velocity
+	// LSimit velocity
 	const float maxVelocity = 0.5f;	
 	
 	if( agentVelX < -maxVelocity )
@@ -166,26 +166,12 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	else if( agentVelY > maxVelocity )
 		agentVelY = maxVelocity;
 	
-	// limit heading
-	/*if( agentDir < 0.0f )
-		agentDir += 360.0f;
-	else if( agentDir >= 360.0f )
-		agentDir -= 360.0f;
-	
-	
-	// update location
-	const float rad = DEG_TO_RAD * agentDir;
-	const float vx  = agentVel * cosf(rad);
-	const float vy  = agentVel * sinf(rad);
-	
-	agentX += vx;
-	agentY += vy;*/
 	agentX += agentVelX;
 	agentY += agentVelY;
 #endif
 
 	
-	// limit location
+	// Limit location
 	bool outOfBounds = false;
 
 	if( agentX < 0.0f )
@@ -211,7 +197,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	}
 
 
-	// if the agent went out of bounds, it counts as a loss
+	// If the agent went out of bounds, it counts as a loss
 	if( outOfBounds )
 	{
 		Reset();	// end of episode, reset
@@ -226,7 +212,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	//	   (int)action, agentX, agentY, agentDir, agentVel );
 		
 
-	// check if agent has reached a goal
+	// Check if agent has reached a goal
 	const uint32_t numFruit = fruitObjects.size();
 	
 	for( uint32_t n=0; n < numFruit; n++ )
@@ -241,7 +227,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 		}
 	}
 	
-	// check if the agent has exceeded the frame time limit
+	// Check if the agent has exceeded the frame time limit
 	const bool timeout = epFrameCount > epMaxFrames;
 	
 	if( timeout )
@@ -255,7 +241,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	{
 		epFrameCount++;	// increment frame count for next time
 
-		// compute the reward based on how close it is to the closest fruit
+		// Compute the reward based on how close it is to the closest fruit
 		float         fruitDistSq = 0.0f;
 		fruitObject* closestFruit = findClosest(&fruitDistSq);
 
@@ -275,7 +261,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 }
 	
 
-// find closest object to agent
+// Find closest object to agent
 FruitEnv::fruitObject* FruitEnv::findClosest( float* distanceOut ) const
 {
 	fruitObject* min_obj = NULL;
@@ -300,7 +286,7 @@ FruitEnv::fruitObject* FruitEnv::findClosest( float* distanceOut ) const
 }
 
 	
-// random_pos
+// Random_pos
 void FruitEnv::randomize_pos( float* x, float* y )
 {
 	if( x != NULL )
@@ -311,7 +297,7 @@ void FruitEnv::randomize_pos( float* x, float* y )
 }
 
 
-// determine if a coordinate is inside (or on the border) of a circle
+// Determine if a coordinate is inside (or on the border) of a circle
 static inline bool check_inside( float x, float y, float cx, float cy, float radius )
 {
 	const float sx = x - cx;
@@ -324,7 +310,7 @@ static inline bool check_inside( float x, float y, float cx, float cy, float rad
 }
 
 
-// copy RGBA colors
+// Copy RGBA colors
 inline static void copy_color( float* src, float* dst )	
 { 
 	dst[0] = src[0]; 
@@ -345,7 +331,7 @@ float* FruitEnv::Render()
 		{
 			float* px = renderCPU + (y * renderWidth * 4 + x * 4);
 	
-			// check if this pixel is a fruit object
+			// Check if this pixel is a fruit object
 			bool is_fruit = false;
 			
 			for( uint32_t n = 0; n < numFruit; n++ )
@@ -357,7 +343,7 @@ float* FruitEnv::Render()
 				}
 			}
 			
-			// check if this pixel is the agent, otherwise it's background
+			// Check if this pixel is the agent, otherwise it's background
 			if( !is_fruit )
 			{
 				if( check_inside(x, y, agentX, agentY, agentRad) )
@@ -375,10 +361,10 @@ float* FruitEnv::Render()
 // Reset
 void FruitEnv::Reset()
 {
-	// reset frame count
+	// Reset frame count
 	epFrameCount = 0;
 	
-	// reset fruit positions
+	// Reset fruit positions
 	const uint32_t numFruit = fruitObjects.size();
 	
 	for( uint32_t n = 0; n < numFruit; n++ )
@@ -388,18 +374,18 @@ void FruitEnv::Reset()
 		fruitObjects[n]->y = float(worldHeight) * 0.5f;
 	}
 	
-	// reset agent dynamics
+	// Reset agent dynamics
 	agentDir = 0;
-	//agentVel = 0;
+	// agentVel = 0;
 	agentVelX = 0;
 	agentVelY = 0;
 
-	// reset agent position
+	// Reset agent position
 	randomize_pos(&agentX, &agentY);
 	//agentX = float(worldWidth) * 0.5f;
 	//agentY = float(worldHeight) * 0.5f;
 
-	// check if there happen to be random overlap
+	// Check if there happen to be random overlap
 	for( uint32_t n=0; n < numFruit; n++ )
 		if( fruitObjects[n]->checkCollision(agentX, agentY, agentRad) )
 			Reset();

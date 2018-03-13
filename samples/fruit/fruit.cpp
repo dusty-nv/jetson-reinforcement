@@ -1,5 +1,5 @@
 /*
- * deepRL
+ * 2D deepRL example
  */
 
 #include "deepRL.h"
@@ -61,10 +61,10 @@ int main( int argc, char** argv )
 		printf("\ncan't catch SIGINT\n");
 
 
-	// create Fruit environment
+	// Create Fruit environment
 	FruitEnv* fruit = FruitEnv::Create(GAME_WIDTH, GAME_HEIGHT, EPISODE_MAX_LENGTH);
 	
-
+	// Check for propper Fruit Enviroment creation
 	if( !fruit )
 	{
 		printf("[deepRL]  failed to create FruitEnv instance\n");
@@ -72,7 +72,7 @@ int main( int argc, char** argv )
 	}
 	
 	
-	// create reinforcement learner agent in pyTorch
+	// Create reinforcement learner agent in pyTorch
 	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS, OPTIMIZER, LEARNING_RATE,
 	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
 	
@@ -83,9 +83,10 @@ int main( int argc, char** argv )
 	}
 	
 
-	// allocate memory for the game input
+	// Allocate memory for the game input
 	Tensor* input_tensor = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
 	
+	// Check for proper
 	if( !input_tensor )
 	{
 		printf("[deepRL]  failed to allocate input tensor with %ux%xu elements", GAME_WIDTH, GAME_HEIGHT);
@@ -93,10 +94,11 @@ int main( int argc, char** argv )
 	}
 	
 	
-	// create openGL display
+	// Create OpenGL display
 	glDisplay* display = glDisplay::Create();
 	glTexture* texture = NULL;
 	
+	// Continue Display Initialization
 	if( display != NULL )
 	{
 		texture = glTexture::Create(GAME_WIDTH, GAME_HEIGHT, GL_RGBA32F_ARB/*GL_RGBA8*/, NULL);
@@ -110,26 +112,28 @@ int main( int argc, char** argv )
 		printf("[deepRL]  failed to create openGL display\n");
 	
 	
-	// create font object
+	// Create font object
 	cudaFont* font = cudaFont::Create();
 	
+	// Check for font object creation
 	if( !font )
 		printf("failed to create cudaFont object\n");
 
 
-	// global variables for tracking agent progress
+	// Set global variables for tracking agent progress
 	uint32_t episode_count = 0;
 	uint32_t episode_wins  = 0;
 
 	float reward = 0.0f;
 
 
-	// game loop
+	// Run game loop
 	while( !quit_signal )
 	{
-		// render fruit environment
+		// Render fruit environment
 		float* imgRGBA = fruit->Render();
 		
+		// Check for proper enviroment configuration 
 		if( !imgRGBA )
 		{
 			printf("[deepRL]  failed to render FruitEnv\n");
@@ -145,7 +149,7 @@ int main( int argc, char** argv )
 							    str, 0, 0, make_float4(0.0f, 0.75f, 1.0f, 255.0f));*/
 		}
 
-		// draw environment to display
+		// Draw environment to display
 		if( display != NULL )
 		{
 			display->UserEvents();
@@ -168,12 +172,12 @@ int main( int argc, char** argv )
 			display->EndRender();
 		}
 		
-		// convert from RGBA to pyTorch tensor format (CHW)
+		// Convert from RGBA to pyTorch tensor format (CHW)
 		CUDA(cudaRGBAToPlanarBGR((float4*)imgRGBA, GAME_WIDTH, GAME_HEIGHT,
 							(float*)input_tensor->gpuPtr, GAME_WIDTH, GAME_HEIGHT));
 	
 	
-		// ask the agent for their action
+		// Ask the agent for their action
 		int action = 0;	//ACTION_NONE;	//rand(0, NUM_ACTIONS);
 
 		if( !agent->NextAction(input_tensor, &action) )
@@ -182,9 +186,10 @@ int main( int argc, char** argv )
 		if( action < 0 || action >= NUM_ACTIONS )
 			action = ACTION_NONE;
 
-		// provide the agent's action to the environment
+		// Provide the agent's action to the environment
 		const bool end_episode = fruit->Action((AgentAction)action, &reward);
 		
+		// End episode and log the outcome
 		if( end_episode )
 		{
 			if( reward >= fruit->GetMaxReward() )
@@ -219,7 +224,7 @@ int main( int argc, char** argv )
 
 		printf("\n");
 
-		// train the agent with the reward
+		// Train the agent with the reward
 		if( !agent->NextReward(reward, end_episode) )
 			printf("[deepRL]  agent->NextReward() failed\n");
 	}
