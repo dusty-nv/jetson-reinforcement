@@ -4,3 +4,6 @@
 [submodule "utils"]
 	path = utils
 	url = https://github.com/dusty-nv/jetson-utils
+[submodule "gazebo/gazebo-pkgs"]
+	path = gazebo/gazebo-pkgs
+	url = http://github.com/JenniferBuehler/gazebo-pkgs
