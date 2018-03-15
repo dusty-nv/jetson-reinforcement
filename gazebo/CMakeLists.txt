@@ -17,7 +17,8 @@ if (GAZEBO_FOUND)
 message("-- Gazebo7 installation detected, building plugins...")
 
 include_directories(${GAZEBO_INCLUDE_DIRS} gazebo-pkgs/gazebo_grasp_plugin/include)
-link_directories(${GAZEBO_LIBRARY_DIRS} gazebo-pkgs/gazebo_grasp_plugin/include)
+link_directories(${GAZEBO_LIBRARY_DIRS})
+#link_directories(${GAZEBO_LIBRARY_DIRS} gazebo-pkgs/gazebo_grasp_plugin/include)
 
 add_library(gazeboArmPlugin SHARED ArmPlugin.cpp)
 add_library(gazeboPropPlugin SHARED PropPlugin.cpp)
