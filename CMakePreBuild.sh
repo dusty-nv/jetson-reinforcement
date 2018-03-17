@@ -48,6 +48,10 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 
 	# setproctitle extension used by A3G
 	sudo pip install setproctitle 
+	sudo pip install matplotlib
+	sudo pip install gym==0.9.1
+
+	sudo apt-get install python-tk
 
 	# install numpy
 	sudo pip install numpy
