@@ -32,6 +32,8 @@ while true; do
 done
 
 
+
+
 #
 # build pyTorch?
 #
@@ -56,6 +58,16 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	# install numpy
 	sudo pip install numpy
 	sudo apt-get install python-gi-cairo
+
+	# (prompt) install Jupyter/IPython
+	while true; do
+	    read -p "[Pre-build]  Do you wish to install support for Jupyter/IPython notebook (y/N)? " yn
+	    case $yn in
+		   [Yy]* ) sudo apt-get update; sudo apt-get install -y ipython ipython-notebook; sudo pip install jupyter; break;;
+		   [Nn]* ) echo "[Pre-build]  skipping Jupyter/IPython installation"; break;;
+		   * ) echo "[Pre-build]  Please answer yes or no.";;
+	    esac
+	done
 
 	# see https://github.com/torch/cutorch/issues/797
 	# use <= v0.2.0
