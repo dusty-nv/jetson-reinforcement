@@ -95,7 +95,7 @@ int main( int argc, char** argv )
 	
 	
 	// Create OpenGL display
-	glDisplay* display = glDisplay::Create();
+	glDisplay* display = glDisplay::Create("Fruit DQN", 0.2f, 0.2f, 0.2f);
 	glTexture* texture = NULL;
 	
 	// Continue Display Initialization
@@ -105,8 +105,6 @@ int main( int argc, char** argv )
 
 		if( !texture )
 			printf("[deepRL]  failed to create openGL texture\n");
-		
-		display->SetTitle("Fruit RL");
 	}
 	else
 		printf("[deepRL]  failed to create openGL display\n");
