@@ -29,6 +29,8 @@
 #define EPS_START 0.9f
 #define EPS_END 0.05f
 #define EPS_DECAY 200
+#define USE_LSTM true
+#define LSTM_SIZE 256
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
 
@@ -84,7 +86,7 @@ int main( int argc, char** argv )
 	dqnAgent* agent = dqnAgent::Create(gameWidth, gameHeight, NUM_CHANNELS, NUM_ACTIONS, 
 								OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE, 
 								GAMMA, EPS_START, EPS_END, EPS_DECAY, 
-								ALLOW_RANDOM, DEBUG_DQN);
+								USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
 	
 	if( !agent )
 	{

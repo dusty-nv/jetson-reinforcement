@@ -44,7 +44,7 @@ parser.add_argument('--epsilon_end', type=float, default=0.05, metavar='N', help
 parser.add_argument('--epsilon_decay', type=float, default=200, metavar='N', help='exponential decay of random actions')
 parser.add_argument('--allow_random', type=int, default=1, metavar='N', help='Allow DQN to select random actions')
 parser.add_argument('--debug_mode', type=int, default=0, metavar='N', help='debug mode')
-parser.add_argument('--lstm', action='store_true', default=True, help='use LSTM layers in network')
+parser.add_argument('--use_lstm', type=int, default=1, metavar='N', help='use LSTM layers in network')
 parser.add_argument('--lstm_size', type=int, default=256, metavar='N', help='number of inputs to LSTM')
 
 args = parser.parse_args()
@@ -63,7 +63,7 @@ epsilon_end 	= args.epsilon_end
 epsilon_decay 	= args.epsilon_decay
 allow_random 	= args.allow_random
 debug_mode 	= args.debug_mode
-use_lstm		= args.lstm
+use_lstm		= args.use_lstm
 lstm_size      = args.lstm_size
 
 

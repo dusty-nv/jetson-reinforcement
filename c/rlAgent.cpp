@@ -71,7 +71,7 @@ rlAgent* rlAgent::Create( uint32_t width, uint32_t height, uint32_t channels, ui
 
 
 // Init
-bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel, const char* optimizer, float learning_rate, uint32_t replay_mem, uint32_t batch_size, float gamma, float epsilon_start,  float epsilon_end,  float epsilon_decay, bool allow_random, bool debug_mode)
+bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t numActions, const char* module, const char* nextAction, const char* nextReward, const char* loadModel, const char* saveModel, const char* optimizer, float learning_rate, uint32_t replay_mem, uint32_t batch_size, float gamma, float epsilon_start, float epsilon_end, float epsilon_decay, bool use_lstm, int lstm_size, bool allow_random, bool debug_mode)
 {
 	if( !module || width == 0 || height == 0 || channels == 0 || numActions == 0 || !module || !nextAction || !nextReward )
 		return false;
@@ -92,6 +92,8 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	char epsilon_startStr[32]; 
 	char epsilon_endStr[32]; 
 	char epsilon_decayStr[32]; 
+	char use_lstmStr[32];
+	char lstm_sizeStr[32];
 	char allow_randomStr[32];
 	char debug_modeStr[32]; 
 
@@ -108,13 +110,15 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	sprintf(epsilon_startStr, "--epsilon_start=%f", epsilon_start);
 	sprintf(epsilon_endStr, "--epsilon_end=%f", epsilon_end);
 	sprintf(epsilon_decayStr, "--epsilon_decay=%f", epsilon_decay);
+	sprintf(use_lstmStr, "--use_lstm=%u", use_lstm);
+	sprintf(lstm_sizeStr, "--lstm_size=%u", lstm_size);
 	sprintf(allow_randomStr, "--allow_random=%u", allow_random);
 	sprintf(debug_modeStr, "--debug_mode=%u", debug_mode);
 
 
 	// set python command line
-	int py_argc = 15;
-	char* py_argv[15];
+	int py_argc = 17;
+	char* py_argv[17];
 
 	py_argv[0] = (char*)module;
 	py_argv[1] = actionStr;
@@ -129,8 +133,10 @@ bool rlAgent::Init( uint32_t width, uint32_t height, uint32_t channels, uint32_t
 	py_argv[10] = epsilon_startStr;
 	py_argv[11] = epsilon_endStr;
 	py_argv[12] = epsilon_decayStr;
-	py_argv[13] = allow_randomStr;
-	py_argv[14] = debug_modeStr;
+	py_argv[13] = use_lstmStr;
+	py_argv[14] = lstm_sizeStr;
+	py_argv[15] = allow_randomStr;
+	py_argv[16] = debug_modeStr;
 
 	// load python module
 	if( !LoadModule(module, py_argc, py_argv) )

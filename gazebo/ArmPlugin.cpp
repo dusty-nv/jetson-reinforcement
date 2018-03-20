@@ -30,6 +30,8 @@
 #define EPS_START 0.9f
 #define EPS_END 0.05f
 #define EPS_DECAY 200
+#define USE_LSTM true
+#define LSTM_SIZE 256
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
 
@@ -113,8 +115,10 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2, OPTIMIZER, LEARNING_RATE,
-	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2, 
+						OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE,
+						GAMMA, EPS_START, EPS_END, EPS_DECAY, 
+						USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
 
 	if( !agent )
 		printf("ArmPlugin - failed to create AI agent\n");
