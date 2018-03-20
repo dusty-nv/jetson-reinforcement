@@ -4,6 +4,7 @@
 
 #include "deepRL.h"
 #include "fruitEnv.h"
+#include "commandLine.h"
 #include "rand.h"
 
 #include "glDisplay.h"
@@ -15,13 +16,10 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#define RENDER_ZOOM 4
-#define EPISODE_MAX_LENGTH 75
-#define GAME_HISTORY 25
 
 // Define DQN API Settings
-#define GAME_WIDTH   48
-#define GAME_HEIGHT  48
+#define DEFAULT_GAME_WIDTH   48
+#define DEFAULT_GAME_HEIGHT  48
 #define NUM_CHANNELS 3
 #define OPTIMIZER "RMSprop"
 #define LEARNING_RATE 0.01f
@@ -34,10 +32,14 @@
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
 
+// Environment variables
+#define RENDER_ZOOM 4
+#define DEFAULT_EPISODE_MAX_FRAMES 75
+#define GAME_HISTORY 20
 
 bool gameHistory[GAME_HISTORY];
 int  gameHistoryIdx = 0;
-
+int  gameHistoryMax = 0;
 
 bool quit_signal = false;
 
@@ -60,11 +62,17 @@ int main( int argc, char** argv )
 	if( signal(SIGINT, sig_handler) == SIG_ERR )
 		printf("\ncan't catch SIGINT\n");
 
+	// Parse command line
+	commandLine cmdLine(argc, argv);
+
+	const int gameWidth   = cmdLine.GetInt("width",  DEFAULT_GAME_WIDTH);
+	const int gameHeight  = cmdLine.GetInt("height", DEFAULT_GAME_HEIGHT);
+	const int epMaxFrames = cmdLine.GetInt("episode_max_frames", DEFAULT_EPISODE_MAX_FRAMES);
+
 
 	// Create Fruit environment
-	FruitEnv* fruit = FruitEnv::Create(GAME_WIDTH, GAME_HEIGHT, EPISODE_MAX_LENGTH);
+	FruitEnv* fruit = FruitEnv::Create(gameWidth, gameHeight, epMaxFrames);
 	
-	// Check for propper Fruit Enviroment creation
 	if( !fruit )
 	{
 		printf("[deepRL]  failed to create FruitEnv instance\n");
@@ -73,23 +81,25 @@ int main( int argc, char** argv )
 	
 	
 	// Create reinforcement learner agent in pyTorch
-	dqnAgent* agent = dqnAgent::Create(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS, NUM_ACTIONS, OPTIMIZER, LEARNING_RATE,
-	REPLAY_MEMORY, BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, ALLOW_RANDOM, DEBUG_DQN);
+	dqnAgent* agent = dqnAgent::Create(gameWidth, gameHeight, NUM_CHANNELS, NUM_ACTIONS, 
+								OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE, 
+								GAMMA, EPS_START, EPS_END, EPS_DECAY, 
+								ALLOW_RANDOM, DEBUG_DQN);
 	
 	if( !agent )
 	{
-		printf("[deepRL]  failed to create deepRL instance  %ux%u  %u", GAME_WIDTH, GAME_HEIGHT, NUM_ACTIONS);
+		printf("[deepRL]  failed to create deepRL instance  %ux%u  %u", gameWidth, gameHeight, NUM_ACTIONS);
 		return 0;
 	}
 	
 
 	// Allocate memory for the game input
-	Tensor* input_tensor = Tensor::Alloc(GAME_WIDTH, GAME_HEIGHT, NUM_CHANNELS);
+	Tensor* input_tensor = Tensor::Alloc(gameWidth, gameHeight, NUM_CHANNELS);
 	
 	// Check for proper
 	if( !input_tensor )
 	{
-		printf("[deepRL]  failed to allocate input tensor with %ux%xu elements", GAME_WIDTH, GAME_HEIGHT);
+		printf("[deepRL]  failed to allocate input tensor with %ux%xu elements", gameWidth, gameHeight);
 		return 0;
 	}
 	
@@ -101,7 +111,7 @@ int main( int argc, char** argv )
 	// Continue Display Initialization
 	if( display != NULL )
 	{
-		texture = glTexture::Create(GAME_WIDTH, GAME_HEIGHT, GL_RGBA32F_ARB/*GL_RGBA8*/, NULL);
+		texture = glTexture::Create(gameWidth, gameHeight, GL_RGBA32F_ARB/*GL_RGBA8*/, NULL);
 
 		if( !texture )
 			printf("[deepRL]  failed to create openGL texture\n");
@@ -143,7 +153,7 @@ int main( int argc, char** argv )
 			/*char str[256];
 			sprintf(str, "%f", reward);
 
-			font->RenderOverlay((float4*)imgRGBA, (float4*)imgRGBA, GAME_WIDTH, GAME_HEIGHT,
+			font->RenderOverlay((float4*)imgRGBA, (float4*)imgRGBA, gameWidth, gameHeight,
 							    str, 0, 0, make_float4(0.0f, 0.75f, 1.0f, 255.0f));*/
 		}
 
@@ -164,19 +174,19 @@ int main( int argc, char** argv )
 					texture->Unmap();
 				}
 
-				texture->Render(50, 50, GAME_WIDTH * RENDER_ZOOM, GAME_HEIGHT * RENDER_ZOOM);		
+				texture->Render(50, 50, gameWidth * RENDER_ZOOM, gameHeight * RENDER_ZOOM);		
 			}
 
 			display->EndRender();
 		}
 		
 		// Convert from RGBA to pyTorch tensor format (CHW)
-		CUDA(cudaRGBAToPlanarBGR((float4*)imgRGBA, GAME_WIDTH, GAME_HEIGHT,
-							(float*)input_tensor->gpuPtr, GAME_WIDTH, GAME_HEIGHT));
+		CUDA(cudaRGBAToPlanarBGR((float4*)imgRGBA, gameWidth, gameHeight,
+							(float*)input_tensor->gpuPtr, gameWidth, gameHeight));
 	
 	
 		// Ask the agent for their action
-		int action = 0;	//ACTION_NONE;	//rand(0, NUM_ACTIONS);
+		int action = 0;
 
 		if( !agent->NextAction(input_tensor, &action) )
 			printf("[deepRL]  agent->NextAction() failed.\n");
@@ -202,9 +212,9 @@ int main( int argc, char** argv )
 			episode_count++;
 		}
 
-		printf("action = %s  reward = %0.4f %s wins = %u of %u (%0.4f)   ", 
+		printf("action = %s  reward = %+0.4f %s wins = %03u of %03u (%0.2f)   ", 
 			  FruitEnv::ActionToStr((AgentAction)action), 
-			  reward, end_episode ? "EOE" : "  ",  
+			  reward, end_episode ? "EOE" : "   ",  
 			  episode_wins, episode_count, float(episode_wins)/float(episode_count));
 
 		if( episode_count >= GAME_HISTORY )
@@ -217,7 +227,10 @@ int main( int argc, char** argv )
 					historyWins++;
 			}
 
-			printf("%02u of last %u  (%0.4f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY));
+			if( historyWins > gameHistoryMax )
+				gameHistoryMax = historyWins;
+
+			printf("%02u of last %u  (%0.2f)  (max=%0.2f)", historyWins, GAME_HISTORY, float(historyWins)/float(GAME_HISTORY), float(gameHistoryMax)/float(GAME_HISTORY));
 		}
 
 		printf("\n");

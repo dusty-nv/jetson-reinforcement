@@ -14,13 +14,13 @@
 // ActionToStr
 const char* FruitEnv::ActionToStr( AgentAction action )
 {
-	if( action == ACTION_FORWARD )		return "FORWARD ";
-	else if( action == ACTION_BACKWARD )	return "BACKWARD";
-	else if( action == ACTION_LEFT )		return "LEFT    ";
-	else if( action == ACTION_RIGHT )		return "RIGHT   ";
-	else if( action == ACTION_NONE )		return "NONE    ";
+	if( action == ACTION_FORWARD )		return "FWD  ";
+	else if( action == ACTION_BACKWARD )	return "BACK ";
+	else if( action == ACTION_LEFT )		return "LEFT ";
+	else if( action == ACTION_RIGHT )		return "RIGHT";
+	else if( action == ACTION_NONE )		return "NONE ";
 
-	return "UNKNOWN ";
+	return "NULL ";
 }
 
 
@@ -113,6 +113,9 @@ bool FruitEnv::init( uint32_t world_width, uint32_t world_height, uint32_t rende
 	
 	// Reset the first time
 	Reset();
+
+	// Print some settings
+	printf("[deepRL]  ep_max_frames:  %u\n", epMaxFrames);
 	return true;
 }
 
@@ -153,7 +156,7 @@ bool FruitEnv::Action( AgentAction action, float* reward )
 	else if( action == ACTION_LEFT )
 		agentVelX -= vel_delta;
 	
-	// LSimit velocity
+	// Limit velocity
 	const float maxVelocity = 0.5f;	
 	
 	if( agentVelX < -maxVelocity )
