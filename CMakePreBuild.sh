@@ -19,23 +19,24 @@ echo "[Pre-build]  installing Torch/LUA into:  $TORCH_PREFIX"
 #set -e
 
 
+#
+# install jetson-utils prerequisites
+#
+sudo apt-get update
+sudo apt-get install libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
+
+
 # 
 # (prompt) install Gazebo7
 #
 while true; do
     read -p "[Pre-build]  Do you wish to install Gazebo robotics simulator (y/N)? " yn
     case $yn in
-        [Yy]* ) sudo apt-get update; sudo apt-get install -y gazebo7 libgazebo7-dev; break;;
+        [Yy]* ) sudo apt-get install -y gazebo7 libgazebo7-dev; break;;
         [Nn]* ) echo "[Pre-build]  skipping Gazebo installation"; break;;
         * ) echo "[Pre-build]  Please answer yes or no.";;
     esac
 done
-
-
-#
-# jetson-utils prerequisites
-#
-sudo apt-get install libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
 
 
 #
