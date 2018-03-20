@@ -7,6 +7,7 @@
 #include "rand.h"
 
 #include <stdlib.h>
+#include <signal.h>
 #include <time.h>
 
 
@@ -24,7 +25,6 @@
 #define EPS_DECAY 200
 #define ALLOW_RANDOM true
 #define DEBUG_DQN false
-
 
 // Set enviromoment variables
 #define BALL_SIZE	8
@@ -48,24 +48,25 @@ enum catchAction
 	NUM_ACTIONS
 };
 
-
-// Action choice output function
+// Action enum to string function
 static const char* catchStr( int action )
 {
-	if( action == 0 )
+	if( action == 0 )		return "STAY";
+	else if( action == 1 ) 	return "LEFT";
+	else if( action == 2 )	return "RIGHT";
+	else					return "NULL";
+}
+
+bool quit_signal = false;
+
+// Function to catch interupt and quit program
+void sig_handler(int signo)
+{
+	if( signo == SIGINT )
 	{
-		return "STAY";
+		printf("received SIGINT\n");
+		quit_signal = true;
 	}
-	else if( action == 1 )
-	{
-		return "LEFT";
-	}
-	else if( action == 2 )
-	{
-		return "RIGHT";
-	}
-	
-	return "NULL";
 }
 
 
@@ -73,13 +74,17 @@ int main( int argc, char** argv )
 {
 	printf("deepRL-catch\n\n");
 
-	// seed RNG
+	// Catch quit signal to stop game
+	if( signal(SIGINT, sig_handler) == SIG_ERR )
+		printf("\ncan't catch SIGINT\n");
+
+	// Seed rng
 	srand_time(); 
 
-	// parse command line
+	// Parse command line
 	commandLine cmdLine(argc, argv);
 
-	const int  gameWidth  = cmdLine.GetInt("width", DEFAULT_GAME_WIDTH);
+	const int  gameWidth  = cmdLine.GetInt("width",  DEFAULT_GAME_WIDTH);
 	const int  gameHeight = cmdLine.GetInt("height", DEFAULT_GAME_HEIGHT);
 	const bool render     = cmdLine.GetFlag("render");
 
@@ -119,7 +124,7 @@ int main( int argc, char** argv )
 
 
 	// Game loop
-	while(true)
+	while( !quit_signal )
 	{
 		// Update the playing field
 		for( int y=0; y < gameHeight; y++ )
