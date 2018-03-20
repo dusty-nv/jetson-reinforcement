@@ -32,6 +32,10 @@ while true; do
 done
 
 
+#
+# jetson-utils prerequisites
+#
+sudo apt-get install libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
 
 
 #
@@ -112,8 +116,6 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 
 	echo "[Pre-build]  pyTorch setup complete"
 fi
-
-sudo apt-get install libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
 
 #
 # build Torch?
