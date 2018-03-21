@@ -202,11 +202,11 @@
 						<near>0.1</near>
 						<far>100</far>
 					</clip>
-					<noise>
+					<!--<noise>
 						<type>gaussian</type>
 						<mean>0.0</mean>
 						<stddev>0.007</stddev>
-					</noise>
+					</noise>-->
 				</camera>
 				<always_on>1</always_on>
 				<update_rate>10</update_rate>
