@@ -54,7 +54,7 @@
 #define ANIMATION_STEPS 1000
 
 // Set Debug Mode
-#define DEBUG false
+#define DEBUG true
 
 // Lock base rotation DOF (Add dof in header file if off)
 #define LOCKBASE true
@@ -194,7 +194,7 @@ void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 // onCollisionMsg
 void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 {
-	if(DEBUG){printf("collision callback (%u contacts)\n", contacts->contact_size());}
+	//if(DEBUG){printf("collision callback (%u contacts)\n", contacts->contact_size());}
 
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{

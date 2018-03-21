@@ -1,13 +1,28 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
 <world name="arm_world">
-	<!-- Ground Plane -->>
+	<!--<include>
+		<uri>model://sun</uri>
+	</include>-->
+	<light name='sun' type='directional'>
+		<cast_shadows>1</cast_shadows>
+		<pose>0 0 10 0 -0 0</pose>
+		<diffuse>0.8 0.8 0.8 1</diffuse>
+		<specular>0.2 0.2 0.2 1</specular>
+		<attenuation>
+			<range>1000</range>
+			<constant>0.9</constant>
+			<linear>0.01</linear>
+			<quadratic>0.001</quadratic>
+		</attenuation>
+		<direction>-0.5 0.1 -0.9</direction>
+	</light>
+
+	<!-- Ground Plane -->
 	<include>
 		<uri>model://ground_plane</uri>
 	</include>
-	<include>
-		<uri>model://sun</uri>
-	</include>
+
 
 	<!--             -->
 	<!-- ARM/GRIPPER -->
@@ -406,8 +421,8 @@
 			<camera>
 				<horizontal_fov>1.047</horizontal_fov>
 				<image>
-					<width>1024</width>
-					<height>1024</height>
+					<width>64</width>
+					<height>64</height>
 				</image>
 				<clip>
 					<near>0.1</near>
@@ -523,8 +538,8 @@
 		<collision name="tube_collision">
 			<geometry>
 			     <cylinder>
-					<radius>0.05</radius>
-					<length>0.1</length>
+					<radius>0.1</radius>
+					<length>0.25</length>
 		              </cylinder>
 			</geometry>
 		</collision>
@@ -532,8 +547,8 @@
 		<visual name="visual">
 			<geometry>
 				<cylinder>
-					<radius>0.05</radius>
-					<length>0.1</length>
+					<radius>0.1</radius>
+					<length>0.25</length>
 		              </cylinder>
 			</geometry>
 			<material>
@@ -554,9 +569,7 @@
 		</sensor>
 		</link>
 		<plugin name="PropPlugin" filename="libgazeboPropPlugin.so" />
-
-	</model>-->
-
+	</model>
 
 </world>
 </sdf>
