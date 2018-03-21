@@ -379,7 +379,7 @@
             </axis>
         </joint>
 		 
-		<plugin name="graspPlugin" filename="libgazeboGraspPlugin.so">
+		<!--<plugin name="graspPlugin" filename="libgazeboGraspPlugin.so">
       		<arm>
         		<arm_name>arm</arm_name>
         		<palm_link>gripperbase</palm_link>
@@ -393,7 +393,7 @@
       		<release_tolerance>0.003</release_tolerance>
       		<disable_collisions_on_attach>false</disable_collisions_on_attach>
       		<contact_topic>__default_topic__</contact_topic>
-		</plugin>		
+		</plugin>-->	
 	</model>
 
 
