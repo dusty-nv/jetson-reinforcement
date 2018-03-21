@@ -387,12 +387,12 @@ def next_action(state_in):
 	#print('state = ' + str(state.size()))
 	
 	if curr_state is not None:
-		last_state = curr_state.clone()
+		last_state = curr_state
 
 	if curr_diff is not None:
-		last_diff = curr_diff.clone()
+		last_diff = curr_diff
 
-	curr_state = state.clone()
+	curr_state = state
 
 	last_action = select_action(curr_state, allow_random)
 
