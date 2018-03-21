@@ -54,7 +54,7 @@
 #define ANIMATION_STEPS 1000
 
 // Set Debug Mode
-#define DEBUG true
+#define DEBUG false
 
 // Lock base rotation DOF (Add dof in header file if off)
 #define LOCKBASE true
@@ -105,7 +105,7 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	lastGoalDistance = 0.0f;
 	avgGoalDelta     = 0.0f;
 	successful_grabs = 0;
-	total_runs = 0;
+	total_runs       = 0;
 }
 
 
@@ -196,6 +196,9 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 {
 	//if(DEBUG){printf("collision callback (%u contacts)\n", contacts->contact_size());}
 
+	if( testAnimation )
+		return;
+
 	for (unsigned int i = 0; i < contacts->contact_size(); ++i)
 	{
 		if( strcmp(contacts->contact(i).collision2().c_str(), COLLISION_FILTER) == 0 )
@@ -206,7 +209,8 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 
 
 		// Check if there is collision between middle prong and object then issue learning reward
-		if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) and (strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 and !testAnimation))
+		//if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) && strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 && !testAnimation)
+		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))		
 		{
 			printf("Give max reward and execute gripper \n");
 			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
@@ -217,15 +221,13 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  -0.5);
 
 			//sleep(10);
-
-			// Increment success
-			successful_grabs++;
 		
 			newReward  = true;
 			endEpisode = true;
-		}
 
-		else{
+			return;	// multiple collisions in the for loop above could mess with win count 
+		}
+		else {
 			// Give penalty for non correct collisions
 //			rewardHistory = 0.1 * REWARD_LOSS;
 			rewardHistory = REWARD_LOSS;
@@ -344,7 +346,7 @@ bool ArmPlugin::updateJoints()
 				ref[n] = JOINT_MIN + step * float(animationStep);
 		}
 		else if( animationStep < ANIMATION_STEPS * 2 )
-		{
+		{r
 			/*ref[0] -= dT[0];
 			ref[1] -= dT[1];
 			ref[2] -= dT[2];*/
@@ -515,13 +517,13 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	if( maxEpisodeLength > 0 && episodeFrames > maxEpisodeLength )
 	{
 		printf("ArmPlugin - triggering EOE, episode has exceeded %i frames\n", maxEpisodeLength);
-		rewardHistory = 0;
+		rewardHistory = REWARD_LOSS;//0;
 //		rewardHistory = 0.1 * REWARD_LOSS;
 		newReward     = true;
 		endEpisode    = true;
 	}
 
-	// if an EOE reward hasn't already been issued, compute one
+	// if an EOE reward hasn't already been issued, compute an intermediary reward
 	if( hadNewState && !newReward )
 	{
 		PropPlugin* prop = GetPropByName(PROP_NAME);
@@ -544,11 +546,11 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 		// if the robot impacts the ground, count it as a loss
 		const math::Box& gripBBox = gripper->GetBoundingBox();
-		const float groundContact = 0.1f;
+		const float groundContact = 0.05f;
 
 		if( gripBBox.min.z <= groundContact || gripBBox.max.z <= groundContact )
 		{
-			for( uint32_t n=0; n < 10; n++ )
+			//for( uint32_t n=0; n < 10; n++ )
 				printf("GROUND CONTACT, EOE\n");
 
 			rewardHistory = REWARD_LOSS;
@@ -561,6 +563,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 
 			if(DEBUG){printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
 
+			// issue an interim reward based on the delta of the distance to the object
 			if( episodeFrames > 1 )
 			{
 				const float distDelta  = lastGoalDistance - distGoal;
@@ -568,57 +571,10 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 				const float epsilon    = 0.001f;		// minimum pos/neg change in position
 				const float movingAvg  = 0.9f;
 
-				avgGoalDelta = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
-
-				rewardHistory = exp(-GAMMA_FALLOFF * distGoal);
-				
-#if 0
-				if( avgGoalDelta > 0.001f )
-				{
-					/*float bboxFactor = distThresh - distGoal;
-
-					if( bboxFactor < 0.0f )
-						bboxFactor = 0.0f;
-
-					bboxFactor = bboxFactor / distThresh; *///(bboxFactor * bboxFactor) / (distThresh * distThresh);
-
-					rewardHistory = avgGoalDelta; //(avgGoalDelta * 25.0f) /** (bboxFactor * 1.0f + 0.1f)*/;
-				}
-				else
-					rewardHistory = 0.0f;
-#endif
-		
-	#if 0
-				if( distDelta <= -epsilon )
-					rewardHistory = -1.0f;
-				else if( distDelta >= epsilon )
-				{
-					float bboxFactor = distThresh - distBBox;
-
-					if( bboxFactor < 0.0f )
-						bboxFactor = 0.0f;
-
-					bboxFactor = (bboxFactor * bboxFactor) / (distThresh * distThresh);
-
-					const float multiplier = (bboxFactor * 2.0f) + 0.1f;
-			
-					//bboxFactor /= distThresh;	// percentage of the way to the goal
-
-					//const float multiplier = (((distThresh - distBBox) / distThresh) * 2.0f) + 1.0f;
-			
-					//if( multiplier < 0.25f )
-					//	multiplier = 0.25f;
-
-					rewardHistory = multiplier;
-
-					//printf("MULTIPLIER %f\n", multiplier);
-			
-					//rewardHistory = 0.1f;
-				} 
-				else
-					rewardHistory = 0.0f;
-	#endif
-				newReward = true;	
+				// compute the smoothed moving average of the delta of the distance to the goal
+				avgGoalDelta  = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
+				rewardHistory = avgGoalDelta;	// exp(-GAMMA_FALLOFF * distGoal) * 0.1f;
+				newReward     = true;	
 			}
 
 			lastGoalDistance = distGoal;
@@ -643,9 +599,13 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			episodeFrames    = 0;
 			lastGoalDistance = 0.0f;
 			avgGoalDelta     = 0.0f;
-			total_runs++;
 
-			printf("Current Accuracy: %f\n", successful_grabs/(double)total_runs);
+			// track the number of wins and agent accuracy
+			if( rewardHistory >= REWARD_WIN )
+				successful_grabs++;
+
+			total_runs++;
+			printf("Current Accuracy:  %0.4f (%03u of %03u)  (reward=%+0.2f %s)\n", float(successful_grabs)/float(total_runs), successful_grabs, total_runs, rewardHistory, (rewardHistory >= REWARD_WIN ? "WIN" : "LOSS"));
 
 //			printf("Reset gripper \n");
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
