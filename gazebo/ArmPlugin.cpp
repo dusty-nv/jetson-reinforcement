@@ -99,7 +99,7 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	newReward        = false;
 	endEpisode       = false;
 	rewardHistory    = 0.0f;
-	testAnimation    = false;
+	testAnimation    = true;
 	loopAnimation    = false;
 	animationStep    = 0;
 	lastGoalDistance = 0.0f;
@@ -113,20 +113,6 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/) 
 {
 	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
-
-	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2, 
-						OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE,
-						GAMMA, EPS_START, EPS_END, EPS_DECAY, 
-						USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
-
-	if( !agent )
-		printf("ArmPlugin - failed to create AI agent\n");
-
-	inputState = Tensor::Alloc(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS);
-
-	if( !inputState )
-		printf("ArmPlugin - failed to allocate %ux%ux%u Tensor\n", INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS);
 
 	// Store the pointer to the model
 	this->model = _parent;
@@ -145,9 +131,45 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 }
 
 
+// CreateAgent
+bool ArmPlugin::createAgent()
+{
+	if( agent != NULL )
+		return true;
+
+	// Create DQN agent
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, DOF*2, 
+						OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE,
+						GAMMA, EPS_START, EPS_END, EPS_DECAY, 
+						USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
+
+	if( !agent )
+	{
+		printf("ArmPlugin - failed to create DQN agent\n");
+		return false;
+	}
+
+	// Allocate the python tensor for passing the camera state
+	inputState = Tensor::Alloc(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS);
+
+	if( !inputState )
+	{
+		printf("ArmPlugin - failed to allocate %ux%ux%u Tensor\n", INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS);
+		return false;
+	}
+
+	return true;
+}
+
+
+
 // onCameraMsg
 void ArmPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 {
+	// don't process the image if the agent hasn't been created yet
+	if( !agent )
+		return;
+
 	// check the validity of the message contents
 	if( !_msg )
 	{
@@ -479,18 +501,20 @@ static float BoxDistance(const math::Box& a, const math::Box& b)
 
 
 // called by the world update start event
-void ArmPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
+void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 {
-   /*const math::Pose& pose = model->GetWorldPose();
-	printf("%s location:  %lf %lf %lf\n", model->GetName().c_str(), pose.pos.x, pose.pos.y, pose.pos.z);
-	
-	const math::Box& bbox = model->GetBoundingBox();
-	printf("%s bounding:  min=%lf %lf %lf  max=%lf %lf %lf\n", model->GetName().c_str(), bbox.min.x, bbox.min.y, bbox.min.z,bbox.max.x, bbox.max.y, bbox.max.z);
-   */
-   /*const math::Vector3 center = bbox.GetCenter();
-	const math::Vector3 bbSize = bbox.GetSize();
+	// deferred loading of the agent (this is to prevent Gazebo black/frozen display)
+	if( !agent && updateInfo.simTime.Float() > 1.5f )
+	{
+		if( !createAgent() )
+			return;
+	}
 
-	printf("arm bounding:  center=%lf %lf %lf  size=%lf %lf %lf\n", center.x, center.y, center.z, bbSize.x, bbSize.y, bbSize.z); */
+	// verify that the agent is loaded
+	if( !agent )
+		return;
+
+	// determine if we have new camera state and need to update the agent
 	const bool hadNewState = newState && !testAnimation;
 
 	// update the robot positions with vision/DQN

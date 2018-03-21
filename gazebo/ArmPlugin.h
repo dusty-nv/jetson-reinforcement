@@ -49,6 +49,7 @@ public:
 
 	float resetPosition( uint32_t dof );  // center servo positions
 
+	bool createAgent();
 	bool updateAgent();
 	bool updateJoints();
 	
@@ -84,8 +85,8 @@ private:
 	float    resetPos[DOF];
 	float    lastGoalDistance;
 	float    avgGoalDelta;
-	int	successful_grabs;
-	int	total_runs;
+	int	    successful_grabs;
+	int	    total_runs;
 
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;
