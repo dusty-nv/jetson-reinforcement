@@ -234,7 +234,9 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		//if ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) && strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0 && !testAnimation)
 		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))		
 		{
-			printf("Give max reward and execute gripper \n");
+			if(DEBUG)
+				printf("Give max reward and execute gripper \n");
+
 			//rewardHistory = (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN;
 			rewardHistory = REWARD_WIN;
 
@@ -423,12 +425,13 @@ bool ArmPlugin::updateJoints()
 				testAnimation = false;
 		}
 		else if( animationStep == ANIMATION_STEPS / 2 )
-			
-			printf("Reset gripper \n");
-			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
-			j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
+		{	
+			//printf("Reset gripper \n");
+			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
+			//j2_controller->SetJointPosition(this->model->GetJoint("gripper_left"),  0);
 //			RandomizeProps();
 			ResetPropDynamics();
+		}
 
 		return true;
 	}

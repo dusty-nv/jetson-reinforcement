@@ -325,40 +325,29 @@
 			</axis>
 		</joint>
 
-		<joint name="gripper_right" type="prismatic">
-		<pose>0 0 0 0 0 0</pose>
-		<parent>gripperbase</parent>
-		    <child>gripper_right</child>
-		    <axis>
-			<xyz>0 -1 0</xyz>
-			<limit>
-			    <effort>100</effort>
-			    <lower>-0.01</lower>
-			    <upper>0.06</upper>
-			    <velocity>0.05</velocity>
-			</limit>
-			<dynamics>
-			    <damping>0.7</damping>
-			</dynamics>
-		    </axis>
-			</joint>
-
-		<joint name="gripper_left" type="prismatic">
-            <pose>0 0 0 0 0 0</pose>
-            <parent>gripperbase</parent>
-            <child>gripper_left</child>
-            <axis>
-                <xyz>0 1 0</xyz>
-                <limit>
-                    <effort>100</effort>
-                    <lower>-0.01</lower>
-                    <upper>0.06</upper>
-                    <velocity>0.05</velocity>
-                </limit>
-                <dynamics>
-                    <damping>0.7</damping>
-                </dynamics>
-            </axis>
+		<joint name="gripper_left" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>gripper_left</child>
+			<parent>gripperbase</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
+		</joint>
+		<joint name="gripper_right" type="revolute">
+			<pose>0 0 -0.05 0 0 0</pose>
+			<child>gripper_right</child>
+			<parent>gripperbase</parent>
+			<axis>
+				<limit>
+					<lower>0</lower>
+					<upper>0</upper>
+				</limit>
+				<xyz>0 1 0</xyz>
+			</axis>
 		</joint>
 		  
 		<joint name="gripperbase" type="fixed">
