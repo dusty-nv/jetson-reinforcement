@@ -90,7 +90,7 @@ if( ${USE_PYTHON} )
 	target_link_libraries(jetson-reinforcement python2.7 _C ATen cuda nvrtc)
 
 	# transfer all python scripts to bin directory
-	file(GLOB pyScripts python/*.py)
+	file(GLOB pyScripts python/*.py python/*.ipynb)
 
 	foreach(pyScript ${pyScripts})
 		message("-- Copying ${pyScript}")
