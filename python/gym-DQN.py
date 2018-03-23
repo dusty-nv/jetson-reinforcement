@@ -465,6 +465,7 @@ for i_episode in range(num_episodes):
         # Perform one step of the optimization (on the target network)
         optimize_model()
         if done:
+            print('Episode %02i, Duration %i' % (i_episode, t+1))
             episode_durations.append(t + 1)
             plot_durations()
             break
