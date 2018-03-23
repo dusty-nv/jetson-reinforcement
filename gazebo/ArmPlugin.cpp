@@ -114,6 +114,10 @@ void ArmPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
 	printf("ArmPlugin::Load('%s')\n", _parent->GetName().c_str());
 
+	// Create DQN agent
+	if( !createAgent() )
+		return;
+
 	// Store the pointer to the model
 	this->model = _parent;
 	this->j2_controller = new physics::JointController(model);
@@ -506,17 +510,6 @@ static float BoxDistance(const math::Box& a, const math::Box& b)
 // called by the world update start event
 void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 {
-	// deferred loading of the agent (this is to prevent Gazebo black/frozen display)
-	if( !agent && updateInfo.simTime.Float() > 1.5f )
-	{
-		if( !createAgent() )
-			return;
-	}
-
-	// verify that the agent is loaded
-	if( !agent )
-		return;
-
 	// determine if we have new camera state and need to update the agent
 	const bool hadNewState = newState && !testAnimation;
 
