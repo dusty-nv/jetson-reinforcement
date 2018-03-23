@@ -58,7 +58,8 @@ public:
 	void onCameraMsg(ConstImageStampedPtr &_msg);
 	void onCollisionMsg(ConstContactsPtr &contacts);
 
-	static const uint32_t DOF = 2;
+	static const uint32_t DOF  = 2;	// active degrees of freedom in the arm
+	static const uint32_t RUNS = 20;	// episode outcome history length / number of runs saved
 
 private:
 	float ref[DOF];			// joint reference positions
@@ -85,8 +86,11 @@ private:
 	float    resetPos[DOF];
 	float    lastGoalDistance;
 	float    avgGoalDelta;
-	int	    successful_grabs;
-	int	    total_runs;
+	int	    successfulGrabs;
+	int	    totalRuns;
+	int      runHistoryIdx;
+	int	    runHistoryMax;
+	bool     runHistory[RUNS];
 
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;

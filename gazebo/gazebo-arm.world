@@ -325,27 +325,27 @@
 			</axis>
 		</joint>
 
-		<joint name="gripper_left" type="revolute">
+		<joint name="gripper_left" type="fixed">
 			<pose>0 0 -0.05 0 0 0</pose>
 			<child>gripper_left</child>
 			<parent>gripperbase</parent>
 			<axis>
-				<limit>
+				<!--<limit>
 					<lower>0</lower>
 					<upper>0</upper>
-				</limit>
+				</limit>-->
 				<xyz>0 1 0</xyz>
 			</axis>
 		</joint>
-		<joint name="gripper_right" type="revolute">
+		<joint name="gripper_right" type="fixed">
 			<pose>0 0 -0.05 0 0 0</pose>
 			<child>gripper_right</child>
 			<parent>gripperbase</parent>
 			<axis>
-				<limit>
+				<!--<limit>
 					<lower>0</lower>
 					<upper>0</upper>
-				</limit>
+				</limit>-->
 				<xyz>0 1 0</xyz>
 			</axis>
 		</joint>
@@ -424,7 +424,7 @@
 				</noise>-->
 			</camera>
 			<always_on>1</always_on>
-			<update_rate>10</update_rate>
+			<update_rate>20</update_rate>
 			<visualize>true</visualize>
 		</sensor>
 		</link>

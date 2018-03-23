@@ -92,7 +92,7 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	inputRawHeight   = 0;
 	actionJointDelta = 0.15f;
 	actionVelDelta   = 0.1f;
-	maxEpisodeLength = 100;
+	maxEpisodeLength = 50;
 	episodeFrames    = 0;
 
 	newState         = false;
@@ -104,8 +104,12 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	animationStep    = 0;
 	lastGoalDistance = 0.0f;
 	avgGoalDelta     = 0.0f;
-	successful_grabs = 0;
-	total_runs       = 0;
+	successfulGrabs  = 0;
+	totalRuns        = 0;
+	runHistoryIdx    = 0;
+	runHistoryMax    = 0;
+
+	memset(runHistory, 0, sizeof(runHistory));
 }
 
 
@@ -622,10 +626,37 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 
 			// track the number of wins and agent accuracy
 			if( rewardHistory >= REWARD_WIN )
-				successful_grabs++;
+			{
+				runHistory[runHistoryIdx] = true;
+				successfulGrabs++;
+			}
+			else
+				runHistory[runHistoryIdx] = false;
 
-			total_runs++;
-			printf("Current Accuracy:  %0.4f (%03u of %03u)  (reward=%+0.2f %s)\n", float(successful_grabs)/float(total_runs), successful_grabs, total_runs, rewardHistory, (rewardHistory >= REWARD_WIN ? "WIN" : "LOSS"));
+			totalRuns++;
+			runHistoryIdx = (runHistoryIdx + 1) % RUNS;
+	
+			printf("%s  wins = %03u of %03u (%0.2f)  ", (rewardHistory >= REWARD_WIN) ? "WIN " : "LOSS", successfulGrabs, totalRuns, float(successfulGrabs)/float(totalRuns));
+
+			if( totalRuns >= RUNS )
+			{
+				uint32_t historyWins = 0;
+
+				for( uint32_t n=0; n < RUNS; n++ )
+				{
+					if( runHistory[n] )
+						historyWins++;
+				}
+
+				if( historyWins > runHistoryMax )
+					runHistoryMax = historyWins;
+
+				printf("%02u of last %u  (%0.2f)  (max=%0.2f)", historyWins, RUNS, float(historyWins)/float(RUNS), float(runHistoryMax)/float(RUNS));
+			}
+
+			printf("\n");
+				
+			//printf("Current Accuracy:  %0.4f (%03u of %03u)  (reward=%+0.2f %s)\n", float(successfulGrabs)/float(totalRuns), successfulGrabs, totalRuns, rewardHistory, (rewardHistory >= REWARD_WIN ? "WIN" : "LOSS"));
 
 //			printf("Reset gripper \n");
 //			j2_controller->SetJointPosition(this->model->GetJoint("gripper_right"),  0);
