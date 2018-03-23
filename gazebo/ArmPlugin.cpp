@@ -593,7 +593,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 				const float distDelta  = lastGoalDistance - distGoal;
 				const float distThresh = 1.5f;		// maximum distance to the goal
 				const float epsilon    = 0.001f;		// minimum pos/neg change in position
-				const float movingAvg  = 0.9f;
+				const float movingAvg  = 0.0f;//0.9f;
 
 				// compute the smoothed moving average of the delta of the distance to the goal
 				avgGoalDelta  = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
@@ -633,16 +633,17 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 			else
 				runHistory[runHistoryIdx] = false;
 
+			const uint32_t RUN_HISTORY = sizeof(runHistory);
+			runHistoryIdx = (runHistoryIdx + 1) % RUN_HISTORY;
 			totalRuns++;
-			runHistoryIdx = (runHistoryIdx + 1) % RUNS;
-	
+
 			printf("%s  wins = %03u of %03u (%0.2f)  ", (rewardHistory >= REWARD_WIN) ? "WIN " : "LOSS", successfulGrabs, totalRuns, float(successfulGrabs)/float(totalRuns));
 
-			if( totalRuns >= RUNS )
+			if( totalRuns >= RUN_HISTORY )
 			{
 				uint32_t historyWins = 0;
 
-				for( uint32_t n=0; n < RUNS; n++ )
+				for( uint32_t n=0; n < RUN_HISTORY; n++ )
 				{
 					if( runHistory[n] )
 						historyWins++;
@@ -651,7 +652,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 				if( historyWins > runHistoryMax )
 					runHistoryMax = historyWins;
 
-				printf("%02u of last %u  (%0.2f)  (max=%0.2f)", historyWins, RUNS, float(historyWins)/float(RUNS), float(runHistoryMax)/float(RUNS));
+				printf("%02u of last %u  (%0.2f)  (max=%0.2f)", historyWins, RUN_HISTORY, float(historyWins)/float(RUN_HISTORY), float(runHistoryMax)/float(RUN_HISTORY));
 			}
 
 			printf("\n");

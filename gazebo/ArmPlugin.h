@@ -59,7 +59,6 @@ public:
 	void onCollisionMsg(ConstContactsPtr &contacts);
 
 	static const uint32_t DOF  = 2;	// active degrees of freedom in the arm
-	static const uint32_t RUNS = 20;	// episode outcome history length / number of runs saved
 
 private:
 	float ref[DOF];			// joint reference positions
@@ -90,7 +89,7 @@ private:
 	int	    totalRuns;
 	int      runHistoryIdx;
 	int	    runHistoryMax;
-	bool     runHistory[RUNS];
+	bool     runHistory[20];
 
 	physics::ModelPtr model;
 	event::ConnectionPtr updateConnection;
