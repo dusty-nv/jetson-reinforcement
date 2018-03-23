@@ -110,24 +110,26 @@ def main():
     running_reward = 10
     for i_episode in count(1):
         state = env.reset()
+        ep_reward = 0
         for t in range(10000):  # Don't infinite loop while learning
             action = select_action(state)
             state, reward, done, _ = env.step(action)
             if args.render:
                 env.render()
             policy.rewards.append(reward)
+            ep_reward = ep_reward + reward
             if done:
                 break
 
         running_reward = running_reward * 0.99 + t * 0.01
         finish_episode()
         if i_episode % args.log_interval == 0:
-            print('Episode {}\tLast length: {:5d}\tAverage length: {:.2f}'.format(
-                i_episode, t, running_reward))
-        if running_reward > env.spec.reward_threshold:
-            print("Solved! Running reward is now {} and "
-                  "the last episode runs to {} time steps!".format(running_reward, t))
-            break
+            print('Episode {:03d}   Reward: {:.2f}   Last length: {:03d}   Average length: {:.2f}'.format(
+                i_episode, ep_reward, t, running_reward))
+        #if running_reward > env.spec.reward_threshold:
+        #    print("Solved! Running reward is now {} and "
+        #          "the last episode runs to {} time steps!".format(running_reward, t))
+            #break
 
 
 if __name__ == '__main__':
