@@ -229,7 +229,7 @@
 	<!--            -->
 	<!-- OBSTACLES  -->
 	<!--            -->
-	<model name="ball">
+	<!--<model name="ball">
 		<link name="link">
 		<pose>0.75 -2.0 0.0 0 0 0</pose>
 		<collision name="ball_collision">
@@ -265,7 +265,7 @@
 		</link>
 
 		<plugin name="PropPlugin" filename="libgazeboPropPlugin.so" />
-	</model>
+	</model>-->
 
 	<model name="goal">
 		<link name="link">
@@ -310,7 +310,7 @@
 			<collision name="box_collision">
 				<geometry>
 					<box>
-						<size>0.25 2.0 0.15</size>
+						<size>0.25 2.25 0.15</size>
 					</box>
 				</geometry>
 			</collision>
@@ -318,7 +318,7 @@
 			<visual name="visual">
 				<geometry>
 					<box>
-						<size>0.25 2.0 0.15</size>
+						<size>0.25 2.25 0.15</size>
 					</box>
 				</geometry>
 				<material>
