@@ -19,8 +19,8 @@ parser.add_argument('--seed', type=int, default=543, metavar='N',
                     help='random seed (default: 543)')
 parser.add_argument('--render', action='store_true',
                     help='render the environment')
-parser.add_argument('--log-interval', type=int, default=10, metavar='N',
-                    help='interval between training status logs (default: 10)')
+parser.add_argument('--log-interval', type=int, default=1, metavar='N',
+                    help='interval between training status logs (default: 1)')
 args = parser.parse_args()
 
 # print(gym.envs.registry.all())
