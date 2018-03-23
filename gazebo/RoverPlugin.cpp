@@ -31,9 +31,9 @@
 #define ROVER_NAME "rover"
 #define GOAL_NAME  "goal"
 
-#define REWARD_WIN   500.0f
-#define REWARD_LOSS -500.0f
-#define REWARD_MULTIPLIER 100.0f
+#define REWARD_WIN   1.0f
+#define REWARD_LOSS -1.0f
+#define REWARD_MULTIPLIER 10.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -61,15 +61,21 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	inputRawWidth     = 0;
 	inputRawHeight    = 0;
 	actionVelDelta    = 0.1f;
-	maxEpisodeLength  = 100;	// set to # frames to limit ep length
+	maxEpisodeLength  = 200;	// set to # frames to limit ep length
 	episodeFrames     = 0;
 	episodesCompleted = 0;
+	episodesWon	   = 0;
 
 	newState          = false;
 	newReward         = false;
 	endEpisode        = false;
 	rewardHistory     = 0.0f;
 	lastGoalDistance  = 0.0f;
+	lastAction        = -1;
+	runHistoryIdx     = 0;
+	runHistoryMax     = 0;
+
+	memset(runHistory, 0, sizeof(runHistory));
 
 	for( uint32_t n=0; n < DOF; n++ )
 		vel[n] = 0.0f;
@@ -193,7 +199,7 @@ void RoverPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 	size = sizeof(this->data) - sizeof(this->data.image) +
 	_msg->image().data().size(); */
 
-	printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);
+	//printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);
 	//std::cout << _msg->DebugString();
 }
 
@@ -302,7 +308,7 @@ bool RoverPlugin::updateAgent()
 		return false;
 	}
 
-	printf("RoverPlugin - agent selected action %i\n", action);
+	//printf("RoverPlugin - agent selected action %i\n", action);
 
 #if 0
 	// action 0 does nothing, the others index a joint
@@ -337,7 +343,19 @@ bool RoverPlugin::updateAgent()
 		vel[1] = VELOCITY_MIN;
 	}
 
+	lastAction = action;
 	return true;
+}
+
+
+// return the tetxual string corresponding to an action
+static const char* actionStr( int action )
+{
+	if( action == 0 )		return "REV  ";
+	else if( action == 1 )	return "FWD  ";
+	else if( action == 2 )	return "LEFT ";
+	else if( action == 3 )	return "RIGHT";
+	else					return "NULL ";
 }
 
 
@@ -396,7 +414,7 @@ bool RoverPlugin::updateJoints()
 	{
 		// update the AI agent when new camera frame is ready
 		episodeFrames++;
-		printf("episode %i frame = %i\n", episodesCompleted, episodeFrames);
+		//printf("episode %i frame = %i\n", episodesCompleted, episodeFrames);
 
 		// reset camera ready flag
 		newState = false;
@@ -546,7 +564,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 	// issue rewards and train DQN
 	if( newReward && agent != NULL )
 	{
-		printf("RoverPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" : (rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");
+		//printf("RoverPlugin - issuing reward %f, EOE=%s  %s\n", rewardHistory, endEpisode ? "true" : "false", (rewardHistory > 0.1f) ? "POS+" : (rewardHistory > 0.0f) ? "POS" : (rewardHistory < 0.0f) ? "    NEG" : "       ZERO");
 		agent->NextReward(rewardHistory, endEpisode);
 
 		// reset reward indicator
@@ -559,6 +577,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			episodeFrames    = 0;
 			lastGoalDistance = 0.0f;
 			
+			// reset simulation state
 			ResetPropDynamics();
 
 			for( uint32_t n=0; n < DOF; n++ )
@@ -570,8 +589,44 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			model->SetLinearVel(math::Vector3(0.0, 0.0, 0.0));
 
 			model->SetWorldPose(originalPose);
+
+			// tally episode stats
+			if( rewardHistory >= REWARD_WIN )
+			{
+				runHistory[runHistoryIdx] = true;
+				episodesWon++;
+			}
+			else
+				runHistory[runHistoryIdx] = false;
+
+			runHistoryIdx = (runHistoryIdx + 1) % sizeof(runHistory);
 			episodesCompleted++;
 		}
+
+		// print agent stats
+		printf("action = %s reward = %+0.4f  wins = %03u of %03u (%0.2f)   ", 
+			  actionStr(lastAction), rewardHistory,  
+			  episodesWon, episodesCompleted, float(episodesWon)/float(episodesCompleted));
+
+		const uint32_t RUN_HISTORY = sizeof(runHistory);
+
+		if( episodesCompleted >= RUN_HISTORY )
+		{
+			uint32_t historyWins = 0;
+
+			for( uint32_t n=0; n < RUN_HISTORY; n++ )
+			{
+				if( runHistory[n] )
+					historyWins++;
+			}
+
+			if( historyWins > runHistoryMax )
+				runHistoryMax = historyWins;
+
+			printf("%02u of last %u  (%0.2f)  (max=%0.2f)", historyWins, RUN_HISTORY, float(historyWins)/float(RUN_HISTORY), float(runHistoryMax)/float(RUN_HISTORY));
+		}
+
+		printf("\n");
 	}
 }
 

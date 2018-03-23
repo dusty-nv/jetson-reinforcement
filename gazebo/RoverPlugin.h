@@ -59,7 +59,7 @@ public:
 	void onCameraMsg(ConstImageStampedPtr &_msg);
 	void onCollisionMsg(ConstContactsPtr &contacts);
 
-	static const uint32_t DOF = 2;
+	static const uint32_t DOF = 2;	// FWD/BACK, LEFT/RIGHT
 
 private:
 	float vel[DOF];			// joint velocity control
@@ -89,7 +89,12 @@ private:
 	int	    maxEpisodeLength;	// maximum number of frames to win episode (or <= 0 for unlimited)
 	int      episodeFrames;		// frame counter for the current episode	
 	int      episodesCompleted;
+	int 	    episodesWon;
+	int	    lastAction;
 	float    lastGoalDistance;
+	int      runHistoryIdx;
+	int	    runHistoryMax;
+	bool     runHistory[20];
 
 	physics::ModelPtr model;
 	math::Pose originalPose;
