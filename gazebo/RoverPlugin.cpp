@@ -9,6 +9,7 @@
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
 
+
 #define PI 3.141592653589793238462643383279502884197169f
 
 #define LF_HINGE "rover::front_left_wheel_hinge"
@@ -22,9 +23,22 @@
 #define VELOCITY_MIN -1.0f
 #define VELOCITY_MAX  1.0f
 
+// Define DQN API Settings
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
+#define OPTIMIZER "RMSprop"
+#define LEARNING_RATE 0.1f
+#define REPLAY_MEMORY 10000
+#define BATCH_SIZE 32
+#define GAMMA 0.9f
+#define EPS_START 0.9f
+#define EPS_END 0.05f
+#define EPS_DECAY 200
+#define USE_LSTM true
+#define LSTM_SIZE 256
+#define ALLOW_RANDOM true
+#define DEBUG_DQN false
 
 #define NET_OUTPUTS 4
 
@@ -124,6 +138,10 @@ void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// Store the original pose of the model
 	this->originalPose = model->GetWorldPose();
+
+	// create DQN agent
+	if( !createAgent() )
+		printf("RoverPlugin -- failed to create DQN agent\n");
 
 	// Create our node for camera communication
 	cameraNode->Init();
@@ -240,8 +258,10 @@ bool RoverPlugin::createAgent()
 		return true;
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, /*DOF*2+1*/NET_OUTPUTS);
-
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, NET_OUTPUTS, 
+						OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE,
+						GAMMA, EPS_START, EPS_END, EPS_DECAY, 
+						USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
 	if( !agent )
 	{
 		printf("RoverPlugin - failed to create AI agent\n");
@@ -263,8 +283,7 @@ bool RoverPlugin::createAgent()
 // upon recieving a new frame, update the AI agent
 bool RoverPlugin::updateAgent()
 {
-	// create agent on-demand
-	if( !createAgent() )
+	if( !agent )
 		return false;
 
 	// convert uchar3 input from camera to planar BGR
