@@ -302,7 +302,7 @@ With `128x128` environment size, the catch agent achieves >75% accuracy after ar
 
 ## Fruit
 
-Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fruit.cpp), where the agent appears at random locations and must find the "fruit" object to gain the reward and win episodes before the timeout period expires.  The [`fruit`](samples/fruit/fruit.cpp) agent has 4 possible actions to choose from:  it can move up, down, left, and right on the screen in order to navigate to the object.  
+Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fruit.cpp), where the agent appears at random locations and must find the "fruit" object to gain the reward and win episodes before running out of bounds or the timeout period expires.  The [`fruit`](samples/fruit/fruit.cpp) agent has 4 possible actions to choose from:  moving up, down, left, and right on the screen in order to navigate to the object.  
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/fruit.gif" width="175">
 
@@ -375,12 +375,19 @@ Once you notice the arm agent converging on the object, you can begin to move th
 
 Note that you will want to move the object so that the arm can still reach it, as the arm's rotational base is initially limited to around 45 degrees of travel in either direction. 
 
-<!---
-#Navigation section
--->
-If you press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic, you can visualize the scene from the robot's perspective.
+## Rover Navigation
 
+We also have a skid-steer rover in Gazebo that learns to follow objects while avoiding the walls of it's environment, similar to the [`fruit`](samples/fruit/fruit.cpp) scenario.  To launch the rover simulation, run this script:
 
+``` bash
+$ ./gazebo-rover.sh
+```
+
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo_rover.jpg">
+
+> Press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic to visualize the scene from the camera.
+
+Similar to the arm, once you notice the rover consistently finding the object (in this case the green box), you can move the object around the scene by pressing `T` first.  Note that there's an episode timeout similar to [`fruit`](samples/fruit/fruit.cpp), so you won't want to move the object too far away without first increasing the rover's [`maxEpisodeLength`](https://github.com/dusty-nv/jetson-reinforcement/blob/b038a719ff6e50c067e905ecff3582896e3d659a/gazebo/RoverPlugin.cpp#L79) in the code and re-compiling.
 
 # Using LUA
 
