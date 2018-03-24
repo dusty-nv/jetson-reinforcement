@@ -68,13 +68,20 @@ void PropPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	this->model = _parent;
 
 	// Store the original pose of the model
-	this->originalPose = model->GetWorldPose();
+	UpdateResetPose();
 
 	// Listen to the update event. This event is broadcast every simulation iteration.
 	this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&PropPlugin::OnUpdate, this, _1));
 
 	// Track this object in the global Prop registry
 	props.push_back(this);
+}
+
+
+// UpdateResetPose
+void PropPlugin::UpdateResetPose()
+{
+	this->originalPose = model->GetWorldPose();
 }
 
 

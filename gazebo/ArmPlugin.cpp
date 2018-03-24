@@ -463,6 +463,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 	// if an EOE reward hasn't already been issued, compute an intermediary reward
 	if( hadNewState && !newReward )
 	{
+		// retrieve the goal prop model object
 		PropPlugin* prop = GetPropByName(PROP_NAME);
 
 		if( !prop )
@@ -470,6 +471,9 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 			printf("ArmPlugin - failed to find Prop '%s'\n", PROP_NAME);
 			return;
 		}
+
+		// remember where the user moved the prop to for when it's reset
+		prop->UpdateResetPose();
 
 		// get the bounding box for the prop object
 		const math::Box& propBBox = prop->model->GetBoundingBox();
