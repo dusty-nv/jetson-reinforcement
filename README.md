@@ -13,11 +13,12 @@ This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, ex
 
 * [Building from Source](#building-from-source)
 * [Verifying PyTorch](#verifying-pytorch)
-* [DQN + OpenAI Gym](#dqn-openai-gym)
+* [DQN + OpenAI Gym](#dqn--openai-gym)
 	* [Cartpole](#cartpole)
 	* [Lunar Lander](#lunar-lander)
 * [Digging into the C++ API](#digging-into-the-c-api)
-	* [Testing the API](#testing-the-api)
+* [Testing the API](#testing-the-api)
+	* [Catch](#catch)
 * [3D Simulation](#3d-simulation)
 	* [Robotic Manipulation](#manipulation)
 * [Using LUA](#using-lua)
@@ -50,10 +51,9 @@ $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
 $ jupyter notebook intro-pytorch.ipynb
 ```
 
-Alternatively, if you wish to skip the notebook and run the PyTorch verification commands directly, you can do so by launching an interactive Python shell and running the following:
+Alternatively, if you wish to skip the notebook and run the PyTorch verification commands directly, you can do so by launching an interactive Python shell with the `python` command and running the following:
 
 ``` python
-$ python
 >>> import pytorch
 >>> print(torch.__version__)
 >>> print('CUDA available: ' + str(torch.cuda.is_available()))
@@ -68,7 +68,6 @@ $ python
 If PyTorch is installed correctly on your system, the output should be as follows:
 
 ``` python
-$ python
 Python 2.7.12 (default, Nov 19 2016, 06:48:10) 
 [GCC 5.4.0 20160609] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
@@ -104,7 +103,9 @@ Now we have verified that PyTorch is loading, able to detect GPU acceleration, i
 
 # DQN + OpenAI Gym
 
-In order to first test and verify that the deep reinforcement learning algorithms are indeed learning, we'll run them inside OpenAI Gym environments (in 2D).  As an introduction to the DQN algorithm, a second CUDA-enabled IPython notebook is included in the repo, **[`intro-DQN.ipynb`](python/intro-DQN.ipynb)**.  This notebook applies the DQN on video captured from the Gym's [`CartPole`](https://gym.openai.com/envs/CartPole-v0/) environment, so it's learning "from vision" on the GPU, as opposed to low-dimensional parameters from the game like traditional RL.  Although CartPole is a toy example, it's vital to start with a simple example to eliminate potential issues early on before graduating to more complex 3D scenarios that will become more difficult to debug, and since the DQN learns from a 2D pixel array it's still considered deep reinforcement learning.  It's recommended to follow along with the notebook to familiarize yourself with the DQN algorithm for when we transition to using it from C++ in more complex environments later in the repo. 
+In order to first test and verify that the deep reinforcement learning algorithms are indeed learning, we'll run them inside OpenAI Gym environments (in 2D).  As an introduction to the DQN algorithm, a second CUDA-enabled IPython notebook is included in the repo, **[`intro-DQN.ipynb`](python/intro-DQN.ipynb)**.  This notebook applies the DQN on video captured from the Gym's [`CartPole`](https://gym.openai.com/envs/CartPole-v0/) environment, so it's learning "from vision" on the GPU, as opposed to low-dimensional parameters from the game like traditional RL.  
+
+Although CartPole is a toy example, it's vital to start with a simple example to eliminate potential issues early on before graduating to more complex 3D scenarios that will become more difficult to debug, and since the DQN learns from a 2D pixel array it's still considered deep reinforcement learning.  It's recommended to follow along with the [notebook](python/intro-DQN.ipynb) below to familiarize yourself with the DQN algorithm for when we transition to using it from C++ in more complex environments later in the repo. 
 
 ## Cartpole
 
@@ -115,15 +116,12 @@ $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
 $ jupyter notebook intro-DQN.ipynb
 ```
 
-The DQN is only set to run for 50 episodes inside of the notebook.  After you have witnessed the DQN start to converge, exit the notebook and run the standalone **[`gym-DQN.py`](python/gym-DQN.py)** script from the terminal for improved performance:
-
-
-Following this [Deep Q-Learning tutorial](http://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html) from PyTorch, run these commands to launch the DQN agent:
+Inside of the notebook, the DQN is set to only run for 50 episodes.  After you have witnessed the DQN start to converge and the CartPole begin to remain upright for longer periods of time, exit the notebook and run the standalone **[`gym-DQN.py`](python/gym-DQN.py)** script from the terminal for improved performance:
 
 ``` bash
 $ python gym-DQN.py
 ```
-> (the following is assuming the current directory of your terminal is still `cd jetson-reinforcement/build/<arch>/bin` from above)
+> (assuming the current directory of your terminal is still `cd jetson-reinforcement/build/<arch>/bin` from above)
 
 Three windows should appear showing the cartpole game, a graph of peformance, and the DQN agent should begin learning.  The longer the DQN agent is able to balance the pole on the moving cart, the more points it's rewarded.  In Gym, a score of 200 indicates the scenario has been mastered.  After a short while of training, the agent should achieve it and the program will quit.
 
@@ -164,7 +162,7 @@ Episode 190   Reward:  +86.32   Last length: 161   Average length: 156.21
 Episode 200   Reward: +111.07   Last length: 505   Average length: 162.06
 ```
 
-Next, we'll look at integrating these standalone Python examples into our robotics code via a C++ interposer library.
+Next, we'll look at integrating these standalone Python examples into robotics code via our C++ wrapper library.
 
 # Digging into the C++ API
 
@@ -202,17 +200,16 @@ public:
 
 Included in the repo are different implementations of the agent, including **[`dqnAgent`](c/dqnAgent.h)** which we will use primarily in the simulation scenarios to follow.  The user provides their sensor data, or environmental state, to the `NextAction()` function, which calls the Python script and returns the predicted action, which the user then applies to their robot or simulation.  Next the reward is issued in the `NextReward()` function, which provides feedback to the learner and kicks off the next training iteration that makes the agent learn over time.
 
-## Testing the API
+# Testing the API
 
 To make sure that the reinforcement learners are still functioning properly from C++, some simple examples of using the API called [`catch`](samples/catch/catch.cpp) and [`fruit`](samples/fruit/fruit.cpp) are provided.  Similar in concept to pong, in `catch` a ball drops from the top of the environment which the agent must catch before the ball reaches the bottom of the screen, by moving it's paddle left or right.
+
+## Catch
 
 Unlike the previous examples which were monolithic Python scripts, the [`catch`](samples/catch/catch.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.  To test the textual `catch` sample, run the following executable from the terminal.  After around 100 episodes or so, the agent should start winning the episodes nearly 100% of the time.  
 
 ``` bash
 $ ./catch 
-[deepRL]  use_cuda:       True
-[deepRL]  use_lstm:       1
-[deepRL]  lstm_size:      256
 [deepRL]  input_width:    64
 [deepRL]  input_height:   64
 [deepRL]  input_channels: 1
@@ -228,8 +225,6 @@ $ ./catch
 [deepRL]  allow_random:   1
 [deepRL]  debug_mode:     0
 [deepRL]  creating DQN model instance
-[deepRL]  DRQN::__init__()
-[deepRL]  LSTM (hx, cx) size = 256
 [deepRL]  DQN model instance created
 [deepRL]  DQN script done init
 [cuda]  cudaAllocMapped 16384 bytes, CPU 0x1020a800000 GPU 0x1020a800000
