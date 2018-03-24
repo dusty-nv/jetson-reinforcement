@@ -23,7 +23,7 @@ This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, ex
 	* [Robotic Arm](#robotic-arm)
 	* [Rover Navigation](#rover-navigation)
 * [Continuous Control](#continuous-control)
-* [Using LUA](#using-lua)
+* [Appendix: Using LUA](#appendix-using-lua)
 
 # Building from Source
 
@@ -414,7 +414,7 @@ Depending on settings and system resources, it typically takes A3G between 90-12
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.gif">
 
-# Using LUA
+# Appendix: Using LUA
 
 By default, the repo builds with PyTorch and Python.  However, there's also support included for Torch7 and LUA script with a compile flag.  The process is scripted to automatically install dependencies like Torch7 and build the project from source.  
 You may be required to enter the sudo password at some point.
