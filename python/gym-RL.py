@@ -124,7 +124,7 @@ def main():
         running_reward = running_reward * 0.99 + t * 0.01
         finish_episode()
         if i_episode % args.log_interval == 0:
-            print('Episode {:03d}   Reward: {:.2f}   Last length: {:03d}   Average length: {:.2f}'.format(
+            print('Episode {:03d}   Reward: {:+7.2f}   Last length: {:03d}   Average length: {:.2f}'.format(
                 i_episode, ep_reward, t, running_reward))
         #if running_reward > env.spec.reward_threshold:
         #    print("Solved! Running reward is now {} and "
