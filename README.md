@@ -168,7 +168,7 @@ Next, we'll look at integrating these standalone Python examples into robotics c
 
 To take these deep reinforcement learners from monolithic Python examples into libray form that can be integrated with robots and simulators, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI to pass the tensor memory between the application and PyTorch without extra copies (ZeroCopy).  
 
-The library is architected to be extended to new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) base class:
+The library is architected to be extended to new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) interface which the RL implementations inherit from:
 
 ``` c++
 /**
@@ -200,15 +200,17 @@ public:
 };
 ```
 
-Included in the repo are different implementations of the agent, including **[`dqnAgent`](c/dqnAgent.h)** which we will use primarily in the simulation scenarios to follow.  The user provides their sensor data, or environmental state, to the `NextAction()` function, which calls the Python script and returns the predicted action, which the user then applies to their robot or simulation.  Next the reward is issued in the `NextReward()` function, which provides feedback to the learner and kicks off the next training iteration that makes the agent learn over time.
+Included in the repo are different implementations of the agent, including **[`dqnAgent`](c/dqnAgent.h)** which we will use in the simulation scenarios to follow.  The user provides their sensor data, or environmental state, to the `NextAction()` function, which calls the Python script and returns the predicted action, which the user then applies to their robot or simulation.  
+
+Next the reward is issued in the `NextReward()` function, which provides feedback to the learner from the environment and kicks off the next training iteration that makes the agent learn over time.
 
 # Testing the C++ API
 
-To make sure that the reinforcement learners are still functioning properly from C++, some simple examples of using the API called [`catch`](samples/catch/catch.cpp) and [`fruit`](samples/fruit/fruit.cpp) are provided.  Similar in concept to pong, in `catch` a ball drops from the top of the environment which the agent must catch before the ball reaches the bottom of the screen, by moving it's paddle left or right.
+To make sure that the reinforcement learners are still functioning properly from C++, some simple examples of using the API called **[`catch`](samples/catch/catch.cpp)** and **[`fruit`](samples/fruit/fruit.cpp)** are provided.  Similar in concept to pong, in [`catch`](samples/catch/catch.cpp) a ball drops from the top of the environment which the agent must catch before the ball reaches the bottom of the screen, by moving it's paddle left or right.
 
 ## Catch
 
-Unlike the previous examples which were monolithic Python scripts, the [`catch`](samples/catch/catch.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.  To test the textual `catch` sample, run the following executable from the terminal.  After around 100 episodes or so, the agent should start winning the episodes nearly 100% of the time.  
+Unlike the previous examples which were monolithic Python scripts, the [`catch`](samples/catch/catch.cpp) sample is a simple C/C++ program which links to the reinforcement learning library outlined above.  To test the textual [`catch`](samples/catch/catch.cpp) sample, run the following executable from the terminal.  After around 100 episodes or so, the agent should start winning the episodes nearly 100% of the time:  
 
 ``` bash
 $ ./catch 
@@ -284,7 +286,7 @@ WON! episode 112
 080 for 112  (0.7143)  20 of last 20  (1.00)  (max=1.00)
 ```
 
-There are some alternate command line parameters to `catch` that you can play around with, to change the pixel array size to increase the complexity and see how it impacts convergence and training times:
+There are some alternate command line parameters to [`catch`](samples/catch/catch.cpp) that you can play around with, to change the pixel array size to increase the complexity and see how it impacts convergence and training times:
 
 ``` bash
 $ ./catch --width=96 --height=96
