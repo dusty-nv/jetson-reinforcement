@@ -4,6 +4,7 @@
 
 #include "RoverPlugin.h"
 #include "PropPlugin.h"
+#include "GazeboUtils.h"
 
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
@@ -31,9 +32,9 @@
 #define ROVER_NAME "rover"
 #define GOAL_NAME  "goal"
 
-#define REWARD_WIN   1.0f
-#define REWARD_LOSS -1.0f
-#define REWARD_MULTIPLIER 10.0f
+#define REWARD_WIN   500.0f
+#define REWARD_LOSS -500.0f
+#define REWARD_MULTIPLIER 100.0f
 
 #define COLLISION_FILTER "ground_plane::link::collision"
 
@@ -71,6 +72,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 	endEpisode        = false;
 	rewardHistory     = 0.0f;
 	lastGoalDistance  = 0.0f;
+	avgGoalDelta	   = 0.0f;
 	lastAction        = -1;
 	runHistoryIdx     = 0;
 	runHistoryMax     = 0;
@@ -183,24 +185,7 @@ void RoverPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 
 	memcpy(inputBuffer[0], _msg->image().data().c_str(), inputBufferSize);
 	newState = true;
-
-	/* unsigned int oldCount = this->data.image_count;
-	this->data.image_count = _msg->image().data().size();
-
-	if (oldCount != this->data.image_count)
-	{
-		delete this->data.image;
-		this->data.image = new uint8_t[this->data.image_count];
-	}
-
-	// Set the image pixels
-	memcpy(this->data.image, _msg->image().data().c_str(),_msg->image().data().size());
-
-	size = sizeof(this->data) - sizeof(this->data.image) +
-	_msg->image().data().size(); */
-
 	//printf("camera %i x %i  %i bpp  %i bytes\n", width, height, bpp, size);
-	//std::cout << _msg->DebugString();
 }
 
 
@@ -427,48 +412,6 @@ bool RoverPlugin::updateJoints()
 }
 
 
-// compute the distance between two bounding boxes
-static float BoxDistance(const math::Box& a, const math::Box& b)
-{
-	float sqrDist = 0;
-
-	if( b.max.x < a.min.x )
-	{
-		float d = b.max.x - a.min.x;
-		sqrDist += d * d;
-	}
-	else if( b.min.x > a.max.x )
-	{
-		float d = b.min.x - a.max.x;
-		sqrDist += d * d;
-	}
-
-	if( b.max.y < a.min.y )
-	{
-		float d = b.max.y - a.min.y;
-		sqrDist += d * d;
-	}
-	else if( b.min.y > a.max.y )
-	{
-		float d = b.min.y - a.max.y;
-		sqrDist += d * d;
-	}
-
-	if( b.max.z < a.min.z )
-	{
-		float d = b.max.z - a.min.z;
-		sqrDist += d * d;
-	}
-	else if( b.min.z > a.max.z )
-	{
-		float d = b.min.z - a.max.z;
-		sqrDist += d * d;
-	}
-	
-	return sqrtf(sqrDist);
-}
-
-
 
 // called by the world update start event
 void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
@@ -539,11 +482,13 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		const math::Box& chassisBBox = chassis->GetBoundingBox();
 		const float distGoal  = BoxDistance(goalBBox, chassisBBox); 
 		const float distDelta = lastGoalDistance - distGoal;
+		const float movingAvg = 0.0f;	// rolling average to smooth out the intermediary reward and prevent "hovering"
 
-		rewardHistory = (episodeFrames > 1) ? distDelta * REWARD_MULTIPLIER : 0.0f;
+		avgGoalDelta  = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
+		rewardHistory = (episodeFrames > 1) ? avgGoalDelta * REWARD_MULTIPLIER : 0.0f;
 
 		if( distGoal < 0.01 )
-			rewardHistory = REWARD_WIN;
+			rewardHistory = REWARD_WIN;	// TODO investigate if necessary
 
 		lastGoalDistance = distGoal;
 
@@ -576,9 +521,10 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 			endEpisode       = false;
 			episodeFrames    = 0;
 			lastGoalDistance = 0.0f;
-			
+			avgGoalDelta     = 0.0f;
+
 			// reset simulation state
-			ResetPropDynamics();
+			// ResetPropDynamics();  // DISABLED:  turns out the rover doesn't move the box anyways (now the user can move the box themselves)
 
 			for( uint32_t n=0; n < DOF; n++ )
 				vel[n] = 0.0f;

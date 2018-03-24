@@ -52,8 +52,6 @@ public:
 	bool createAgent();
 	bool updateAgent();
 	bool updateJoints();
-	
-	void setAnimationTarget( float x, float y );
 
 	void onCameraMsg(ConstImageStampedPtr &_msg);
 	void onCollisionMsg(ConstContactsPtr &contacts);

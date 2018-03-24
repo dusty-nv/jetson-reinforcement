@@ -4,6 +4,7 @@
 
 #include "ArmPlugin.h"
 #include "PropPlugin.h"
+#include "GazeboUtils.h"
 
 #include "cudaMappedMemory.h"
 #include "cudaPlanar.h"
@@ -362,53 +363,9 @@ bool ArmPlugin::updateJoints()
 	{
 		const float step = (JOINT_MAX - JOINT_MIN) * (float(1.0f) / float(ANIMATION_STEPS));
 
-#if 0
-		// range of motion
-		if( animationStep < ANIMATION_STEPS )
-		{
-			//for( uint32_t n=0; n < DOF; n++ )
-			/*ref[0] += dT[0];
-			ref[1] += dT[1];	//ref[4] += dT[1];
-			ref[2] += dT[2];	//ref[8] += dT[2];*/
-
-			animationStep++;
-			printf("animation step %u\n", animationStep);
-
-			for( uint32_t n=0; n < DOF; n++ )
-				ref[n] = JOINT_MIN + step * float(animationStep);
-		}
-		else if( animationStep < ANIMATION_STEPS * 2 )
-		{r
-			/*ref[0] -= dT[0];
-			ref[1] -= dT[1];
-			ref[2] -= dT[2];*/
-
-			animationStep++;
-			printf("animation step %u\n", animationStep);
-
-			for( uint32_t n=0; n < DOF; n++ )
-				ref[n] = JOINT_MAX - step * float(animationStep-ANIMATION_STEPS);
-		}
-		else
-		{
-			animationStep = 0;
-
-			//const float r = float(rand()) / float(RAND_MAX);
-			//setAnimationTarget( 10000.0f, 0.0f );
-		}
-
-#else
 		// return to base position
 		for( uint32_t n=0; n < DOF; n++ )
 		{
-			/*float diff = ref[n] - resetPos[n];
-
-			if( diff < 0.0f )
-				diff = -diff;
-
-			if( diff < step )
-				step = diff;*/
-
 			if( ref[n] < resetPos[n] )
 				ref[n] += step;
 			else if( ref[n] > resetPos[n] )
@@ -418,11 +375,9 @@ bool ArmPlugin::updateJoints()
 				ref[n] = JOINT_MIN;
 			else if( ref[n] > JOINT_MAX )
 				ref[n] = JOINT_MAX;
-			
 		}
 
 		animationStep++;
-#endif
 
 		// reset and loop the animation
 		if( animationStep > ANIMATION_STEPS )
@@ -466,48 +421,6 @@ bool ArmPlugin::updateJoints()
 float ArmPlugin::resetPosition( uint32_t dof )
 {
 	return resetPos[dof];
-}
-
-
-// compute the distance between two bounding boxes
-static float BoxDistance(const math::Box& a, const math::Box& b)
-{
-	float sqrDist = 0;
-
-	if( b.max.x < a.min.x )
-	{
-		float d = b.max.x - a.min.x;
-		sqrDist += d * d;
-	}
-	else if( b.min.x > a.max.x )
-	{
-		float d = b.min.x - a.max.x;
-		sqrDist += d * d;
-	}
-
-	if( b.max.y < a.min.y )
-	{
-		float d = b.max.y - a.min.y;
-		sqrDist += d * d;
-	}
-	else if( b.min.y > a.max.y )
-	{
-		float d = b.min.y - a.max.y;
-		sqrDist += d * d;
-	}
-
-	if( b.max.z < a.min.z )
-	{
-		float d = b.max.z - a.min.z;
-		sqrDist += d * d;
-	}
-	else if( b.min.z > a.max.z )
-	{
-		float d = b.min.z - a.max.z;
-		sqrDist += d * d;
-	}
-	
-	return sqrtf(sqrDist);
 }
 
 
@@ -668,60 +581,6 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 				vel[n] = 0.0f;
 		}
 	}
-}
-
-
-// Inverse kinematics solver
-void IK( float x, float y, float theta[3] )
-{
-	const float l1 = 4000.0f;
-	const float l2 = 4000.0f;
-	const float l3 = 1000.0f;
-
-	const float phi = 0.0f;
-
-	const float xw = x - l3 * cosf(0.0f);
-	const float yw = y - l3 * sinf(0.0f);
-
-	const float l12 = l1 * l1;
-	const float l22 = l2 * l2;
-
-	const float xw2 = xw * xw;
-	const float yw2 = yw * yw;
-
-	if( xw == 0.0f && yw == 0.0f )
-	{
-		theta[0] = 0.0f;
-		theta[1] = 0.0f;
-		theta[2] = 0.0f;
-	}
-	else
-	{
-		theta[1] = PI - acosf((l12+l22-xw2-yw2)/(2*l1*l2));
-		theta[0] = atanf(yw/xw) - acosf((l12-l22+xw2+yw2)/(2*l1*sqrtf(xw2+yw2)));
-		theta[2] = phi - theta[1] - theta[0];
-	}
-}
-
-
-// setAnimationTarget
-void ArmPlugin::setAnimationTarget( float x, float y )
-{
-	IK( x, y, dT );
-
-	printf("theta:  %f  %f  %f\n", dT[0], dT[1], dT[2]);
-	
-	dT[0] /= float(ANIMATION_STEPS);
-	dT[1] /= float(ANIMATION_STEPS);
-	dT[2] /= float(ANIMATION_STEPS);
-
-	printf("dT:  %f  %f  %f\n", dT[0], dT[1], dT[2]);
-}
-
-inline float randf( float rand_min, float rand_max )
-{
-	const float r = float(rand()) / float(RAND_MAX);
-	return (r * (rand_max - rand_min)) + rand_min;
 }
 
 }

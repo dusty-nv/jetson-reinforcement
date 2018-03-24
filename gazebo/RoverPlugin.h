@@ -92,6 +92,7 @@ private:
 	int 	    episodesWon;
 	int	    lastAction;
 	float    lastGoalDistance;
+	float    avgGoalDelta;
 	int      runHistoryIdx;
 	int	    runHistoryMax;
 	bool     runHistory[20];
