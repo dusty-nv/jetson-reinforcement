@@ -56,7 +56,7 @@ public:
 	void onCameraMsg(ConstImageStampedPtr &_msg);
 	void onCollisionMsg(ConstContactsPtr &contacts);
 
-	static const uint32_t DOF  = 2;	// active degrees of freedom in the arm
+	static const uint32_t DOF  = 3;	// active degrees of freedom in the arm
 
 private:
 	float ref[DOF];			// joint reference positions
