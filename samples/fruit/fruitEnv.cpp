@@ -14,8 +14,8 @@
 // ActionToStr
 const char* FruitEnv::ActionToStr( AgentAction action )
 {
-	if( action == ACTION_FORWARD )		return "FWD  ";
-	else if( action == ACTION_BACKWARD )	return "BACK ";
+	if( action == ACTION_FORWARD )		return "DOWN ";	// up/down are reversed visually
+	else if( action == ACTION_BACKWARD )	return "UP   ";	// in the GUI due to y-coordinate
 	else if( action == ACTION_LEFT )		return "LEFT ";
 	else if( action == ACTION_RIGHT )		return "RIGHT";
 	else if( action == ACTION_NONE )		return "NONE ";
