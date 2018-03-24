@@ -5,7 +5,7 @@ In this tutorial, we'll be creating artificially intelligent agents that learn f
 
 Ultimately, our aim will be to train reinforcement learning agents from virtual robotic simulation in 3D and transfer the agent to a real-world robot.  Reinforcement learners choose the best action for the agent to perform based on environmental state (like camera inputs) and rewards that provide feedback to the agent about it's performance.  Reinforcement learning can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
 
-In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to predict the best action, which is where deep reinforcement learning and GPU acceleration comes into play.  With deep reinforcement learning the agents are typically processing 2D imagery using convolutional neural networks (CNNs), inputs that are an order of magnitude more complex than low-dimensional RL, and the ability to learn "from vision" end-to-end.
+In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to predict the best action, which is where deep reinforcement learning and GPU acceleration comes into play.  With deep reinforcement learning, the agents are typically processing 2D imagery using convolutional neural networks (CNNs), processing inputs that are an order of magnitude more complex than low-dimensional RL, and have the ability to learn "from vision" with the end-to-end network (referred to as "pixels-to-actions").
 
 This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, examples and an interoperability library API in C++ for integrating with Linux applications in robotics, simulation, and deployment to the field.
 
@@ -105,7 +105,7 @@ Now we have verified that PyTorch is loading, able to detect GPU acceleration, i
 
 In order to first test and verify that the deep reinforcement learning algorithms are indeed learning, we'll run them inside OpenAI Gym environments (in 2D).  As an introduction to the DQN algorithm, a second CUDA-enabled IPython notebook is included in the repo, **[`intro-DQN.ipynb`](python/intro-DQN.ipynb)**.  This notebook applies the DQN on video captured from the Gym's [`CartPole`](https://gym.openai.com/envs/CartPole-v0/) environment, so it's learning "from vision" on the GPU, as opposed to low-dimensional parameters from the game like traditional RL.  
 
-Although CartPole is a toy example, it's vital to start with a simple example to eliminate potential issues early on before graduating to more complex 3D scenarios that will become more difficult to debug, and since the DQN learns from a 2D pixel array it's still considered deep reinforcement learning.  It's recommended to follow along with the [notebook](python/intro-DQN.ipynb) below to familiarize yourself with the DQN algorithm for when we transition to using it from C++ in more complex environments later in the repo. 
+Although CartPole is a toy example, it's vital to start with a simple example to eliminate potential issues early on before graduating to more complex 3D scenarios that will become more difficult to debug, and since the DQN learns from a raw 2D pixel array it's still considered deep reinforcement learning.  It's recommended to follow along with the [notebook](python/intro-DQN.ipynb) below to familiarize yourself with the DQN algorithm for when we transition to using it from C++ in more complex environments later in the repo. 
 
 ## Cartpole
 
@@ -304,7 +304,9 @@ Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fru
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/fruit.gif" width="175">
 
-Note this native C++ example is running mostly on the GPU, with the rudimentary 2D rasterization of the environment in CUDA along with the DQN, and the display visualization in OpenGL.  To start [`fruit`](samples/fruit/fruit.cpp), launch the following executable from the terminal:
+Note this native C++ example is running mostly on the GPU, with the rudimentary 2D rasterization of the environment in CUDA along with the DQN, and the display visualization in OpenGL.  Like before, it is learning "from vision" using to translate the raw pixel array into actions.
+
+To start [`fruit`](samples/fruit/fruit.cpp), launch the following executable from the terminal:
 
 ``` bash
 $ ./fruit
@@ -342,7 +344,7 @@ When increasing the dimensions of the environment and pixel array input, the `ep
 
 # 3D Simulation
 
-Up until this point in the repo, the environments have been 2D, namely to confirm that the RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
+Up until this point in the repo, the environments have been 2D, namely to confirm that the deep RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
 
 <!---
 Discussion of Gazebo plugin architecture
