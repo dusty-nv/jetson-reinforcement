@@ -1,6 +1,6 @@
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/jetson-reinforcement-header.jpg">
 
-# Reinforcement Learning in Robotics
+# Deep Reinforcement Learning in Robotics
 In this tutorial, we'll be creating artificially intelligent agents that learn from interacting with their environment, gathering experience, and a system of rewards with deep reinforcement learning (deep RL).  Using end-to-end neural networks that translate raw pixels into actions, RL-trained agents are capable of exhibiting intuitive behaviors and performing complex tasks.  
 
 Ultimately, our aim will be to train reinforcement learning agents from virtual robotic simulation in 3D and transfer the agent to a real-world robot.  Reinforcement learners choose the best action for the agent to perform based on environmental state (like camera inputs) and rewards that provide feedback to the agent about it's performance.  Reinforcement learning can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
@@ -22,6 +22,7 @@ This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, ex
 * [3D Simulation](#3d-simulation)
 	* [Robotic Arm](#robotic-arm)
 	* [Rover Navigation](#rover-navigation)
+* [Continuous Control](#continuous-control)
 * [Using LUA](#using-lua)
 
 # Building from Source
@@ -370,7 +371,7 @@ $ ./gazebo-arm.sh
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo_arm.jpg">
 
 The plugins which hook the learning into the simulation are located in the [`gazebo/`](gazebo/) directory of the repo.  
-See **[`ArmPlugin.cpp`](gazebo/ArmPlugin.cpp)** for the code that links Gazebo with the [`dqnAgent`](c/dqnAgent.h) and controls the arm.
+See **[`ArmPlugin.cpp`](gazebo/ArmPlugin.cpp)** for the code that links Gazebo with the [`dqnAgent`](c/dqnAgent.h) and controls the arm joints.
 
 Once you notice the arm agent converging on the object, you can begin to move the object around the scene by pressing `T` on the keyboard to enable `Translation` mode in Gazebo, and then by clicking and dragging the object around the viewport.
 
@@ -389,6 +390,29 @@ $ ./gazebo-rover.sh
 > Press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic to visualize the scene from the camera.
 
 Similar to the arm, once you notice the rover consistently finding the object (in this case the green box), you can move the object around the scene by pressing `T` first.  Note that there's an episode timeout similar to [`fruit`](samples/fruit/fruit.cpp), so you won't want to move the object too far away without first increasing the rover's [`maxEpisodeLength`](https://github.com/dusty-nv/jetson-reinforcement/blob/b038a719ff6e50c067e905ecff3582896e3d659a/gazebo/RoverPlugin.cpp#L79) in the code and re-compiling.
+
+# Continuous Control
+
+The DQN agent that we've been using is discrete, meaning that the network selects one output neuron per timestep, that the user then explicitly maps or defines to correspond to an action (typically increasing/decreasing a position or velocity by a delta amount).  This means that for each degree of freedom in the robot, 2 outputs are typically required - one to increase the variable by the delta and another to decrease it.  In more complex scenarious it is advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to the stability of the robot.
+
+For this there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research yielding the latest learners like DDPG, ACKTR, and A3C/A3G.
+
+## Bipedal Walker
+
+To demonstrate a continuous learner on one of the most challenging and difficult OpenAI Gym environments, [`BipedalWalkerHardcore-v2`](https://gym.openai.com/envs/BipedalWalkerHardcore-v2/), included in the repo is a demo of A3G, which launches many Gym instances to learn more quickly in parallel using the GPU.
+
+To launch the A3G learner, run the following commands from terminal:
+
+``` bash
+$ cd jetson-reinforcement/python/A3G
+$ python main.py --env BipedalWalkerHardcore-v2 --workers 8 --gpu-ids 0 --amsgrad True --model CONV --stack-frames 4
+```
+
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.jpg">
+
+Depending on settings and system resources, it typically takes 90-120 minutes to master the environment by clearing the hurdles and pitfalls.  If you have multiple GPUs in a PC or server, you can increase the number of worker threads and specify additional `gpu-ids` to speed training. 
+
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.gif">
 
 # Using LUA
 
