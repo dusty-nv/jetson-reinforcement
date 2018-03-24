@@ -286,6 +286,8 @@ WON! episode 112
 080 for 112  (0.7143)  20 of last 20  (1.00)  (max=1.00)
 ```
 
+Internally, [`catch`](samples/catch/catch.cpp) is using the [`dqnAgent`](c/dqnAgent.h) API from our C++ library to implement the learning.
+
 #### Alternate Arguments
 
 There are some optional command line parameters to [`catch`](samples/catch/catch.cpp) that you can play around with, to change the dimensions of the environment and pixel array input size, increasing the complexity to see how it impacts convergence and training times:
@@ -300,13 +302,13 @@ With `128x128` environment size, the catch agent achieves >75% accuracy after ar
 
 ## Fruit
 
-Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fruit.cpp), where the agent appears at random locations and must find the "fruit" object to gain the reward and win episodes before the timeout period expires.  The [`fruit`](samples/fruit/fruit.cpp) agent has 4 possible actions to choose from:  it can move up, down, left, and right on the screen.  
+Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fruit.cpp), where the agent appears at random locations and must find the "fruit" object to gain the reward and win episodes before the timeout period expires.  The [`fruit`](samples/fruit/fruit.cpp) agent has 4 possible actions to choose from:  it can move up, down, left, and right on the screen in order to navigate to the object.  
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/fruit.gif" width="175">
 
 Note this C++ example is running mostly on the GPU, with the rudimentary 2D rasterization of the environment in CUDA along with the DQN, and the display visualization in OpenGL.  Like before, it is learning "from vision" using to translate the raw pixel array into actions using deep reinforcement learning.
 
-An analog to more complex navigation tasks, the simple [`fruit`](samples/fruit/fruit.cpp) example intended to prove that the DQN agent is able of visually identifying and homing in on and navigating to objects of interest from any starting location.  Later on in the repo, we will build on that capability in the 3D robotic simulations.
+An analog to more complex navigation tasks, the simple [`fruit`](samples/fruit/fruit.cpp) example intended to prove that the [`dqnAgent`](c/dqnAgent.h) is able of visually identifying and homing in on and navigating to objects of interest from any starting location.  Later on in the repo, we will build on that capability in the 3D robotic simulations.
 
 #### Running the Sample
 
@@ -348,7 +350,7 @@ When increasing the dimensions of the environment and pixel array input, the `ep
 
 # 3D Simulation
 
-Up until this point in the repo, the environments have been 2D, namely to confirm that the deep RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
+Up until this point in the repo, the environments have been 2D, namely to confirm that the deep RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotic simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
 
 <!---
 Discussion of Gazebo plugin architecture
@@ -363,15 +365,19 @@ Our first Gazebo environment we'll be using involves training a robotic arm to m
 $ ./gazebo-arm.sh
 ```
 
-If you press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic, you can visualize the scene from the robot's perspective.
-
-<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo.png">
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo_arm.jpg">
 
 The plugins which hook the learning into the simulation are located in the `gazebo/` directory of the repo.
+See the **[ArmPlugin](gazebo/ArmPlugin.cpp)** for the code that links Gazebo with the [`dqnAgent`](c/dqnAgent.h) and controls the arm.
+
+Once you notice the arm agent converging on the object, you can begin to move the object around the scene by pressing the `T` key to enable `Translation` mode in Gazebo, and then by clicking and dragging the object around the viewport.   Note that you will want to move the object so that the arm can still reach it, and the arm's rotational base is initially limited to around 45 degrees of travel in either direction, 
 
 <!---
 #Navigation section
 -->
+If you press `Ctrl+T` and subscribe to the `~/camera/link/camera/image` topic, you can visualize the scene from the robot's perspective.
+
+
 
 # Using LUA
 
