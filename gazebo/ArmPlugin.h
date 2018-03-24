@@ -73,6 +73,7 @@ private:
 	size_t   inputBufferSize;
 	size_t   inputRawWidth;
 	size_t   inputRawHeight;	
+	float    jointRange[DOF][2];	// min/max range of each arm joint
 	float    actionJointDelta;	// amount of offset caused to a joint by an action
 	float    actionVelDelta;		// amount of velocity offset caused to a joint by an action
 	int	    maxEpisodeLength;	// maximum number of frames to win episode (or <= 0 for unlimited)

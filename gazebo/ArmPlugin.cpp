@@ -11,8 +11,11 @@
 
 #define PI 3.141592653589793238462643383279502884197169f
 
-#define JOINT_MIN	-0.75f
-#define JOINT_MAX	 2.0f
+// Joint ranges for the arm segments and rotating base
+#define JOINT_MIN	   -0.75f
+#define JOINT_MAX	    2.0f
+#define BASE_JOINT_MIN -0.75f		
+#define BASE_JOINT_MAX  0.75f
 
 // Turn on velocity based control
 #define VELOCITY_CONTROL false
@@ -24,7 +27,7 @@
 #define INPUT_HEIGHT  64
 #define INPUT_CHANNELS 3
 #define OPTIMIZER "RMSprop"
-#define LEARNING_RATE 0.01f
+#define LEARNING_RATE 0.1f
 #define REPLAY_MEMORY 10000
 #define BATCH_SIZE 32
 #define GAMMA 0.9f
@@ -42,8 +45,9 @@
 #define GRIP_NAME  "gripper_middle"
 
 // Define Reward Parameters
-#define REWARD_WIN  1.0f
-#define REWARD_LOSS -1.0f
+#define REWARD_WIN   500.0f
+#define REWARD_LOSS -500.0f
+#define REWARD_MULTIPLIER 10.0f
 #define GAMMA_FALLOFF 0.35f
 
 // Define Collision Parameters
@@ -73,17 +77,6 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 {
 	printf("ArmPlugin::ArmPlugin()\n");
 
-	for( uint32_t n=0; n < DOF; n++ )
-		resetPos[n] = 0.0f;
-
-	resetPos[1] = 0.25;
-
-	for( uint32_t n=0; n < DOF; n++ )
-	{
-		ref[n] = resetPos[n]; //JOINT_MIN;
-		vel[n] = 0.0f;
-	}
-
 	agent 	       = NULL;
 	inputState       = NULL;
 	inputBuffer[0]   = NULL;
@@ -92,8 +85,8 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	inputRawWidth    = 0;
 	inputRawHeight   = 0;
 	actionJointDelta = 0.15f;
-	actionVelDelta   = 0.1f;
-	maxEpisodeLength = 75;
+	actionVelDelta   = 0.05f;
+	maxEpisodeLength = 85;
 	episodeFrames    = 0;
 
 	newState         = false;
@@ -110,7 +103,35 @@ ArmPlugin::ArmPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::Node()
 	runHistoryIdx    = 0;
 	runHistoryMax    = 0;
 
+	// zero the run history buffer
 	memset(runHistory, 0, sizeof(runHistory));
+
+	// set the default reset position for each joint
+	for( uint32_t n=0; n < DOF; n++ )
+		resetPos[n] = 0.0f;
+
+	resetPos[1] = 0.25;	 // make the arm canted forward a little
+
+	// set the initial positions and velocities to the reset
+	for( uint32_t n=0; n < DOF; n++ )
+	{
+		ref[n] = resetPos[n]; //JOINT_MIN;
+		vel[n] = 0.0f;
+	}
+
+	// set the joint ranges
+	for( uint32_t n=0; n < DOF; n++ )
+	{
+		jointRange[n][0] = JOINT_MIN;
+		jointRange[n][1] = JOINT_MAX;
+	}
+
+	// if the base is freely rotating, set it's range separately
+	if( !LOCKBASE )
+	{
+		jointRange[0][0] = BASE_JOINT_MIN;
+		jointRange[0][1] = BASE_JOINT_MAX;
+	}
 }
 
 
@@ -169,7 +190,6 @@ bool ArmPlugin::createAgent()
 
 	return true;
 }
-
 
 
 // onCameraMsg
@@ -310,9 +330,8 @@ bool ArmPlugin::updateAgent()
 
 
 #if VELOCITY_CONTROL
-	// if the action is even, increase the joint position by the delta parameter
-	// if the action is odd,  decrease the joint position by the delta parameter
-
+	// if the action is even, increase the joint velocity by the delta parameter
+	// if the action is odd,  decrease the joint velocity by the delta parameter
 	float velocity = vel[action/2] + actionVelDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
 
 	if( velocity < VELOCITY_MIN )
@@ -327,29 +346,32 @@ bool ArmPlugin::updateAgent()
 	{
 		ref[n] += vel[n];
 
-		if( ref[n] < JOINT_MIN )
+		if( ref[n] < jointRange[n][0] )
 		{
-			ref[n] = JOINT_MIN;
+			ref[n] = jointRange[n][0];
 			vel[n] = 0.0f;
 		}
-		else if( ref[n] > JOINT_MAX )
+		else if( ref[n] > jointRange[n][1] )
 		{
-			ref[n] = JOINT_MAX;
+			ref[n] = jointRange[n][1];
 			vel[n] = 0.0f;
 		}
 	}
 #else
-	float joint = ref[action/2] + actionJointDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
+	// index the joint, considering each DoF has 2 actions (+ and -)
+	const int jointIdx = action / 2;
+
+	// compute the new joint value and either increase or decrease it based on the action
+	float joint = ref[jointIdx] + actionJointDelta * ((action % 2 == 0) ? 1.0f : -1.0f);
 
 	// limit the joint to the specified range
-	if( joint < JOINT_MIN )
-		joint = JOINT_MIN;
+	if( joint < jointRange[jointIdx][0] )
+		joint = jointRange[jointIdx][0];
 	
-	if( joint > JOINT_MAX )
-		joint = JOINT_MAX;
+	if( joint > jointRange[jointIdx][1] )
+		joint = jointRange[jointIdx][1];
 
-	ref[action/2] = joint;
-
+	ref[jointIdx] = joint;
 #endif
 
 	return true;
@@ -371,10 +393,10 @@ bool ArmPlugin::updateJoints()
 			else if( ref[n] > resetPos[n] )
 				ref[n] -= step;
 
-			if( ref[n] < JOINT_MIN )
-				ref[n] = JOINT_MIN;
-			else if( ref[n] > JOINT_MAX )
-				ref[n] = JOINT_MAX;
+			if( ref[n] < jointRange[n][0] )
+				ref[n] = jointRange[n][0];
+			else if( ref[n] > jointRange[n][1] )
+				ref[n] = jointRange[n][1];
 		}
 
 		animationStep++;
@@ -442,7 +464,6 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	0);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[0]);
 		j2_controller->SetJointPosition(this->model->GetJoint("joint2"),  ref[1]);
-
 #else
 		j2_controller->SetJointPosition(this->model->GetJoint("base"), 	 ref[0]); 
 		j2_controller->SetJointPosition(this->model->GetJoint("joint1"),  ref[1]);
@@ -487,7 +508,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 
 		// if the robot impacts the ground, count it as a loss
 		const math::Box& gripBBox = gripper->GetBoundingBox();
-		const float groundContact = 0.05f;
+		const float groundContact = 0.00f;
 
 		if( gripBBox.min.z <= groundContact || gripBBox.max.z <= groundContact )
 		{
@@ -503,7 +524,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 			const float distGoal = BoxDistance(gripBBox, propBBox); // compute the reward from distance to the goal
 
 			if(DEBUG){printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
-
+			
 			// issue an interim reward based on the delta of the distance to the object
 			if( episodeFrames > 1 )
 			{
@@ -514,7 +535,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 
 				// compute the smoothed moving average of the delta of the distance to the goal
 				avgGoalDelta  = (avgGoalDelta * movingAvg) + (distDelta * (1.0f - movingAvg));
-				rewardHistory = avgGoalDelta;	// exp(-GAMMA_FALLOFF * distGoal) * 0.1f;
+				rewardHistory = avgGoalDelta * REWARD_MULTIPLIER;	// exp(-GAMMA_FALLOFF * distGoal) * 0.1f;
 				newReward     = true;	
 			}
 
