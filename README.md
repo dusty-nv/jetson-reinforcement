@@ -308,7 +308,7 @@ Next, we provide a 2D graphical sample in C++ called [`fruit`](samples/fruit/fru
 
 Note this C++ example is running mostly on the GPU, with the rudimentary 2D rasterization of the environment in CUDA along with the DQN, and the display visualization in OpenGL.  Like before, it is learning "from vision" using to translate the raw pixel array into actions using deep reinforcement learning.
 
-An analog to more complex navigation tasks, the simple [`fruit`](samples/fruit/fruit.cpp) example intended to prove that the [`dqnAgent`](c/dqnAgent.h) is able of visually identifying and homing in on and navigating to objects of interest from any starting location.  Later on in the repo, we will build on that capability in the 3D robotic simulations.
+An analog to more complex navigation and motion planning tasks, the simple [`fruit`](samples/fruit/fruit.cpp) example intended to prove that the [`dqnAgent`](c/dqnAgent.h) is able of visually identifying and navigating to objects of interest from any starting location.  Later on in the repo, we will build on that path-planning capability in the 3D robotic simulations.
 
 #### Running the Sample
 
@@ -359,7 +359,8 @@ Discussion of Gazebo plugin architecture
 
 ## Robotic Manipulation
 
-Our first Gazebo environment we'll be using involves training a robotic arm to manipulate objects.  To get started, run the following script:
+Our first Gazebo environment we'll be using involves training a robotic arm to touch objects without explicit IK.  
+The motion planning is learned by the network.  To get started, run the following script from the terminal:
 
 ``` bash
 $ ./gazebo-arm.sh
@@ -367,10 +368,12 @@ $ ./gazebo-arm.sh
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gazebo_arm.jpg">
 
-The plugins which hook the learning into the simulation are located in the `gazebo/` directory of the repo.
-See the **[ArmPlugin](gazebo/ArmPlugin.cpp)** for the code that links Gazebo with the [`dqnAgent`](c/dqnAgent.h) and controls the arm.
+The plugins which hook the learning into the simulation are located in the [`gazebo/`](gazebo/) directory of the repo.  
+See **[`ArmPlugin.cpp`](gazebo/ArmPlugin.cpp)** for the code that links Gazebo with the [`dqnAgent`](c/dqnAgent.h) and controls the arm.
 
-Once you notice the arm agent converging on the object, you can begin to move the object around the scene by pressing the `T` key to enable `Translation` mode in Gazebo, and then by clicking and dragging the object around the viewport.   Note that you will want to move the object so that the arm can still reach it, and the arm's rotational base is initially limited to around 45 degrees of travel in either direction, 
+Once you notice the arm agent converging on the object, you can begin to move the object around the scene by pressing `T` on the keyboard to enable `Translation` mode in Gazebo, and then by clicking and dragging the object around the viewport.
+
+Note that you will want to move the object so that the arm can still reach it, as the arm's rotational base is initially limited to around 45 degrees of travel in either direction. 
 
 <!---
 #Navigation section
