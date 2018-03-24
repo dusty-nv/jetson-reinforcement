@@ -20,7 +20,8 @@ This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, ex
 * [Testing the C++ API](#testing-the-c-api)
 	* [Catch](#catch)
 * [3D Simulation](#3d-simulation)
-	* [Robotic Manipulation](#manipulation)
+	* [Robotic Arm](#robotic-arm)
+	* [Rover Navigation](#rover-navigation)
 * [Using LUA](#using-lua)
 
 # Building from Source
@@ -357,7 +358,7 @@ Discussion of Gazebo plugin architecture
 (or maybe this should be high-level, then more specific info under #Robotic-Manipulation/#Navigation)
 -->
 
-## Robotic Manipulation
+## Robotic Arm
 
 Our first Gazebo environment trains a robotic arm to touch objects without needing explicit IK ([Inverse Kinematics](https://appliedgo.net/roboticarm/)).  
 The arm's motion planning is learned internally by the network.  To get started, run the following script from the terminal:
