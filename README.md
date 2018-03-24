@@ -360,7 +360,7 @@ Discussion of Gazebo plugin architecture
 ## Robotic Manipulation
 
 Our first Gazebo environment trains a robotic arm to touch objects without needing explicit IK ([Inverse Kinematics](https://appliedgo.net/roboticarm/)).  
-The motion planning is learned by the network.  To get started, run the following script from the terminal:
+The motion planning is learned internally by the network.  To get started, run the following script from the terminal:
 
 ``` bash
 $ ./gazebo-arm.sh
