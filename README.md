@@ -395,13 +395,13 @@ Similar to the arm, once you notice the rover consistently finding the object (i
 
 The DQN agent that we've been using is discrete, meaning that the network selects one output neuron per timestep, that the user then explicitly maps or defines to correspond to an action (typically increasing/decreasing a position or velocity by a delta amount).  This means that for each degree of freedom in the robot, 2 outputs are typically required - one to increase the variable by the delta and another to decrease it.  
 
-In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to the stability of the robot.
+In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
 
-For this there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research yielding the latest learners like DDPG, ACKTR, and A3C/A3G.
+For continuous control there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research yielding the latest learners like DDPG, ACKTR, and A3C/A3G.
 
 ## Bipedal Walker
 
-To demonstrate a continuous learner on one of the most challenging and difficult OpenAI Gym environments, [`BipedalWalkerHardcore-v2`](https://gym.openai.com/envs/BipedalWalkerHardcore-v2/), included in the repo is a demo of A3G, which launches many Gym instances to learn more quickly in parallel using the GPU.  To launch the A3G learner, run the following commands from terminal:
+To demonstrate a continuous learner on one of the most challenging and difficult OpenAI Gym environments, [`BipedalWalkerHardcore-v2`](https://gym.openai.com/envs/BipedalWalkerHardcore-v2/), included in the repo is a demo of A3G, which launches many Gym instances to learn more quickly in parallel using the GPU.  To launch the A3G solver, run the following commands from terminal:
 
 ``` bash
 $ cd jetson-reinforcement/python/A3G
@@ -410,7 +410,7 @@ $ python main.py --env BipedalWalkerHardcore-v2 --workers 8 --gpu-ids 0 --amsgra
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.jpg">
 
-Depending on settings and system resources, it typically takes 90-120 minutes to master the environment by clearing the hurdles and pitfalls.  If you have multiple GPUs in a PC or server, you can increase the number of worker threads and specify additional `gpu-ids` to speed training. 
+Depending on settings and system resources, it typically takes A3G between 90-120 minutes to master the environment by clearing the hurdles and pitfalls.  If you have multiple GPUs in a PC or server, you can increase the number of worker threads and specify additional `gpu-ids` to speed training. 
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.gif">
 
