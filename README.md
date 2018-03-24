@@ -397,7 +397,7 @@ The DQN agent that we've been using is discrete, meaning that the network select
 
 In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
 
-For continuous control there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research yielding the latest learners like DDPG, ACKTR, and A3C/A3G.
+For continuous control there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research that's recently yielded the latest learners like DDPG, ACKTR, and A3C/A3G.
 
 ## Bipedal Walker
 
@@ -410,7 +410,7 @@ $ python main.py --env BipedalWalkerHardcore-v2 --workers 8 --gpu-ids 0 --amsgra
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.jpg">
 
-Depending on settings and system resources, it typically takes A3G between 90-120 minutes to master the environment by clearing the hurdles and pitfalls.  If you have multiple GPUs in a PC or server, you can increase the number of worker threads and specify additional `gpu-ids` to speed training. 
+Depending on settings and system resources, it typically takes A3G between 90-120 minutes to master the environment by clearing the hurdles and pitfalls.  If you have multiple GPUs in a PC or server, you can disable rendering and increase the number of worker threads and specify additional `gpu-ids` to speed up training. 
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/gym_bipedal.gif">
 
