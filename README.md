@@ -17,7 +17,7 @@ This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, ex
 	* [Cartpole](#cartpole)
 	* [Lunar Lander](#lunar-lander)
 * [Digging into the C++ API](#digging-into-the-c-api)
-* [Testing the API](#testing-the-api)
+* [Testing the C++ API](#testing-the-c-api)
 	* [Catch](#catch)
 * [3D Simulation](#3d-simulation)
 	* [Robotic Manipulation](#manipulation)
@@ -121,7 +121,7 @@ Inside of the notebook, the DQN is set to only run for 50 episodes.  After you h
 ``` bash
 $ python gym-DQN.py
 ```
-> (assuming the current directory of your terminal is still `cd jetson-reinforcement/build/<arch>/bin` from above)
+> (assuming the current directory of your terminal is still `jetson-reinforcement/build/<arch>/bin` from above)
 
 Three windows should appear showing the cartpole game, a graph of peformance, and the DQN agent should begin learning.  The longer the DQN agent is able to balance the pole on the moving cart, the more points it's rewarded.  In Gym, a score of 200 indicates the scenario has been mastered.  After a short while of training, the agent should achieve it and the program will quit.
 
@@ -166,7 +166,9 @@ Next, we'll look at integrating these standalone Python examples into robotics c
 
 # Digging into the C++ API
 
-To take these deep reinforcement learners from monolithic Python examples into libray form that can be integrated with simulators and real robots, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI API to pass the tensor memory between the user's application and PyTorch without extra copies (ZeroCopy).  The library is architected to be extended to new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) base class:
+To take these deep reinforcement learners from monolithic Python examples into libray form that can be integrated with robots and simulators, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI to pass the tensor memory between the application and PyTorch without extra copies (ZeroCopy).  
+
+The library is architected to be extended to new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) base class:
 
 ``` c++
 /**
@@ -200,7 +202,7 @@ public:
 
 Included in the repo are different implementations of the agent, including **[`dqnAgent`](c/dqnAgent.h)** which we will use primarily in the simulation scenarios to follow.  The user provides their sensor data, or environmental state, to the `NextAction()` function, which calls the Python script and returns the predicted action, which the user then applies to their robot or simulation.  Next the reward is issued in the `NextReward()` function, which provides feedback to the learner and kicks off the next training iteration that makes the agent learn over time.
 
-# Testing the API
+# Testing the C++ API
 
 To make sure that the reinforcement learners are still functioning properly from C++, some simple examples of using the API called [`catch`](samples/catch/catch.cpp) and [`fruit`](samples/fruit/fruit.cpp) are provided.  Similar in concept to pong, in `catch` a ball drops from the top of the environment which the agent must catch before the ball reaches the bottom of the screen, by moving it's paddle left or right.
 
@@ -232,222 +234,48 @@ $ ./catch
 [deepRL]  nn.Conv2d() output size = 800
 WON! episode 1
 001 for 001  (1.0000)  
-WON! episode 2
-002 for 002  (1.0000)  
-LOST episode 3
-002 for 003  (0.6667)  
-WON! episode 4
-003 for 004  (0.7500)  
 WON! episode 5
 004 for 005  (0.8000)  
-LOST episode 6
-004 for 006  (0.6667)  
-WON! episode 7
-005 for 007  (0.7143)  
-LOST episode 8
-005 for 008  (0.6250)  
-WON! episode 9
-006 for 009  (0.6667)  
 WON! episode 10
 007 for 010  (0.7000)  
-LOST episode 11
-007 for 011  (0.6364)  
-WON! episode 12
-008 for 012  (0.6667)  
-WON! episode 13
-009 for 013  (0.6923)  
-LOST episode 14
-009 for 014  (0.6429)  
 WON! episode 15
 010 for 015  (0.6667)  
-WON! episode 16
-011 for 016  (0.6875)  
-LOST episode 17
-011 for 017  (0.6471)  
-LOST episode 18
-011 for 018  (0.6111)  
-WON! episode 19
-012 for 019  (0.6316)  
 WON! episode 20
 013 for 020  (0.6500)  13 of last 20  (0.65)  (max=0.65)
-LOST episode 21
-013 for 021  (0.6190)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 22
-014 for 022  (0.6364)  12 of last 20  (0.60)  (max=0.65)
-LOST episode 23
-014 for 023  (0.6087)  12 of last 20  (0.60)  (max=0.65)
-LOST episode 24
-014 for 024  (0.5833)  11 of last 20  (0.55)  (max=0.65)
 WON! episode 25
 015 for 025  (0.6000)  11 of last 20  (0.55)  (max=0.65)
-WON! episode 26
-016 for 026  (0.6154)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 27
-017 for 027  (0.6296)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 28
-018 for 028  (0.6429)  13 of last 20  (0.65)  (max=0.65)
-LOST episode 29
-018 for 029  (0.6207)  12 of last 20  (0.60)  (max=0.65)
 LOST episode 30
 018 for 030  (0.6000)  11 of last 20  (0.55)  (max=0.65)
-LOST episode 31
-018 for 031  (0.5806)  11 of last 20  (0.55)  (max=0.65)
-LOST episode 32
-018 for 032  (0.5625)  10 of last 20  (0.50)  (max=0.65)
-LOST episode 33
-018 for 033  (0.5455)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 34
-019 for 034  (0.5588)  10 of last 20  (0.50)  (max=0.65)
 LOST episode 35
 019 for 035  (0.5429)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 36
-020 for 036  (0.5556)  09 of last 20  (0.45)  (max=0.65)
-LOST episode 37
-020 for 037  (0.5405)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 38
-021 for 038  (0.5526)  10 of last 20  (0.50)  (max=0.65)
-LOST episode 39
-021 for 039  (0.5385)  09 of last 20  (0.45)  (max=0.65)
 WON! episode 40
 022 for 040  (0.5500)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 41
-023 for 041  (0.5610)  10 of last 20  (0.50)  (max=0.65)
-WON! episode 42
-024 for 042  (0.5714)  10 of last 20  (0.50)  (max=0.65)
-LOST episode 43
-024 for 043  (0.5581)  10 of last 20  (0.50)  (max=0.65)
-LOST episode 44
-024 for 044  (0.5455)  10 of last 20  (0.50)  (max=0.65)
 LOST episode 45
 024 for 045  (0.5333)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 46
-025 for 046  (0.5435)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 47
-026 for 047  (0.5532)  09 of last 20  (0.45)  (max=0.65)
-LOST episode 48
-026 for 048  (0.5417)  08 of last 20  (0.40)  (max=0.65)
-LOST episode 49
-026 for 049  (0.5306)  08 of last 20  (0.40)  (max=0.65)
 WON! episode 50
 027 for 050  (0.5400)  09 of last 20  (0.45)  (max=0.65)
-WON! episode 51
-028 for 051  (0.5490)  10 of last 20  (0.50)  (max=0.65)
-LOST episode 52
-028 for 052  (0.5385)  10 of last 20  (0.50)  (max=0.65)
-WON! episode 53
-029 for 053  (0.5472)  11 of last 20  (0.55)  (max=0.65)
-WON! episode 54
-030 for 054  (0.5556)  11 of last 20  (0.55)  (max=0.65)
 WON! episode 55
 031 for 055  (0.5636)  12 of last 20  (0.60)  (max=0.65)
-LOST episode 56
-031 for 056  (0.5536)  11 of last 20  (0.55)  (max=0.65)
-WON! episode 57
-032 for 057  (0.5614)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 58
-033 for 058  (0.5690)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 59
-034 for 059  (0.5763)  13 of last 20  (0.65)  (max=0.65)
 LOST episode 60
 034 for 060  (0.5667)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 61
-035 for 061  (0.5738)  12 of last 20  (0.60)  (max=0.65)
-LOST episode 62
-035 for 062  (0.5645)  11 of last 20  (0.55)  (max=0.65)
-WON! episode 63
-036 for 063  (0.5714)  12 of last 20  (0.60)  (max=0.65)
-WON! episode 64
-037 for 064  (0.5781)  13 of last 20  (0.65)  (max=0.65)
 WON! episode 65
 038 for 065  (0.5846)  14 of last 20  (0.70)  (max=0.70)
-WON! episode 66
-039 for 066  (0.5909)  14 of last 20  (0.70)  (max=0.70)
-WON! episode 67
-040 for 067  (0.5970)  14 of last 20  (0.70)  (max=0.70)
-WON! episode 68
-041 for 068  (0.6029)  15 of last 20  (0.75)  (max=0.75)
-LOST episode 69
-041 for 069  (0.5942)  15 of last 20  (0.75)  (max=0.75)
 WON! episode 70
 042 for 070  (0.6000)  15 of last 20  (0.75)  (max=0.75)
-LOST episode 71
-042 for 071  (0.5915)  14 of last 20  (0.70)  (max=0.75)
-WON! episode 72
-043 for 072  (0.5972)  15 of last 20  (0.75)  (max=0.75)
-WON! episode 73
-044 for 073  (0.6027)  15 of last 20  (0.75)  (max=0.75)
-WON! episode 74
-045 for 074  (0.6081)  15 of last 20  (0.75)  (max=0.75)
 LOST episode 75
 045 for 075  (0.6000)  14 of last 20  (0.70)  (max=0.75)
-WON! episode 76
-046 for 076  (0.6053)  15 of last 20  (0.75)  (max=0.75)
-WON! episode 77
-047 for 077  (0.6104)  15 of last 20  (0.75)  (max=0.75)
-WON! episode 78
-048 for 078  (0.6154)  15 of last 20  (0.75)  (max=0.75)
-WON! episode 79
-049 for 079  (0.6203)  15 of last 20  (0.75)  (max=0.75)
 WON! episode 80
 050 for 080  (0.6250)  16 of last 20  (0.80)  (max=0.80)
-WON! episode 81
-051 for 081  (0.6296)  16 of last 20  (0.80)  (max=0.80)
-WON! episode 82
-052 for 082  (0.6341)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 83
-053 for 083  (0.6386)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 84
-054 for 084  (0.6429)  17 of last 20  (0.85)  (max=0.85)
 WON! episode 85
 055 for 085  (0.6471)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 86
-056 for 086  (0.6512)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 87
-057 for 087  (0.6552)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 88
-058 for 088  (0.6591)  17 of last 20  (0.85)  (max=0.85)
-LOST episode 89
-058 for 089  (0.6517)  17 of last 20  (0.85)  (max=0.85)
 WON! episode 90
 059 for 090  (0.6556)  17 of last 20  (0.85)  (max=0.85)
-WON! episode 91
-060 for 091  (0.6593)  18 of last 20  (0.90)  (max=0.90)
-LOST episode 92
-060 for 092  (0.6522)  17 of last 20  (0.85)  (max=0.90)
-WON! episode 93
-061 for 093  (0.6559)  17 of last 20  (0.85)  (max=0.90)
-WON! episode 94
-062 for 094  (0.6596)  17 of last 20  (0.85)  (max=0.90)
 WON! episode 95
 063 for 095  (0.6632)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 96
-064 for 096  (0.6667)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 97
-065 for 097  (0.6701)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 98
-066 for 098  (0.6735)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 99
-067 for 099  (0.6768)  18 of last 20  (0.90)  (max=0.90)
 WON! episode 100
 068 for 100  (0.6800)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 101
-069 for 101  (0.6832)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 102
-070 for 102  (0.6863)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 103
-071 for 103  (0.6893)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 104
-072 for 104  (0.6923)  18 of last 20  (0.90)  (max=0.90)
 WON! episode 105
 073 for 105  (0.6952)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 106
-074 for 106  (0.6981)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 107
-075 for 107  (0.7009)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 108
-076 for 108  (0.7037)  18 of last 20  (0.90)  (max=0.90)
-WON! episode 109
-077 for 109  (0.7064)  19 of last 20  (0.95)  (max=0.95)
 WON! episode 110
 078 for 110  (0.7091)  19 of last 20  (0.95)  (max=0.95)
 WON! episode 111
@@ -456,9 +284,19 @@ WON! episode 112
 080 for 112  (0.7143)  20 of last 20  (1.00)  (max=1.00)
 ```
 
+There are some alternate command line parameters to `catch` that you can play around with, to change the pixel array size to increase the complexity and see how it impacts convergence and training times:
+
+``` bash
+$ ./catch --width=96 --height=96
+$ ./catch --render	# enable text output of the environment
+```
+
+For example with `96x96` input size, the catch agent achieves >75% accuracy after around 150-200 episodes.  With `128x128` input size, the catch agent achieves >75% accuracy after around 325 episodes. 
+
+
 # 3D Simulation
 
-Up until this point in the tutorial, the RL environments have been 2-dimensional.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
+Up until this point in the repo, the environments have been 2D, namely to confirm that the RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotics simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
 
 <!---
 Discussion of Gazebo plugin architecture
