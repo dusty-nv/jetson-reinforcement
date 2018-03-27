@@ -7,7 +7,9 @@ Ultimately, our aim will be to train reinforcement learning agents from virtual 
 
 In many scenarios, the state space is significantly complex and multi-dimensional to where neural networks are increasingly used to predict the best action, which is where deep reinforcement learning and GPU acceleration comes into play.  With deep reinforcement learning, the agents are typically processing 2D imagery using convolutional neural networks (CNNs), processing inputs that are an order of magnitude more complex than low-dimensional RL, and have the ability to learn "from vision" with the end-to-end network (referred to as "pixels-to-actions").
 
-This repository includes Deep Q-Learning (DQN) and A3G algorithms in PyTorch, examples and an interoperability library API in C++ for integrating with Linux applications in robotics, simulation, and deployment to the field.
+<img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/nv_rl_stack_diagram.jpg">
+
+This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algorithms in PyTorch, examples and an interoperability library API in C++ for integrating with Linux applications in robotics, simulation, and deployment to the field.
 
 ### **Table of Contents**
 
