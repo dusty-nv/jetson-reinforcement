@@ -401,7 +401,7 @@ In more complex real-world scenarious it's often advantageous to control all deg
 
 <img align="right" src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/RL_discrete_continuous.png">
 
-For continuous control there exists a class of more advanced deep reinforcement learners called Actor/Critic, an active area of research that's recently yielded the latest state of the art learners like [DDPG](https://arxiv.org/abs/1509.02971), [ACKTR](https://arxiv.org/abs/1708.05144), and [A3C/A3G](https://arxiv.org/abs/1611.06256).
+For continuous control, there exists a class of more advanced deep reinforcement learners called Actor/Critic — an active area of research that's recently yielded the latest state of the art learners like [DDPG](https://arxiv.org/abs/1509.02971), [ACKTR](https://arxiv.org/abs/1708.05144), and [A3C/A3G](https://arxiv.org/abs/1611.06256).
 
 ## Bipedal Walker
 
