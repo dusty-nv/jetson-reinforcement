@@ -395,7 +395,7 @@ Similar to the arm, once you notice the rover consistently finding the object (i
 
 # Continuous Control
 
-The DQN agent that we've been using is discrete, meaning that the network selects one output neuron per timestep, that the user then explicitly maps or defines to correspond to an action (typically increasing/decreasing a position or velocity by a delta amount).  This means that for each degree of freedom in the robot, 2 outputs are typically required - one to increase the variable by the delta and another to decrease it.  
+The DQN agent that we've been using is discrete, meaning that the network selects one output neuron per timestep, that the user then explicitly maps or defines to correspond to an action (typically increasing/decreasing a position or velocity by a delta amount).  This means that for each degree of freedom in the robot, 2 outputs are typically required - one to increase the variable by the delta and another to decrease it. <img align="right" src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/DQN-argmax.png">
 
 In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
 
