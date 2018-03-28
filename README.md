@@ -399,7 +399,7 @@ Similar to the arm, once you notice the rover consistently finding the object (i
 
 In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
 
-<img align="center" src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/RL_discrete_continuous.png">
+<p align="center"><img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/RL_discrete_continuous.png"></p>
 
 For continuous control, there exists a class of more advanced deep reinforcement learners called Actor/Critic — an active area of research that's recently yielded the latest state-of-the-art solutions like [DDPG](https://arxiv.org/abs/1509.02971), [ACKTR](https://arxiv.org/abs/1708.05144), and [A3C/A3G](https://arxiv.org/abs/1611.06256).
 
