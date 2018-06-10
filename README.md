@@ -21,6 +21,7 @@ This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algor
 * [Digging into the C++ API](#digging-into-the-c-api)
 * [Testing the C++ API](#testing-the-c-api)
 	* [Catch](#catch)
+	* [Fruit](#fruit)
 * [3D Simulation](#3d-simulation)
 	* [Robotic Arm](#robotic-arm)
 	* [Rover Navigation](#rover-navigation)
@@ -322,7 +323,7 @@ To start [`fruit`](samples/fruit/fruit.cpp), launch the following executable fro
 $ ./fruit
 ```
 
-It should achieve 85% accuracy after around ~100 episodes within the default `48x48` environment:
+It should achieve around 95% accuracy after around ~100 episodes within the default `48x48` environment:
 
 ```
 action = DOWN   reward = +0.0628     wins = 052 of 094 (0.55)   16 of last 20  (0.80)  (max=0.80)
