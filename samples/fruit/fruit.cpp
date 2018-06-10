@@ -107,7 +107,7 @@ int main( int argc, char** argv )
 	
 	
 	// Create OpenGL display
-	glDisplay* display = glDisplay::Create("Fruit DQN", 0.1f, 0.1f, 0.1f);
+	glDisplay* display = glDisplay::Create("Fruit DQN", 0.2f, 0.2f, 0.2f);
 	glTexture* texture = NULL;
 	
 	// Continue Display Initialization
