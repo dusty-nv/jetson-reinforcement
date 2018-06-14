@@ -11,6 +11,8 @@ In many scenarios, the state space is significantly complex and multi-dimensiona
 
 This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algorithms in PyTorch, examples and an interoperability library API in C++ for integrating with Linux applications in robotics, simulation, and deployment to the field.
 
+> note:  view our **[Webinar](https://nvda.ws/2KdbtaO)** that follows this tutorial.
+
 ### **Table of Contents**
 
 * [Building from Source](#building-from-source)
@@ -173,7 +175,7 @@ Next, we'll look at integrating these standalone Python examples into robotics c
 
 To take these deep reinforcement learners from monolithic Python examples into libray form that can be integrated with robots and simulators, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI to pass the tensor memory between the application and PyTorch without extra copies (ZeroCopy).  
 
-The library is architected to be extended to new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) interface which the RL implementations inherit from:
+The library is architected to be modular and extended to support new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) interface which the RL implementations inherit from:
 
 ``` c++
 /**
