@@ -28,7 +28,7 @@ This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algor
 * [Continuous Control](#continuous-control)
 * [Appendix: Using LUA](#appendix-using-lua)
 
-> note:  stream our **[Webinar](https://nvda.ws/2KdbtaO)** on the topic that follows this tutorial.
+> note:  stream our **[webinar](https://nvda.ws/2KdbtaO)** on the topic that follows this tutorial.
 
 # Building from Source
 
