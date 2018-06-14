@@ -11,8 +11,6 @@ In many scenarios, the state space is significantly complex and multi-dimensiona
 
 This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algorithms in PyTorch, examples and an interoperability library API in C++ for integrating with Linux applications in robotics, simulation, and deployment to the field.
 
-> note:  view our **[Webinar](https://nvda.ws/2KdbtaO)** that follows this tutorial.
-
 ### **Table of Contents**
 
 * [Building from Source](#building-from-source)
@@ -29,6 +27,8 @@ This repository includes discrete Deep Q-Learning (DQN) and continuous A3G algor
 	* [Rover Navigation](#rover-navigation)
 * [Continuous Control](#continuous-control)
 * [Appendix: Using LUA](#appendix-using-lua)
+
+> note:  stream our **[Webinar](https://nvda.ws/2KdbtaO)** on the topic that follows this tutorial.
 
 # Building from Source
 
