@@ -61,7 +61,7 @@ $ jupyter notebook intro-pytorch.ipynb
 Alternatively, if you wish to skip the notebook and run the PyTorch verification commands directly, you can do so by launching an interactive Python shell with the `python` command and running the following:
 
 ``` python
->>> import pytorch
+>>> import torch
 >>> print(torch.__version__)
 >>> print('CUDA available: ' + str(torch.cuda.is_available()))
 >>> a = torch.cuda.FloatTensor(2).zero_()
