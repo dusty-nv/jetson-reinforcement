@@ -75,7 +75,7 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	while true; do
 	    read -p "[Pre-build]  Do you wish to install support for Jupyter/IPython notebook (y/N)? " yn
 	    case $yn in
-		   [Yy]* ) sudo apt-get install -y ipython ipython-notebook; sudo pip install jupyter; break;;
+		   [Yy]* ) sudo apt-get install -y ipython ipython-notebook; sudo pip install pyzmq==17.0.0 jupyter; break;;
 		   [Nn]* ) echo "[Pre-build]  skipping Jupyter/IPython installation"; break;;
 		   * ) echo "[Pre-build]  Please answer yes or no.";;
 	    esac
