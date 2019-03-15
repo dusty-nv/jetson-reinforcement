@@ -55,7 +55,8 @@ To launch the [notebook](python/intro-pytorch.ipynb) locally on your system, run
 
 ``` bash
 $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
-$ jupyter notebook intro-pytorch.ipynb
+$ jupyter notebook 
+# Click on:  intro-pytorch.ipynb
 ```
 
 Alternatively, if you wish to skip the notebook and run the PyTorch verification commands directly, you can do so by launching an interactive Python shell with the `python` command and running the following:
