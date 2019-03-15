@@ -18,7 +18,7 @@ echo "starting Gazebo7 Client (gzclient)"
 gnome-terminal -e 'sh -c "echo \"\033]0; Gazebo7 Client (gzclient)\007\"; \
 				echo \"launching Gazebo7 Client (gzclient)\"; \
 				echo \"Press Ctrl+Q or close window to quit\n\"; \
-				sleep 2; \
+				sleep 10; \
 				gzclient --verbose; \
 				pkill gzserver"' # pkill -INT gzserver
 
