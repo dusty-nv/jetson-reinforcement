@@ -113,7 +113,7 @@ if [ $BUILD_PYTORCH = "ON" ] || [ $BUILD_PYTORCH = "YES" ] || [ $BUILD_PYTORCH =
 	git clone https://github.com/pytorch/examples
 	sudo pip install -r examples/reinforcement_learning/requirements.txt 
 
-	git clone https://github.com/pytorch/vision
+	git clone -b v0.2.0 https://github.com/pytorch/vision
 	cd vision
 	sudo python setup.py install
 
