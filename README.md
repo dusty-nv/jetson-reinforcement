@@ -121,7 +121,8 @@ To launch the [notebook](python/intro-DQN.ipynb) locally from your machine, run 
 
 ``` bash
 $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
-$ jupyter notebook intro-DQN.ipynb
+$ jupyter notebook
+# Click on:  intro-DQN.ipynb
 ```
 
 Inside of the notebook, the DQN is set to only run for 50 episodes.  After you have witnessed the DQN start to converge and the CartPole begin to remain upright for longer periods of time, exit the notebook and run the standalone **[`gym-DQN.py`](python/gym-DQN.py)** script from the terminal for improved performance:
