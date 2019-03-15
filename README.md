@@ -56,7 +56,7 @@ To launch the [notebook](python/intro-pytorch.ipynb) locally on your system, run
 ``` bash
 $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
 $ jupyter notebook 
-# Click on:  intro-pytorch.ipynb
+# click on:  intro-pytorch.ipynb
 ```
 
 Alternatively, if you wish to skip the notebook and run the PyTorch verification commands directly, you can do so by launching an interactive Python shell with the `python` command and running the following:
@@ -122,7 +122,7 @@ To launch the [notebook](python/intro-DQN.ipynb) locally from your machine, run 
 ``` bash
 $ cd jetson-reinforcement/build/aarch64/bin   # or cd x86_64/bin on PC
 $ jupyter notebook
-# Click on:  intro-DQN.ipynb
+# click on:  intro-DQN.ipynb
 ```
 
 Inside of the notebook, the DQN is set to only run for 50 episodes.  After you have witnessed the DQN start to converge and the CartPole begin to remain upright for longer periods of time, exit the notebook and run the standalone **[`gym-DQN.py`](python/gym-DQN.py)** script from the terminal for improved performance:
