@@ -57,7 +57,7 @@
 
 namespace gazebo
 {
- 
+
 // register this plugin with the simulator
 GZ_REGISTER_MODEL_PLUGIN(RoverPlugin)
 
@@ -100,7 +100,7 @@ RoverPlugin::RoverPlugin() : ModelPlugin(), cameraNode(new gazebo::transport::No
 }
 
 
-// configJoint 
+// configJoint
 bool RoverPlugin::configJoint( const char* name )
 {
 	std::vector<physics::JointPtr> jnt = model->GetJoints();
@@ -123,13 +123,13 @@ bool RoverPlugin::configJoint( const char* name )
 
 
 // Load
-void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/) 
+void RoverPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
 	printf("RoverPlugin::Load('%s')\n", _parent->GetName().c_str());
 
 	// Store the pointer to the model
 	this->model = _parent;
-	
+
 	// Configure the drive joints
 	configJoint(LF_HINGE);
 	configJoint(LB_HINGE);
@@ -161,7 +161,7 @@ void RoverPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 {
 	static int iter = 0;
 	iter++;
-	
+
 	if( iter < 10 )
 		return;
 
@@ -195,7 +195,7 @@ void RoverPlugin::onCameraMsg(ConstImageStampedPtr &_msg)
 		}
 
 		printf("RoverPlugin - allocated camera img buffer %ix%i  %i bpp  %i bytes\n", width, height, bpp, size);
-		
+
 		inputBufferSize = size;
 		inputRawWidth   = width;
 		inputRawHeight  = height;
@@ -258,9 +258,9 @@ bool RoverPlugin::createAgent()
 		return true;
 
 	// Create AI agent
-	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, NET_OUTPUTS, 
+	agent = dqnAgent::Create(INPUT_WIDTH, INPUT_HEIGHT, INPUT_CHANNELS, NET_OUTPUTS,
 						OPTIMIZER, LEARNING_RATE, REPLAY_MEMORY, BATCH_SIZE,
-						GAMMA, EPS_START, EPS_END, EPS_DECAY, 
+						GAMMA, EPS_START, EPS_END, EPS_DECAY,
 						USE_LSTM, LSTM_SIZE, ALLOW_RANDOM, DEBUG_DQN);
 	if( !agent )
 	{
@@ -280,7 +280,7 @@ bool RoverPlugin::createAgent()
 }
 
 
-// upon recieving a new frame, update the AI agent
+// upon receiving a new frame, update the AI agent
 bool RoverPlugin::updateAgent()
 {
 	if( !agent )
@@ -318,7 +318,7 @@ bool RoverPlugin::updateAgent()
 	// action 0 does nothing, the others index a joint
 	if( action == 0 )
 		return false;	// not an error, but didn't cause an update
-	
+
 	action--;	// with action 0 = no-op, index 1 should map to joint 0
 
 	// if the action is even, increase the joint position by the delta parameter
@@ -366,13 +366,13 @@ static const char* actionStr( int action )
 // update joint reference positions, returns true if positions have been modified
 bool RoverPlugin::updateJoints()
 {
-	if( opMode == USER_MANUAL )	
+	if( opMode == USER_MANUAL )
 	{
 		// make sure the HID interface is open
 		if( !HID )
 		{
 			static int count = 0;	// BUG:  gazebo glitches when dev opened early
-	
+
 			if( count > 1000 )
 				HID = InputDevices::Create();
 
@@ -381,7 +381,7 @@ bool RoverPlugin::updateJoints()
 			if( !HID )
 				return false;	// TODO: print Try running sudo?
 		}
-		
+
 		// poll for input events
 		HID->Poll();
 
@@ -437,7 +437,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 {
 	static int iter = 0;
 	iter++;
-	
+
 	if( iter < 1000 )
 		return;
 
@@ -499,7 +499,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		}
 
 		const math::Box& chassisBBox = chassis->GetBoundingBox();
-		const float distGoal  = BoxDistance(goalBBox, chassisBBox); 
+		const float distGoal  = BoxDistance(goalBBox, chassisBBox);
 		const float distDelta = lastGoalDistance - distGoal;
 		const float movingAvg = 0.0f;	// rolling average to smooth out the intermediary reward and prevent "hovering"
 
@@ -522,7 +522,7 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		else
 			rewardHistory = 0.0f;*/
 
-		newReward = true;	
+		newReward = true;
 	}
 
 	// issue rewards and train DQN
@@ -569,8 +569,8 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 		}
 
 		// print agent stats
-		printf("action = %s reward = %+0.4f  wins = %03u of %03u (%0.2f)   ", 
-			  actionStr(lastAction), rewardHistory,  
+		printf("action = %s reward = %+0.4f  wins = %03u of %03u (%0.2f)   ",
+			  actionStr(lastAction), rewardHistory,
 			  episodesWon, episodesCompleted, float(episodesWon)/float(episodesCompleted));
 
 		const uint32_t RUN_HISTORY = sizeof(runHistory);
@@ -596,4 +596,3 @@ void RoverPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
 }
 
 }
-
