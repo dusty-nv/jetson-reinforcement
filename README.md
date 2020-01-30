@@ -45,7 +45,7 @@ $ cmake ../
 $ make
 ```
 
-During the `cmake` step, PyTorch will be compiled and installed so it can take awhile (around ~30 minutes to an hour on the Jetson).  The stable version of PyTorch we are currently using is `0.3.0`.  The build script will download pacekages and ask you for your `sudo` password during the install.
+During the `cmake` step, PyTorch will be compiled and installed so it can take awhile (around ~30 minutes to an hour on the Jetson).  The stable version of PyTorch we are currently using is `0.3.0`.  The build script will download packages and ask you for your `sudo` password during the install.
 
 # Verifying PyTorch
 
@@ -132,7 +132,7 @@ $ python gym-DQN.py
 ```
 > (assuming the current directory of your terminal is still `jetson-reinforcement/build/<arch>/bin` from above)
 
-Three windows should appear showing the cartpole game, a graph of peformance, and the DQN agent should begin learning.  The longer the DQN agent is able to balance the pole on the moving cart, the more points it's rewarded.  In Gym, a score of 200 indicates the scenario has been mastered.  After a short while of training, the agent should achieve it and the program will quit.
+Three windows should appear showing the cartpole game, a graph of performance, and the DQN agent should begin learning.  The longer the DQN agent is able to balance the pole on the moving cart, the more points it's rewarded.  In Gym, a score of 200 indicates the scenario has been mastered.  After a short while of training, the agent should achieve it and the program will quit.
 
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/DQN-cartpole.png" width="400">
 
@@ -175,7 +175,7 @@ Next, we'll look at integrating these standalone Python examples into robotics c
 
 # Digging into the C++ API
 
-To take these deep reinforcement learners from monolithic Python examples into libray form that can be integrated with robots and simulators, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI to pass the tensor memory between the application and PyTorch without extra copies (ZeroCopy).  
+To take these deep reinforcement learners from monolithic Python examples into library form that can be integrated with robots and simulators, we provide a C++ wrapper library and API to the Python code.  Underneath, the library uses Python's low-level C FFI to pass the tensor memory between the application and PyTorch without extra copies (ZeroCopy).  
 
 The library is architected to be modular and extended to support new types of learning algorithms.  Below is pseudocode illustrating the signature of the [`rlAgent`](c/rlAgent.h) interface which the RL implementations inherit from:
 
@@ -359,7 +359,7 @@ When increasing the dimensions of the environment and pixel array input, the `ep
 
 # 3D Simulation
 
-Up until this point in the repo, the environments have been 2D, namely to confirm that the deep RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotic simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transfered to the real-world robots.
+Up until this point in the repo, the environments have been 2D, namely to confirm that the deep RL algorithms are learning as intended.  To migrate the agent to operating in 3D worlds, we're going to use the [Gazebo](http://gazebosim.org) robotic simulator to simulate different autonomous machines including a robotic arm and rover, which can then be transferred to the real-world robots.
 
 <!---
 Discussion of Gazebo plugin architecture
@@ -402,7 +402,7 @@ Similar to the arm, once you notice the rover consistently finding the object (i
 
 <img align="right" src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/DQN-argmax.png" width="275"> The DQN agent that we've been using is discrete, meaning that the network selects one output neuron per timestep, that the user then explicitly maps or defines to correspond to an action (typically increasing/decreasing a position or velocity by a delta amount).  This means that for each degree of freedom in the robot, 2 outputs are required - one to increase the variable by the delta and another to decrease it.
 
-In more complex real-world scenarious it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
+In more complex real-world scenarios it's often advantageous to control all degrees of freedom simultaneously and to have the network output the precise value of these variables.  For example, if you wanted to teach a humanoid to walk (which can have 20-40 or more degrees of freedom), controlling all the joints simultaneously would be important to it's stability.
 
 <p align="center"><img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/RL_discrete_continuous.png"></p>
 
