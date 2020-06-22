@@ -1,6 +1,11 @@
 <img src="https://github.com/dusty-nv/jetson-reinforcement/raw/master/docs/images/jetson-reinforcement-header.jpg">
 
 # Deep Reinforcement Learning in Robotics
+
+> **note**: this repo supports PyTorch v0.3 and JetPack 3.2.  For newer examples, check out: <br/>
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`openai_ros` package](http://wiki.ros.org/openai_ros) <br/>
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`gym_gazebo2` repo](https://github.com/AcutronicRobotics/gym-gazebo2) <br/>
+
 In this tutorial, we'll be creating artificially intelligent agents that learn from interacting with their environment, gathering experience, and a system of rewards with deep reinforcement learning (deep RL).  Using end-to-end neural networks that translate raw pixels into actions, RL-trained agents are capable of exhibiting intuitive behaviors and performing complex tasks.  
 
 Ultimately, our aim will be to train reinforcement learning agents from virtual robotic simulation in 3D and transfer the agent to a real-world robot.  Reinforcement learners choose the best action for the agent to perform based on environmental state (like camera inputs) and rewards that provide feedback to the agent about it's performance.  Reinforcement learning can learn to behave optimally in it's environment given a policy, or task - like obtaining the reward.
