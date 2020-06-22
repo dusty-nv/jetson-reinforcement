@@ -3,8 +3,9 @@
 # Deep Reinforcement Learning in Robotics
 
 > **note**: this repo supports PyTorch v0.3 and JetPack 3.2.  For newer examples, check out: <br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`openai_ros` package](http://wiki.ros.org/openai_ros) <br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`gym_gazebo2` repo](https://github.com/AcutronicRobotics/gym-gazebo2) <br/>
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`openai_ros` package](http://wiki.ros.org/openai_ros) <br/>
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`gym_gazebo2` repo](https://github.com/AcutronicRobotics/gym-gazebo2) <br/>
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - [`Isaac SDK` samples](https://docs.nvidia.com/isaac/isaac/packages/rl/doc/rl_dolly_docking.html) <br/>
 
 In this tutorial, we'll be creating artificially intelligent agents that learn from interacting with their environment, gathering experience, and a system of rewards with deep reinforcement learning (deep RL).  Using end-to-end neural networks that translate raw pixels into actions, RL-trained agents are capable of exhibiting intuitive behaviors and performing complex tasks.  
 
