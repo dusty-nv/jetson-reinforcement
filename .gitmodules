@@ -1,9 +1,0 @@
-[submodule "python/A3G"]
-	path = python/A3G
-	url = https://github.com/dusty-nv/a3c_continuous
-[submodule "utils"]
-	path = utils
-	url = https://github.com/dusty-nv/jetson-utils
-[submodule "gazebo/gazebo-pkgs"]
-	path = gazebo/gazebo-pkgs
-	url = http://github.com/JenniferBuehler/gazebo-pkgs
