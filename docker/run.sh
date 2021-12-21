@@ -102,7 +102,7 @@ while :; do
             ROS_DISTRO="foxy"
             ;;
 	   -d|--dev)
-            DEV_VOLUME="--volume $PWD/jetson_reinforcement:$DOCKER_ROOT/jetson_reinforcement --volume $PWD/examples:$DOCKER_ROOT/examples --volume $PWD/scripts:$DOCKER_ROOT/scripts --volume $PWD/tests:$DOCKER_ROOT/tests"
+            DEV_VOLUME="--volume $PWD/samples:$DOCKER_ROOT/samples"
             ;;
         -v|--volume)
             if [ "$2" ]; then
@@ -169,11 +169,23 @@ $DEV_VOLUME \
 $DATA_VOLUME \
 $USER_VOLUME"
 
+# give docker root user X11 permissions
+sudo xhost +si:localuser:root
+
+# enable SSH X11 forwarding inside container (https://stackoverflow.com/q/48235040)
+XAUTH=/tmp/.docker.xauth
+sudo rm -rf $XAUTH
+xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+chmod 777 $XAUTH
+
 if [ $ARCH = "aarch64" ]; then
 
 	sudo docker run --runtime nvidia -it --rm \
 		--name=$CONTAINER_NAME \
 		--network host \
+		-e DISPLAY=$DISPLAY \
+		-v /tmp/.X11-unix/:/tmp/.X11-unix \
+		-v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH \
 		$MOUNTS $CONTAINER_IMAGE $USER_COMMAND
 	    
 elif [ $ARCH = "x86_64" ]; then

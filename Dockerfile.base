@@ -54,11 +54,16 @@ RUN apt-get update && \
 		nano \
 		tzdata \
 		python3-tk \
+		mesa-utils \
+		libgl1-mesa-glx \
+		libgl1-mesa-dri \
+		xvfb \
+		swig \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
     
+RUN pip3 install --no-cache-dir --verbose pyvirtualdisplay pyglet
+RUN pip3 install --no-cache-dir --verbose box2d box2d-kengz
 RUN pip3 install --no-cache-dir --verbose stable-baselines3
     
 
-# disable JupyterLab from auto-starting (inherited behavior from l4t-ml)
-#CMD /bin/bash
