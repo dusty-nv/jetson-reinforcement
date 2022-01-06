@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ROS_DISTRO=${1:-"foxy"}
+#ROS_DISTRO=${1:-"foxy"}
 source docker/tag.sh
 
 # push image
@@ -18,5 +18,5 @@ push()
 
 push "$CONTAINER_NAME:$TAG"
 
-ROS_CONTAINER="$CONTAINER_NAME:$TAG-ros-$ROS_DISTRO"
-push "$ROS_CONTAINER"
+#ROS_CONTAINER="$CONTAINER_NAME:$TAG-ros-$ROS_DISTRO"
+#push "$ROS_CONTAINER"
