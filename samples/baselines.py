@@ -24,11 +24,12 @@ import stable_baselines3
 from gym.wrappers import GrayScaleObservation, ResizeObservation
 from gym.wrappers.pixel_observation import PixelObservationWrapper
 
-from stable_baselines3 import A2C
+from stable_baselines3 import A2C, DDPG, DQN, PPO
 from stable_baselines3.common.callbacks import BaseCallback
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('--model', type=str, choices=['A2C', 'DDPG', 'DQN', 'PPO'], default='A2C', help='the RL algorithm to use')
 parser.add_argument('--env', '--environment', type=str, default='CartPole-v1')
 parser.add_argument('--list-envs', action='store_true', help='list the available environments and exit')
 
@@ -174,7 +175,22 @@ if 'pixels' in args.observations:
 print('Observation space:  ' + str(env.observation_space))
 print('Action space:  ' + str(env.action_space))
 
-model = A2C('MultiInputPolicy' if 'pixels' in args.observations else 'MlpPolicy', env, verbose=1)
+# create model
+policy = 'MultiInputPolicy' if 'pixels' in args.observations else 'MlpPolicy' # TODO:  CnnPolicy
+
+if args.model == 'A2C':
+    model = A2C(policy, env, verbose=1)  
+elif args.model == 'DDPG':
+    model = DDPG(policy, env, verbose=1) 
+elif args.model == 'DQN':
+    model = DQN(policy, env, verbose=1) 
+elif args.model == 'PPO':
+    model = PPO(policy, env, verbose=1) 
+    
+print('Model:  ' + args.model)
+print('Policy: ' + policy)
+
+# training 
 model.learn(total_timesteps=args.train_steps, callback=TrainingMonitor(env_monitor))
 
 print('done training')
