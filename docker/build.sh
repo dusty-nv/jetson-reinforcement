@@ -25,8 +25,7 @@ if [ $ARCH = "aarch64" ]; then
 		fi
 	fi
 elif [ $ARCH = "x86_64" ]; then
-	echo "building jetson-reinforcement container is not currently supported on x86"
-	exit 1
+	BASE_IMAGE=${BASE_IMAGE:-"nvcr.io/nvidia/pytorch:21.06-py3"}
 fi
 
 RL_CONTAINER="$CONTAINER_NAME:$TAG"
@@ -35,6 +34,6 @@ RL_CONTAINER="$CONTAINER_NAME:$TAG"
 echo "CONTAINER=$RL_CONTAINER_BASE"
 echo "BASE_IMAGE=$BASE_IMAGE"
 
-sudo docker build -t $RL_CONTAINER -f Dockerfile.base \
+sudo docker build -t $RL_CONTAINER -f Dockerfile.$ARCH \
           --build-arg BASE_IMAGE=$BASE_IMAGE \
 		.

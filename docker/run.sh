@@ -196,6 +196,9 @@ elif [ $ARCH = "x86_64" ]; then
 		--shm-size=8g \
 		--ulimit memlock=-1 \
 		--ulimit stack=67108864 \
+		-e DISPLAY=$DISPLAY \
+		-v /tmp/.X11-unix/:/tmp/.X11-unix \
+		-v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH \
 		$MOUNTS $CONTAINER_IMAGE $USER_COMMAND
 		
 fi
