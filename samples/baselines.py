@@ -178,8 +178,7 @@ class EnvMonitor(gym.Wrapper):
         self.timesteps = 0
         
 # Create and wrap the environment
-env = EnvMonitor(gym.make(args.env))
-env_monitor = env
+env = gym.make(args.env)
 env.reset()
 
 class ResizeObservation(ObservationWrapper):
@@ -232,11 +231,14 @@ if 'pixels' in args.observations:
     env = ResizeObservation(env, args.pixel_res, args.pixel_scale, args.pixel_gray)
     print(f'Wrapping the env in a ResizeObservation wrapper')
 
+env = EnvMonitor(env)
+env_monitor = env
+
 print('Observation space:  ' + str(env.observation_space))
 print('Action space:  ' + str(env.action_space))
 
 # create/load model
-policy = 'MultiInputPolicy' if 'pixels' in args.observations else 'MlpPolicy'
+policy = 'MultiInputPolicy' if 'pixels' in args.observations else 'MlpPolicy'   # 'CnnPolicy'
 
 if args.load != '':
     print(f'Loading {args.model} model from {args.load}')
