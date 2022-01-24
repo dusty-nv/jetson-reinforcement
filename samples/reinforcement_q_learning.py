@@ -85,8 +85,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', '--environment', type=str, default='CartPole-v0')
 parser.add_argument('--train-episodes', type=int, default=500, help='number of episodes to train for')
 parser.add_argument('--batch-size', type=int, default=128, help='the batch size to use for training')
+parser.add_argument('--learning-rate', type=float, default=0.01, help='training learning rate')
 parser.add_argument('--resolution', type=int, default=40, help='resolution to resize the image')
 parser.add_argument('--crop', action='store_true', help='crop the image around the cart (only works with CartPole environments)')
+parser.add_argument('--subtract', action='store_true', help='subtract the last image from the current image to get the difference')
 
 args = parser.parse_args()
 print(args)
@@ -346,10 +348,11 @@ n_actions = env.action_space.n
 
 policy_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net = DQN(screen_height, screen_width, n_actions).to(device)
+
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
-optimizer = optim.RMSprop(policy_net.parameters())
+optimizer = optim.RMSprop(policy_net.parameters(), lr=args.learning_rate)
 memory = ReplayMemory(10000)
 
 
@@ -479,7 +482,12 @@ for i_episode in range(args.train_episodes):
     env.reset()
     last_screen = get_screen()
     current_screen = get_screen()
-    state = current_screen - last_screen
+    
+    if args.subtract:
+        state = current_screen - last_screen
+    else:
+        state = current_screen
+        
     ep_reward = 0
     
     for t in count():
@@ -487,14 +495,17 @@ for i_episode in range(args.train_episodes):
         action = select_action(state)
         _, reward, done, _ = env.step(action.item())
         ep_reward += reward
-        reward = torch.tensor([reward], device=device)
+        reward = torch.tensor([reward], device=device, dtype=torch.float32)
 
         # Observe new state
         last_screen = current_screen
         current_screen = get_screen()
         
         if not done:
-            next_state = current_screen - last_screen
+            if args.subtract:
+                next_state = current_screen - last_screen
+            else:
+                next_state = current_screen
         else:
             next_state = None
 
