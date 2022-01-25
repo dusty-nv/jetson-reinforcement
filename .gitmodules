@@ -1,0 +1,4 @@
+[submodule "samples/rl-baselines3-zoo"]
+	path = samples/rl-baselines3-zoo
+	url = https://github.com/dusty-nv/rl-baselines3-zoo
+	branch = v1.3.1
