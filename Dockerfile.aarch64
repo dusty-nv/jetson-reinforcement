@@ -62,11 +62,45 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
     
+
+# versions this installs:
+#   stable-baselines3 1.3.0 (this is the max version that supports Python 3.6)
+#   gym 0.19.0
+#   atari-py 0.2.6
 RUN pip3 install --no-cache-dir --verbose pyvirtualdisplay pyglet
 RUN pip3 install --no-cache-dir --verbose box2d box2d-kengz
 RUN pip3 install --no-cache-dir --verbose stable-baselines3
 RUN pip3 install --no-cache-dir --verbose atari-py==0.2.6
 
-# stable-baselines3 1.3.0
-# gym 0.19.0
-# atari-py 0.2.6
+# install DLR-RM/rl-baselines3-zoo
+RUN git clone --recursive --branch v1.3.0 https://github.com/DLR-RM/rl-baselines3-zoo
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustc --version && \
+    pip3 install setuptools-rust
+RUN pip3 install --no-cache-dir --verbose -r rl-baselines3-zoo/requirements.txt
+
+
+#
+# re-install OpenCV (with CUDA)
+# note:  this gets overwritten above, so re-install it here
+#
+ARG OPENCV_URL=https://nvidia.box.com/shared/static/5v89u6g5rb62fpz4lh0rz531ajo2t5ef.gz
+ARG OPENCV_DEB=OpenCV-4.5.0-aarch64.tar.gz
+
+RUN apt-get purge -y '*opencv*' || echo "previous OpenCV installation not found" && \
+    mkdir opencv && \
+    cd opencv && \
+    wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${OPENCV_URL} -O ${OPENCV_DEB} && \
+    tar -xzvf ${OPENCV_DEB} && \
+    dpkg -i --force-depends *.deb && \
+    apt-get update && \
+    apt-get install -y -f --no-install-recommends && \
+    dpkg -i *.deb && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    cd ../ && \
+    rm -rf opencv && \
+    cp -r /usr/include/opencv4 /usr/local/include/opencv4 && \
+    cp -r /usr/lib/python3.6/dist-packages/cv2 /usr/local/lib/python3.6/dist-packages/cv2
+
