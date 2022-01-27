@@ -68,6 +68,20 @@ RUN pip3 install --no-cache-dir --verbose atari-py==0.2.6
 RUN rm -rf /opt/conda/lib/python3.8/site-packages/cv2 && \
     conda install -y opencv
     
-# install DLR-RM/rl-baselines3-zoo
-RUN git clone --recursive --branch v1.3.0 https://github.com/DLR-RM/rl-baselines3-zoo
-RUN pip3 install --no-cache-dir --verbose -r rl-baselines3-zoo/requirements.txt
+    
+################################################################
+## DLR-RM/rl-baselines3-zoo
+################################################################
+COPY samples/rl-baselines3-zoo/requirements.txt /tmp/rl-baselines3-zoo-requirements.txt
+RUN pip3 install --no-cache-dir --verbose -r /tmp/rl-baselines3-zoo-requirements.txt
+
+# download models (do it this way to avoid cloning entire repo history)
+# 3dd2af4c is the SHA for rl-baselines3 v1.3.0
+ARG RL_AGENTS_URL=https://github.com/DLR-RM/rl-trained-agents/archive/3dd2af4cee930750016cf943dc6393bada57b89c.zip
+ARG RL_AGENTS_ZIP=/tmp/rl-trained-agents.zip
+
+RUN wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${RL_AGENTS_URL} -O ${RL_AGENTS_ZIP} && \
+    unzip ${RL_AGENTS_ZIP} -d ${WORKSPACE} && \
+    mv rl-trained-agents-* rl-trained-agents && \
+    rm -rf ${RL_AGENTS_ZIP}
+    
