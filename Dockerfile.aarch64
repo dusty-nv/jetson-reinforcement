@@ -52,6 +52,7 @@ RUN apt-get update && \
 		libpng-dev \
 		libglib2.0-0 \
 		nano \
+		unzip \
 		tzdata \
 		python3-tk \
 		mesa-utils \
@@ -72,23 +73,37 @@ RUN pip3 install --no-cache-dir --verbose box2d box2d-kengz
 RUN pip3 install --no-cache-dir --verbose stable-baselines3
 RUN pip3 install --no-cache-dir --verbose atari-py==0.2.6
 
-# install DLR-RM/rl-baselines3-zoo
-RUN git clone --recursive --branch v1.3.0 https://github.com/DLR-RM/rl-baselines3-zoo
+
+################################################################
+## DLR-RM/rl-baselines3-zoo
+################################################################
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustc --version && \
-    pip3 install setuptools-rust
-RUN pip3 install --no-cache-dir --verbose -r rl-baselines3-zoo/requirements.txt
+    pip3 install --no-cache-dir --verbose setuptools-rust
+    
+COPY samples/rl-baselines3-zoo/requirements.txt /tmp/rl-baselines3-zoo-requirements.txt
+RUN pip3 install --no-cache-dir --verbose -r /tmp/rl-baselines3-zoo-requirements.txt
 
+# download models (do it this way to avoid cloning entire repo history)
+# 3dd2af4c is the SHA for rl-baselines3 v1.3.0
+ARG RL_AGENTS_URL=https://github.com/DLR-RM/rl-trained-agents/archive/3dd2af4cee930750016cf943dc6393bada57b89c.zip
+ARG RL_AGENTS_ZIP=/tmp/rl-trained-agents.zip
 
-#
-# re-install OpenCV (with CUDA)
-# note:  this gets overwritten above, so re-install it here
-#
+RUN wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${RL_AGENTS_URL} -O ${RL_AGENTS_ZIP} && \
+    unzip ${RL_AGENTS_ZIP} -d ${WORKSPACE} && \
+    mv rl-trained-agents-* rl-trained-agents && \
+    rm -rf ${RL_AGENTS_ZIP}
+    
+
+################################################################
+## re-install OpenCV (this version gets overwritten above)
+################################################################
 ARG OPENCV_URL=https://nvidia.box.com/shared/static/5v89u6g5rb62fpz4lh0rz531ajo2t5ef.gz
 ARG OPENCV_DEB=OpenCV-4.5.0-aarch64.tar.gz
 
 RUN apt-get purge -y '*opencv*' || echo "previous OpenCV installation not found" && \
+    pip3 uninstall -y opencv-python && \
     mkdir opencv && \
     cd opencv && \
     wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${OPENCV_URL} -O ${OPENCV_DEB} && \
